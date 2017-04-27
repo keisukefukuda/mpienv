@@ -1,0 +1,2 @@
+# mpienv
+MPI environment selector
