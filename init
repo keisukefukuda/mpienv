@@ -1,3 +1,4 @@
+#!/bin/bash
 
 function mpienv() {
     command="$1"
