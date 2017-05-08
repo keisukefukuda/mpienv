@@ -2,15 +2,26 @@
 
 function mpienv() {
     command="$1"
+    shift
 
     case "$command" in
         "use" )
             {
-                eval "$($SHELL ~/.mpienv/mpienv_use.sh $2)"
+                eval "$($SHELL ~/.mpienv/mpienv_use.sh $1)"
+            }
+            ;;
+        "list" )
+            {
+                python ~/.mpienv/mpienv_list.py $*
+            }
+            ;;
+        "info" )
+            {
+                python ~/.mpienv/mpienv_info.py $*
             }
             ;;
         * )
-            echo "Unknown command '$command'"
+            echo "mpienv [ERROR]: Unknown command '$command'"
             ;;
     esac
 }

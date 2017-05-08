@@ -15,7 +15,7 @@ def main():
 
     new_llp = filter_path(proj_root, cur_llp.split(':'))
     
-    mpi_link = os.path.join(proj_root, 'links', mpi_type)
+    mpi_link = os.path.join(proj_root, 'versions', mpi_type)
     if not (os.path.exists(mpi_link) and os.path.islink(mpi_link)):
         sys.stderr.write("Error: Unknown MPI type: '{}'".format(mpi_type))
         exit(-1)
