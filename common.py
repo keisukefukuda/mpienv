@@ -1,10 +1,14 @@
 # coding: utf-8
 
+import distutils.spawn
 import glob
 import os.path
 import re
-from subprocess import call, check_output
+from subprocess import call, check_output, PIPE, Popen
 import sys
+
+def which(cmd):
+    return os.path.realpath(distutils.spawn.find_executable(cmd))
 
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
@@ -18,7 +22,7 @@ def filter_path(proj_root, paths):
 
     return llp
 
-def print_info(prefix, name, verbose=True):
+def print_info(prefix, name, verbose=True, active_flag=False):
     """Obtain information of the MPI installed under prefix.
     """
 
@@ -27,15 +31,15 @@ def print_info(prefix, name, verbose=True):
     # Check mvapich
     ret = call(['grep', '-i', 'MVAPICH2_VERSION', '-q', mpi_h])
     if ret == 0:
-        return print_info_mvapich(prefix, name, verbose)
+        return print_info_mvapich(prefix, name, verbose, active_flag)
 
     ret = call(['grep', '-i', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
     if ret == 0:
-        return print_info_ompi(prefix, name, verbose)
+        return print_info_ompi(prefix, name, verbose, active_flag)
     
     raise RuntimeError("Unknown")
 
-def print_info_mvapich(prefix, name, verbose):
+def print_info_mvapich(prefix, name, verbose, active_flag):
     # Get the Mvapich version
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
@@ -64,11 +68,18 @@ def print_info_mvapich(prefix, name, verbose):
         path = os.path.realpath(prefix)
     else:path = prefix
     
+    # Check if it's active
+    mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
+    if which('mpiexec') == mpiexec:
+        active = "*"
+    else:
+        active = " "
+        
     # Print the result
     if name is None:
-        print("  MVAPICH on {}".format(prefix))
+        print(" {} MVAPICH on {}".format(active, prefix))
     else:
-        print("  {}".format(name))
+        print(" {} {}".format(active, name))
 
     if verbose:
         print("\tType:              MVAPICH")
@@ -80,7 +91,7 @@ def print_info_mvapich(prefix, name, verbose):
             print("\t                   {}".format(conf))
     
 
-def print_info_ompi(prefix, name, verbose):
+def print_info_ompi(prefix, name, verbose, active_flag):
     # Get the Open MPI version
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
@@ -97,10 +108,17 @@ def print_info_ompi(prefix, name, verbose):
 
     ver = "{}.{}.{}".format(major, minor, rel)
 
-    if name is None:
-        print("  Open MPI on {}".format(prefix))
+    # Check if it's active
+    mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
+    if which('mpiexec') == mpiexec:
+        active = "*"
     else:
-        print("  {}".format(name))
+        active = " "
+        
+    if name is None:
+        print(" {} Open MPI on {}".format(active, prefix))
+    else:
+        print(" {} {}".format(active, name))
 
     if verbose:
         print("\tType:              MVAPICH")
