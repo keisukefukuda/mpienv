@@ -7,9 +7,19 @@ import re
 from subprocess import call, check_output, PIPE, Popen
 import sys
 
+root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
+vers_dir = os.path.join(root_dir, 'versions')
+
 def which(cmd):
     return os.path.realpath(distutils.spawn.find_executable(cmd))
 
+def list_versions():
+    res = []
+    for ver in glob.glob(os.path.join(vers_dir, '*')):
+        name = os.path.split(ver)[1]
+        res.append(get_info(ver, name))
+    return res
+        
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
 
@@ -22,7 +32,7 @@ def filter_path(proj_root, paths):
 
     return llp
 
-def print_info(prefix, name, verbose=True, active_flag=False):
+def get_info(prefix, name):
     """Obtain information of the MPI installed under prefix.
     """
 
@@ -31,15 +41,25 @@ def print_info(prefix, name, verbose=True, active_flag=False):
     # Check mvapich
     ret = call(['grep', '-i', 'MVAPICH2_VERSION', '-q', mpi_h])
     if ret == 0:
-        return print_info_mvapich(prefix, name, verbose, active_flag)
+        return get_info_mvapich(prefix, name)
 
     ret = call(['grep', '-i', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
     if ret == 0:
-        return print_info_ompi(prefix, name, verbose, active_flag)
+        return get_info_ompi(prefix, name)
     
     raise RuntimeError("Unknown")
 
-def print_info_mvapich(prefix, name, verbose, active_flag):
+def get_label(prefix):
+    if re.search(r'/$', prefix):
+        prefix = re.sub(r'/$','',prefix)
+
+    return os.path.split(prefix)[-1]
+
+def get_info_mvapich(prefix, name):
+    info = {}
+
+    label = get_label(prefix)
+
     # Get the Mvapich version
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
@@ -70,28 +90,23 @@ def print_info_mvapich(prefix, name, verbose, active_flag):
     
     # Check if it's active
     mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
-    if which('mpiexec') == mpiexec:
-        active = "*"
-    else:
-        active = " "
-        
-    # Print the result
-    if name is None:
-        print(" {} MVAPICH on {}".format(active, prefix))
-    else:
-        print(" {} {}".format(active, name))
+    active = which('mpiexec') == mpiexec
 
-    if verbose:
-        print("\tType:              MVAPICH")
-        print("\tVersion:           {}".format(mv_ver))
-        print("\tMPICH Version:     {}".format(mch_ver))
-        print("\tLocation:          {}".format(path))
-        print("\tConfigure options: {}".format(conf_list[0]))
-        for conf in conf_list[1:]:
-            print("\t                   {}".format(conf))
-    
+    info['label'] = label
+    info['type'] = 'MVAPICH'
+    info['active'] = active
+    info['version'] = mv_ver
+    info['mpich_ver'] = mch_ver
+    info['path'] = path
+    info['configure'] = conf_list[0]
+    info['conf_params'] = conf_list
 
-def print_info_ompi(prefix, name, verbose, active_flag):
+    return info
+
+def get_info_ompi(prefix, name):
+    info = {}
+    label = get_label(prefix)
+
     # Get the Open MPI version
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
@@ -110,17 +125,19 @@ def print_info_ompi(prefix, name, verbose, active_flag):
 
     # Check if it's active
     mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
-    if which('mpiexec') == mpiexec:
-        active = "*"
-    else:
-        active = " "
-        
-    if name is None:
-        print(" {} Open MPI on {}".format(active, prefix))
-    else:
-        print(" {} {}".format(active, name))
+    active = (which('mpiexec') == mpiexec)
 
-    if verbose:
-        print("\tType:              MVAPICH")
-        print("\tVersion:           {}".format(ver))
-        print("\tLocation:          {}".format(path))
+    if os.path.islink(prefix):
+        path = os.path.realpath(prefix)
+    else:path = prefix
+
+    info['label'] = label
+    info['type'] = 'Open MPI'
+    info['active'] = active
+    info['version'] = ver
+    info['prefix'] = prefix
+    info['path'] = path
+    info['configure'] = ""
+    info['conf_params'] = []
+
+    return info

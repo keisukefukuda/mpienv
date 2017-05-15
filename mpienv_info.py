@@ -5,8 +5,7 @@ import os.path
 import re
 import sys
 
-from common import print_info
-
+import common
 
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
 vers_dir = os.path.join(root_dir, 'versions')
@@ -16,4 +15,4 @@ if __name__ == "__main__":
         name = sys.argv[2]
     else:
         name = None
-    print_info(sys.argv[1], name)
+    print(common.get_info(sys.argv[1], name))
