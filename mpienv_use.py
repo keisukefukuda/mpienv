@@ -32,11 +32,17 @@ def use(label):
     trg_mpi = os.path.realpath(os.path.join(vers_dir, label))
 
     if cur_mpi == trg_mpi:
+        print("You are already using {}".format(label))
         return True
+
+    if os.path.exists(dst):
+        os.remove(dst)
 
     src = os.path.realpath(os.path.join(vers_dir, label))
 
     os.symlink(src, dst)
+
+    print("Using {} -> {}".format(label, src))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -14,11 +14,13 @@ if __name__ == '__main__':
 
     max_label_len = max(len(x['label']) for x in mpis)
 
-    print("Installed MPIs:")
+    print("\nInstalled MPIs:\n")
     for mpi in mpis:
-        print(" {} {:<{width}} : {}".format(
+        print(" {} {:<{width}} -> {}".format(
             "*" if mpi['active'] else " ",
             mpi['label'],
             mpi['path'],
             width=max_label_len))
+
+    print()
         

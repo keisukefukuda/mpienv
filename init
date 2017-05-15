@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ ! -f $HOME/.mpienv/shims ]; then
+    G=$HOME/.mpienv/version_global
+    if [ -f $G ]; then
+        ln -s $(cat $G) $HOME/.mpienv/shims
+    fi
+fi
+
 export PATH=$HOME/.mpienv/shims/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/.mpienv/shims/lib:$HOME/.mpienv/shims/lib64:$LD_LIBRARY_PATH
 

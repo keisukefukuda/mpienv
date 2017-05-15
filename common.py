@@ -55,6 +55,10 @@ def get_label(prefix):
 
     return os.path.split(prefix)[-1]
 
+def is_active(prefix):
+    prefix = os.path.realpath(prefix)
+    shims = os.path.realpath(os.path.join(root_dir, 'shims'))
+
 def get_info_mvapich(prefix, name):
     info = {}
 
@@ -89,8 +93,7 @@ def get_info_mvapich(prefix, name):
     else:path = prefix
     
     # Check if it's active
-    mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
-    active = which('mpiexec') == mpiexec
+    active = is_active(prefix)
 
     info['label'] = label
     info['type'] = 'MVAPICH'
