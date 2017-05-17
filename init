@@ -20,6 +20,11 @@ function mpienv() {
                 python ~/.mpienv/mpienv_use.py $*
             }
             ;;
+        "add" )
+            {
+                python ~/.mpienv/mpienv_add.py $*
+            }
+            ;;
         "list" )
             {
                 python ~/.mpienv/mpienv_list.py $*

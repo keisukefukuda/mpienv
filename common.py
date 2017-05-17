@@ -16,8 +16,7 @@ def which(cmd):
 def list_versions():
     res = []
     for ver in glob.glob(os.path.join(vers_dir, '*')):
-        name = os.path.split(ver)[1]
-        res.append(get_info(ver, name))
+        res.append(get_info(ver))
     return res
         
 def filter_path(proj_root, paths):
@@ -32,7 +31,7 @@ def filter_path(proj_root, paths):
 
     return llp
 
-def get_info(prefix, name):
+def get_info(prefix):
     """Obtain information of the MPI installed under prefix.
     """
 
@@ -41,13 +40,13 @@ def get_info(prefix, name):
     # Check mvapich
     ret = call(['grep', '-i', 'MVAPICH2_VERSION', '-q', mpi_h])
     if ret == 0:
-        return get_info_mvapich(prefix, name)
+        return get_info_mvapich(prefix)
 
     ret = call(['grep', '-i', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
     if ret == 0:
-        return get_info_ompi(prefix, name)
+        return get_info_ompi(prefix)
     
-    raise RuntimeError("Unknown")
+    raise RuntimeError("MPI is not installed on '{}'".format(prefix))
 
 def get_label(prefix):
     if re.search(r'/$', prefix):
@@ -59,7 +58,7 @@ def is_active(prefix):
     prefix = os.path.realpath(prefix)
     shims = os.path.realpath(os.path.join(root_dir, 'shims'))
 
-def get_info_mvapich(prefix, name):
+def get_info_mvapich(prefix):
     info = {}
 
     label = get_label(prefix)
@@ -103,10 +102,11 @@ def get_info_mvapich(prefix, name):
     info['path'] = path
     info['configure'] = conf_list[0]
     info['conf_params'] = conf_list
+    info['default_name'] = "mvapich-{}".format(mv_ver)
 
     return info
 
-def get_info_ompi(prefix, name):
+def get_info_ompi(prefix):
     info = {}
     label = get_label(prefix)
 
@@ -142,5 +142,6 @@ def get_info_ompi(prefix, name):
     info['path'] = path
     info['configure'] = ""
     info['conf_params'] = []
+    info['default_name'] = "ompi-{}".format(ver)
 
     return info
