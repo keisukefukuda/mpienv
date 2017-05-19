@@ -42,13 +42,17 @@ def main():
                     # Exclude mpienv's own directory
                     name = manager.is_installed(dirpath)
                     if name:
-                        print("{}\n\t Already known as {}".format(dirpath, name))
+                        print("{}\n\t Already known as '{}'".format(dirpath, name))
                         print()
                     else:
-                        print(mpiexec)
-                        pprint.pprint(manager.get_info(dirpath))
-                        print()
-
+                        # Install the new MPI
+                        try:
+                            name = manager.add(dirpath)
+                            print("Added {} as {}".format(dirpath, name))
+                        except RuntimeError as e:
+                            print("Error occured while adding {}".format(dirpath))
+                            print(e)
+                            
                     checked.add(dirpath)
         
 if __name__ == "__main__":

@@ -188,7 +188,7 @@ class Manager():
         if os.path.isdir(path):
             mpiexec = os.path.realpath(os.path.join(path, 'bin', 'mpiexec'))
         else:
-            raise RuntimeError("todo")
+            raise RuntimeError("todo: path={}".format(path))
 
         for name, info in self.items():
             if info['mpiexec'] == mpiexec:
@@ -198,6 +198,29 @@ class Manager():
 
     def get_current_name(self):
         return next(name for name, info in self.items() if info['active'])
-    
+
+    def add(self, prefix, name=None):
+        n = self.is_installed(prefix)
+        if n is not None:
+            raise RuntimeError("{} is already managed as '{}'".format(prefix, n))
+
+        info = self.get_info(prefix)
+
+        if name is not None:
+            raise RuntimeError("Specifed name '{}' is already taken".format(name))
+        else:
+            name = info['default_name']
+            if name in self:
+                raise RuntimeError("Recommended name for {} is {}, "
+                                   "but the name is already used.".format(prefix, name))
+
+        # dst -> src
+        dst = os.path.join(self._vers_dir, name)
+        src = prefix
+
+        os.symlink(src, dst)
+
+        return name
+
 manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))
 

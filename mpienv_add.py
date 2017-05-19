@@ -18,27 +18,9 @@ def main():
                         help='Path in which an MPI is intalled')
 
     args = parser.parse_args()
-    path = args.path
-    name = args.name
-
-    # Error check:
-    if not os.path.exists(path):
-        raise RuntimeError("{} does not exist.".format(path))
-    if not os.path.isdir(path):
-        raise RuntimeError("{} is not a directory.".format(path))
-
-    try:
-        info = common.get_info(args.path)
-    except:
-        raise RuntimeError("Could not find an MPI installation in {}".format(path))
-
-    name = args.name or info['default_name']
-
-    # Check if the name is already taken:
-    if os.path.exists(os.path.join(vers_dir, name)):
-        raise RuntimeError("The name '{}' is already used.".format(name))
-
+    
     # Create a link
+    manager.add(args.name, args.path)
 
 if __name__ == "__main__":
     main()
