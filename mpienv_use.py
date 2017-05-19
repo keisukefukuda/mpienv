@@ -4,7 +4,7 @@ import os
 import os.path
 import sys
 
-import common
+# import common
 
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
 vers_dir = os.path.join(root_dir, 'versions')
@@ -25,7 +25,7 @@ def use(name):
         sys.stderr.write("mpienv: Error: {} is not a sylink... "
                          "Something is broken\n").format(dst)
         exit(-1)
-        
+
     # Check if `name` is the currently active one,
     # and do nothing if so
     cur_mpi = os.path.realpath(os.path.join(root_dir, 'shims'))
