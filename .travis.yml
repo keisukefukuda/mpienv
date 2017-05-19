@@ -18,4 +18,5 @@ script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
   - flake8 *.py
+  - sh ./tests/test1.sh
   - nosetests -v

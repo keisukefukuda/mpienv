@@ -7,8 +7,8 @@ if [ ! -f $HOME/.mpienv/shims ]; then
     fi
 fi
 
-export PATH=$HOME/.mpienv/shims/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/.mpienv/shims/lib:$HOME/.mpienv/shims/lib64:$LD_LIBRARY_PATH
+export PATH=$HOME/.mpienv/shims/bin:${PATH:-}
+export LD_LIBRARY_PATH=$HOME/.mpienv/shims/lib:$HOME/.mpienv/shims/lib64:${LD_LIBRARY_PATH:-}
 
 function mpienv() {
     command="$1"
