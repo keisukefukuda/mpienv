@@ -3,23 +3,19 @@
 import glob
 import os
 import os.path
+import pprint
 
-import common
-
-root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
-vers_dir = os.path.join(root_dir, 'versions')
+from common import manager
 
 if __name__ == '__main__':
-    mpis = common.list_versions()
-
-    max_label_len = max(len(x['name']) for x in mpis)
+    max_label_len = max(len(name) for name in manager.keys())
 
     print("\nInstalled MPIs:\n")
-    for mpi in mpis:
+    for name, info in manager.items():
         print(" {} {:<{width}} -> {}".format(
-            "*" if mpi['active'] else " ",
-            mpi['name'],
-            mpi['path'],
+            "*" if info['active'] else " ",
+            info['name'],
+            info['path'],
             width=max_label_len))
 
     print()

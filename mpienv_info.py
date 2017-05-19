@@ -6,14 +6,16 @@ import re
 import sys
 import pprint
 
-import common
-
-root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
-vers_dir = os.path.join(root_dir, 'versions')
+from common import manager
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        name = sys.argv[2]
+    if len(sys.argv) == 1:
+        name = manager.get_current_name()
     else:
-        name = None
-    pprint.pprint(common.get_info(sys.argv[1], name))
+        name = sys.argv[1]
+
+    if name in manager:
+        print(name)
+        pprint.pprint(manager[name])
+    else:
+        sys.stderr.write("Error: {} is not installed.\n".format(name))

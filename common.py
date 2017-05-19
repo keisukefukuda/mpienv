@@ -7,23 +7,10 @@ import os.path
 import re
 import sys
 
-root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
-vers_dir = os.path.join(root_dir, 'versions')
-
-class Manager():
-    def __init__(self, root_dir):
-        self._root_dir = root_dir
-        self._vers_dir = os.path.join(root_dir, 'versions')
 
 def which(cmd):
     return os.path.realpath(distutils.spawn.find_executable(cmd))
 
-def list_versions():
-    res = []
-    for ver in glob.glob(os.path.join(vers_dir, '*')):
-        res.append(get_info(ver))
-    return res
-        
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
 
@@ -36,46 +23,12 @@ def filter_path(proj_root, paths):
 
     return llp
 
-def get_info(prefix):
-    """Obtain information of the MPI installed under prefix.
-    """
-
-    mpi_h = os.path.join(prefix, 'include', 'mpi.h')
-
-    if not os.path.exists(mpi_h):
-        sys.stderr.write("Error: {}/include/mpi.h was not found. "
-                         "MPI is not intsalled in this path or only runtime".format(
-                             prefix))
-
-    # Check MPICH
-    ret = call(['grep', 'MPICH_VERSION', '-q', mpi_h])
-    if ret == 0:
-        return get_info_mpich(prefix)
-
-    # Check mvapich
-    ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
-    if ret == 0:
-        return get_info_mvapich(prefix)
-
-    # Check Open MPI
-    ret = call(['grep', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
-    if ret == 0:
-        return get_info_ompi(prefix)
-    
-    raise RuntimeError("MPI is not installed on '{}'".format(prefix))
-
 def is_active(prefix):
-    prefix = os.path.realpath(prefix)
-    shims = os.path.realpath(os.path.join(root_dir, 'shims'))
+    mpiexec1 = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
+    mpiexec2 = which('mpiexec')
+    return mpiexec1 == mpiexec2
 
-def get_name(path):
-    if path.find(vers_dir) == 0:
-        path2 = re.sub(r'/?$', '', path)
-        return os.path.split(path2)[-1]
-    else:
-        None
-
-def get_info_mpich(prefix):
+def _get_info_mpich(prefix):
     info = {}
 
     # Run mpiexec --version and extract some information
@@ -97,6 +50,9 @@ def get_info_mpich(prefix):
         path = os.path.realpath(prefix)
     else:path = prefix
 
+    for bin in ['mpiexec', 'mpicc', 'mpicxx']:
+        info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
+
     info['type'] = 'MPICH'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -104,11 +60,10 @@ def get_info_mpich(prefix):
     info['configure'] = conf_list[0]
     info['conf_params'] = conf_list
     info['default_name'] = "mpich-{}".format(ver)
-    info['name'] = get_name(prefix)
 
     return info
 
-def get_info_mvapich(prefix):
+def _get_info_mvapich(prefix):
     info = get_info_mpich(prefix)
 
     # Parse mvapich version
@@ -127,7 +82,7 @@ def get_info_mvapich(prefix):
 
     return info
 
-def get_info_ompi(prefix):
+def _get_info_ompi(prefix):
     info = {}
 
     # Get the Open MPI version
@@ -150,6 +105,9 @@ def get_info_ompi(prefix):
         path = os.path.realpath(prefix)
     else:path = prefix
 
+    for bin in ['mpiexec', 'mpicc', 'mpicxx']:
+        info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
+
     info['type'] = 'Open MPI'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -158,6 +116,88 @@ def get_info_ompi(prefix):
     info['configure'] = ""
     info['conf_params'] = []
     info['default_name'] = "ompi-{}".format(ver)
-    info['name'] = get_name(prefix)
 
     return info
+
+class Manager():
+    def __init__(self, root_dir):
+        self._root_dir = root_dir
+        self._vers_dir = os.path.join(root_dir, 'versions')
+        self._load_info()
+
+    def root_dir(self): return self._root_dir
+
+    def _load_info(self):
+        # Get the current status of the MPI environment.
+        self._installed = {}
+        for prefix in glob.glob(os.path.join(self._vers_dir, '*')):
+            name = os.path.split(prefix)[-1]
+            info = self.get_info(prefix)
+            info['name'] = name
+            self._installed[name] = info
+
+    def get_info(self, name):
+        """Obtain information of the MPI installed under prefix.
+        """
+
+        prefix = os.path.join(self._vers_dir, name)
+        mpi_h = os.path.join(prefix, 'include', 'mpi.h')
+
+        if not os.path.exists(mpi_h):
+            sys.stderr.write("Error: {}/include/mpi.h was not found. "
+                             "MPI is not intsalled in this path or only runtime".format(
+                                 prefix))
+
+        # Check MPICH
+        ret = call(['grep', 'MPICH_VERSION', '-q', mpi_h])
+        if ret == 0:
+            return _get_info_mpich(prefix)
+
+        # Check mvapich
+        ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
+        if ret == 0:
+            return _get_info_mvapich(prefix)
+
+        # Check Open MPI
+        ret = call(['grep', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
+        if ret == 0:
+            return _get_info_ompi(prefix)
+    
+        raise RuntimeError("MPI is not installed on '{}'".format(prefix))
+
+    def items(self):
+        return self._installed.items()
+
+    def keys(self):
+        return self._installed.keys()
+
+    def __getitem__(self, key):
+        return self._installed[key]
+
+    def __contains__(self, key):
+        return key in self._installed
+
+    def mpiexec(self, name):
+        return os.path.realpath(os.path.join(self._vers_dir, name, 'bin', 'mpiexec'))
+
+    def is_installed(self, path):
+        # Find mpiexec in the path or something and check if it is already
+        # under our control.
+        mpiexec = None
+        path = os.path.realpath(path)
+        if os.path.isdir(path):
+            mpiexec = os.path.realpath(os.path.join(path, 'bin', 'mpiexec'))
+        else:
+            raise RuntimeError("todo")
+
+        for name, info in self.items():
+            if info['mpiexec'] == mpiexec:
+                return name
+            
+        return None
+
+    def get_current_name(self):
+        return next(name for name, info in self.items() if info['active'])
+    
+manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))
+
