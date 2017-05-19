@@ -1,15 +1,17 @@
 # coding: utf-8
 
-from subprocess import call, check_output, PIPE, Popen
 import distutils.spawn
 import glob
 import os.path
 import re
+from subprocess import call
+from subprocess import check_output
 import sys
 
 
 def which(cmd):
     return os.path.realpath(distutils.spawn.find_executable(cmd))
+
 
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
@@ -23,10 +25,12 @@ def filter_path(proj_root, paths):
 
     return llp
 
+
 def is_active(prefix):
     mpiexec1 = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
     mpiexec2 = which('mpiexec')
     return mpiexec1 == mpiexec2
+
 
 def _get_info_mpich(prefix):
     info = {}
@@ -38,17 +42,19 @@ def _get_info_mpich(prefix):
 
     # Parse 'Configure options' section
     # Config options are like this:
-    # '--disable-option-checking' '--prefix=NONE' '--enable-cuda' '--disable-fortran' '--cache-file=/dev/null'
+    # '--disable-option-checking' '--prefix=NONE' '--enable-cuda'
     m = re.search(r'Configure options:\s+(.*)$', out, re.MULTILINE)
     conf_str = m.group(1)
-    conf_list = [s.replace("'",'') for s in re.findall(r'\'[^\']+\'', conf_str)]
+    conf_list = [s.replace("'", '') for s
+                 in re.findall(r'\'[^\']+\'', conf_str)]
 
     m = re.search(r'Version:\s+(\S+)', out, re.MULTILINE)
     ver = m.group(1)
 
     if os.path.islink(prefix):
         path = os.path.realpath(prefix)
-    else:path = prefix
+    else:
+        path = prefix
 
     for bin in ['mpiexec', 'mpicc', 'mpicxx']:
         info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
@@ -63,10 +69,15 @@ def _get_info_mpich(prefix):
 
     return info
 
+
 def _get_info_mvapich(prefix):
-    info = get_info_mpich(prefix)
+    info = _get_info_mpich(prefix)
 
     # Parse mvapich version
+    mpi_h = os.path.join(prefix, 'include', 'mpi.h')
+    if not os.path.exists(mpi_h):
+        raise RuntimeError("Error: Cannot find {}".format(mpi_h))
+
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
                           encoding=sys.getdefaultencoding())
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
@@ -81,6 +92,7 @@ def _get_info_mvapich(prefix):
     info['default_name'] = "mvapich-{}".format(mv_ver)
 
     return info
+
 
 def _get_info_ompi(prefix):
     info = {}
@@ -103,7 +115,8 @@ def _get_info_ompi(prefix):
 
     if os.path.islink(prefix):
         path = os.path.realpath(prefix)
-    else:path = prefix
+    else:
+        path = prefix
 
     for bin in ['mpiexec', 'mpicc', 'mpicxx']:
         info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
@@ -118,6 +131,7 @@ def _get_info_ompi(prefix):
     info['default_name'] = "ompi-{}".format(ver)
 
     return info
+
 
 class Manager():
     def __init__(self, root_dir):
@@ -162,7 +176,7 @@ class Manager():
         ret = call(['grep', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
         if ret == 0:
             return _get_info_ompi(prefix)
-    
+
         raise RuntimeError("MPI is not installed on '{}'".format(prefix))
 
     def items(self):
@@ -193,7 +207,7 @@ class Manager():
         for name, info in self.items():
             if info['mpiexec'] == mpiexec:
                 return name
-            
+
         return None
 
     def get_current_name(self):
@@ -202,17 +216,20 @@ class Manager():
     def add(self, prefix, name=None):
         n = self.is_installed(prefix)
         if n is not None:
-            raise RuntimeError("{} is already managed as '{}'".format(prefix, n))
+            raise RuntimeError("{} is already managed "
+                               "as '{}'".format(prefix, n))
 
         info = self.get_info(prefix)
 
         if name is not None:
-            raise RuntimeError("Specifed name '{}' is already taken".format(name))
+            raise RuntimeError("Specifed name '{}' is "
+                               "already taken".format(name))
         else:
             name = info['default_name']
             if name in self:
                 raise RuntimeError("Recommended name for {} is {}, "
-                                   "but the name is already used.".format(prefix, name))
+                                   "but the name is "
+                                   "already used.".format(prefix, name))
 
         # dst -> src
         dst = os.path.join(self._vers_dir, name)
@@ -223,4 +240,3 @@ class Manager():
         return name
 
 manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))
-
