@@ -10,11 +10,11 @@ import common
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
 vers_dir = os.path.join(root_dir, 'versions')
 
-def use(label):
-    # Check label is a valid MPI installation
-    if not os.path.exists(os.path.join(vers_dir, label)):
+def use(name):
+    # Check name is a valid MPI installation
+    if not os.path.exists(os.path.join(vers_dir, name)):
         sys.stderr.write("mpienv: Error: unknown MPI installation: '{}'\n".format(
-            label))
+            name))
         exit(-1)
 
     dst = os.path.join(root_dir, 'shims')
@@ -26,23 +26,23 @@ def use(label):
                           "Something is broken\n").format(dst))
         exit(-1)
 
-    # Check if `label` is the currently active one,
+    # Check if `name` is the currently active one,
     # and do nothing if so
     cur_mpi = os.path.realpath(os.path.join(root_dir, 'shims'))
-    trg_mpi = os.path.realpath(os.path.join(vers_dir, label))
+    trg_mpi = os.path.realpath(os.path.join(vers_dir, name))
 
     if cur_mpi == trg_mpi:
-        print("You are already using {}".format(label))
+        print("You are already using {}".format(name))
         return True
 
     if os.path.exists(dst):
         os.remove(dst)
 
-    src = os.path.realpath(os.path.join(vers_dir, label))
+    src = os.path.realpath(os.path.join(vers_dir, name))
 
     os.symlink(src, dst)
 
-    print("Using {} -> {}".format(label, src))
+    print("Using {} -> {}".format(name, src))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

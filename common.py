@@ -10,6 +10,11 @@ import sys
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
 vers_dir = os.path.join(root_dir, 'versions')
 
+class Manager():
+    def __init__(self, root_dir):
+        self._root_dir = root_dir
+        self._vers_dir = os.path.join(root_dir, 'versions')
+
 def which(cmd):
     return os.path.realpath(distutils.spawn.find_executable(cmd))
 
@@ -59,20 +64,19 @@ def get_info(prefix):
     
     raise RuntimeError("MPI is not installed on '{}'".format(prefix))
 
-def get_label(prefix):
-    if re.search(r'/$', prefix):
-        prefix = re.sub(r'/$','',prefix)
-
-    return os.path.split(prefix)[-1]
-
 def is_active(prefix):
     prefix = os.path.realpath(prefix)
     shims = os.path.realpath(os.path.join(root_dir, 'shims'))
 
+def get_name(path):
+    if path.find(vers_dir) == 0:
+        path2 = re.sub(r'/?$', '', path)
+        return os.path.split(path2)[-1]
+    else:
+        None
+
 def get_info_mpich(prefix):
     info = {}
-
-    label = get_label(prefix)
 
     # Run mpiexec --version and extract some information
     mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
@@ -93,7 +97,6 @@ def get_info_mpich(prefix):
         path = os.path.realpath(prefix)
     else:path = prefix
 
-    info['label'] = label
     info['type'] = 'MPICH'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -101,16 +104,12 @@ def get_info_mpich(prefix):
     info['configure'] = conf_list[0]
     info['conf_params'] = conf_list
     info['default_name'] = "mpich-{}".format(ver)
+    info['name'] = get_name(prefix)
 
     return info
 
 def get_info_mvapich(prefix):
-    info = {}
-
-    label = get_label(prefix)
-
-    # Get the Mvapich version
-    mpi_h = os.path.join(prefix, 'include', 'mpi.h')
+    info = get_info_mpich(prefix)
 
     # Parse mvapich version
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
@@ -130,7 +129,6 @@ def get_info_mvapich(prefix):
 
 def get_info_ompi(prefix):
     info = {}
-    label = get_label(prefix)
 
     # Get the Open MPI version
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
@@ -152,7 +150,6 @@ def get_info_ompi(prefix):
         path = os.path.realpath(prefix)
     else:path = prefix
 
-    info['label'] = label
     info['type'] = 'Open MPI'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -161,5 +158,6 @@ def get_info_ompi(prefix):
     info['configure'] = ""
     info['conf_params'] = []
     info['default_name'] = "ompi-{}".format(ver)
+    info['name'] = get_name(prefix)
 
     return info

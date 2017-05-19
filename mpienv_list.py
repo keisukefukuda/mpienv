@@ -12,13 +12,13 @@ vers_dir = os.path.join(root_dir, 'versions')
 if __name__ == '__main__':
     mpis = common.list_versions()
 
-    max_label_len = max(len(x['label']) for x in mpis)
+    max_label_len = max(len(x['name']) for x in mpis)
 
     print("\nInstalled MPIs:\n")
     for mpi in mpis:
         print(" {} {:<{width}} -> {}".format(
             "*" if mpi['active'] else " ",
-            mpi['label'],
+            mpi['name'],
             mpi['path'],
             width=max_label_len))
 

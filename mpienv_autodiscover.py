@@ -44,8 +44,6 @@ def main():
                 
                 mpiexec = os.path.join(bin,'mpiexec')
                 if os.path.exists(mpiexec):
-                    print("-------------------------------------")
-                    print("Found mpiexec: {}".format(mpiexec))
                     pprint.pprint(common.get_info(dirpath))
                     print()
         

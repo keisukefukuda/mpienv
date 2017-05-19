@@ -4,6 +4,7 @@ import os
 import os.path
 import re
 import sys
+import pprint
 
 import common
 
@@ -15,4 +16,4 @@ if __name__ == "__main__":
         name = sys.argv[2]
     else:
         name = None
-    print(common.get_info(sys.argv[1], name))
+    pprint.pprint(common.get_info(sys.argv[1], name))
