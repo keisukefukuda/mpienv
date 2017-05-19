@@ -17,5 +17,6 @@ def main():
     # Create a link
     manager.add(args.name, args.path)
 
+
 if __name__ == "__main__":
     main()
