@@ -1,14 +1,16 @@
 #!/bin/bash
 
-if [ ! -f $HOME/.mpienv/shims ]; then
-    G=$HOME/.mpienv/version_global
+ROOT=$(dirname $0)
+
+if [ ! -f $ROOT/shims ]; then
+    G=$ROOT/version_global
     if [ -f $G ]; then
-        ln -s $(cat $G) $HOME/.mpienv/shims
+        ln -s $(cat $G) $ROOT/shims
     fi
 fi
 
-export PATH=$HOME/.mpienv/shims/bin:${PATH:-}
-export LD_LIBRARY_PATH=$HOME/.mpienv/shims/lib:$HOME/.mpienv/shims/lib64:${LD_LIBRARY_PATH:-}
+export PATH=$ROOT/shims/bin:${PATH:-}
+export LD_LIBRARY_PATH=$ROOT/shims/lib:$ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
 
 function mpienv() {
     command="$1"
@@ -17,27 +19,27 @@ function mpienv() {
     case "$command" in
         "use" )
             {
-                python ~/.mpienv/mpienv_use.py $*
+                python $ROOT/mpienv_use.py $*
             }
             ;;
         "add" )
             {
-                python ~/.mpienv/mpienv_add.py $*
+                python $ROOT/mpienv_add.py $*
             }
             ;;
         "list" )
             {
-                python ~/.mpienv/mpienv_list.py $*
+                python $ROOT/mpienv_list.py $*
             }
             ;;
         "info" )
             {
-                python ~/.mpienv/mpienv_info.py $*
+                python $ROOT/mpienv_info.py $*
             }
             ;;
         "autodiscover" )
             {
-                python ~/.mpienv/mpienv_autodiscover.py $*
+                python $ROOT/mpienv_autodiscover.py $*
             }
             ;;
         * )
