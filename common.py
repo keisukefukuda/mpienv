@@ -246,7 +246,7 @@ class Manager(object):
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
         exit(-1)
-            
+
         dst = os.path.join(self._root_dir, 'shims')
 
         # check if `name` is the currently active one,

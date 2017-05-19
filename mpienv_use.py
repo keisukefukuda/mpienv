@@ -1,7 +1,5 @@
 # coding: utf-8
 
-import os
-import os.path
 import sys
 
 from common import manager
