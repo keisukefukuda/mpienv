@@ -240,5 +240,30 @@ class Manager(object):
 
         return name
 
+    def use(self, name):
+        if name not in self:
+            sys.stderr.write("mpienv: Error: "
+                             "unknown MPI installation: "
+                             "'{}'\n".format(name))
+        exit(-1)
+            
+        dst = os.path.join(self._root_dir, 'shims')
+
+        # check if `name` is the currently active one,
+        # and do nothing if so
+        cur_mpi = os.path.realpath(os.path.join(self._root_dir, 'shims'))
+        trg_mpi = os.path.realpath(os.path.join(self._vers_dir, name))
+
+        if cur_mpi == trg_mpi:
+            print("You are already using {}".format(name))
+            return True
+
+        if os.path.exists(dst):
+            os.remove(dst)
+
+        src = os.path.realpath(os.path.join(self._vers_dir, name))
+
+        os.symlink(src, dst)
+
 
 manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))
