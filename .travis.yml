@@ -13,4 +13,5 @@ python:
   - "nightly" # currently points to 3.7-dev
 
 script:
+  - python --version
   - nosetests -v
