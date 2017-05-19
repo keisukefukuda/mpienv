@@ -1,10 +1,5 @@
 # coding: utf-8
 
-import glob
-import os
-import os.path
-import pprint
-
 from common import manager
 
 if __name__ == '__main__':
@@ -19,4 +14,3 @@ if __name__ == '__main__':
             width=max_label_len))
 
     print()
-        

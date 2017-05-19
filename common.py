@@ -81,7 +81,7 @@ def _get_info_mvapich(prefix):
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
                           encoding=sys.getdefaultencoding())
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
-                          encoding=sys.getdefaultencoding())
+                           encoding=sys.getdefaultencoding())
 
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
@@ -105,7 +105,7 @@ def _get_info_ompi(prefix):
     minor_s = check_output(['grep', '-E', 'define OMPI_MINOR_VERSION', mpi_h],
                            encoding=sys.getdefaultencoding())
     rel_s = check_output(['grep', '-E', 'define OMPI_RELEASE_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding())
+                         encoding=sys.getdefaultencoding())
 
     major = re.search(r'\d+', major_s).group(0)
     minor = re.search(r'\d+', minor_s).group(0)
@@ -133,13 +133,14 @@ def _get_info_ompi(prefix):
     return info
 
 
-class Manager():
+class Manager(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
         self._vers_dir = os.path.join(root_dir, 'versions')
         self._load_info()
 
-    def root_dir(self): return self._root_dir
+    def root_dir(self):
+        return self._root_dir
 
     def _load_info(self):
         # Get the current status of the MPI environment.
@@ -151,16 +152,15 @@ class Manager():
             self._installed[name] = info
 
     def get_info(self, name):
-        """Obtain information of the MPI installed under prefix.
-        """
+        """Obtain information of the MPI installed under prefix."""
 
         prefix = os.path.join(self._vers_dir, name)
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
         if not os.path.exists(mpi_h):
             sys.stderr.write("Error: {}/include/mpi.h was not found. "
-                             "MPI is not intsalled in this path or only runtime".format(
-                                 prefix))
+                             "MPI is not intsalled in this "
+                             "path or only runtime".format(prefix))
 
         # Check MPICH
         ret = call(['grep', 'MPICH_VERSION', '-q', mpi_h])
@@ -192,7 +192,8 @@ class Manager():
         return key in self._installed
 
     def mpiexec(self, name):
-        return os.path.realpath(os.path.join(self._vers_dir, name, 'bin', 'mpiexec'))
+        return os.path.realpath(os.path.join(
+            self._vers_dir, name, 'bin', 'mpiexec'))
 
     def is_installed(self, path):
         # Find mpiexec in the path or something and check if it is already
@@ -238,5 +239,6 @@ class Manager():
         os.symlink(src, dst)
 
         return name
+
 
 manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))

@@ -15,5 +15,6 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - python --version
+  - autopep8 -r . --global-config .pep8 | tee check_autopep8
+  - test ! -s check_autopep8
   - nosetests -v

@@ -1,10 +1,7 @@
 # coding: utf-8
 
-import os
-import os.path
-import re
-import sys
 import pprint
+import sys
 
 from common import manager
 

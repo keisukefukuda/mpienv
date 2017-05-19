@@ -1,13 +1,8 @@
 # coding: utf-8
 
 import argparse
-import os
-import sys
 
-import common
-
-root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
-vers_dir = os.path.join(root_dir, 'versions')
+from common import manager
 
 
 def main():
@@ -18,10 +13,9 @@ def main():
                         help='Path in which an MPI is intalled')
 
     args = parser.parse_args()
-    
+
     # Create a link
     manager.add(args.name, args.path)
 
 if __name__ == "__main__":
     main()
-    

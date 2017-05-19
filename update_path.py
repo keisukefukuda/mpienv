@@ -6,6 +6,7 @@ import sys
 
 from common import *
 
+
 def main():
     proj_root = sys.argv[1]    # the directory where this script is installed
     cur_llp = sys.argv[2]  # the current LD_LIBRARY_PATH
@@ -20,6 +21,7 @@ def main():
 
     new_path[:0] = [os.path.join(mpi_link, 'bin')]
     print(':'.join(new_path))
+
 
 if __name__ == "__main__":
     main()

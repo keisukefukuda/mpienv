@@ -2,7 +2,6 @@
 
 import os
 import os.path
-import re
 import sys
 
 import common
@@ -10,11 +9,12 @@ import common
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
 vers_dir = os.path.join(root_dir, 'versions')
 
+
 def use(name):
     # Check name is a valid MPI installation
     if not os.path.exists(os.path.join(vers_dir, name)):
-        sys.stderr.write("mpienv: Error: unknown MPI installation: '{}'\n".format(
-            name))
+        sys.stderr.write("mpienv: Error: "
+                         "unknown MPI installation: '{}'\n".format(name))
         exit(-1)
 
     dst = os.path.join(root_dir, 'shims')
@@ -22,10 +22,10 @@ def use(name):
     # Check if the current `shims` is a symlink.
     # If not, something is broken
     if os.path.exists(dst) and not os.path.islink(dst):
-        sys.stderr.write(("mpienv: Error: {} is not a sylink... " + 
-                          "Something is broken\n").format(dst))
+        sys.stderr.write("mpienv: Error: {} is not a sylink... "
+                         "Something is broken\n").format(dst)
         exit(-1)
-
+        
     # Check if `name` is the currently active one,
     # and do nothing if so
     cur_mpi = os.path.realpath(os.path.join(root_dir, 'shims'))
