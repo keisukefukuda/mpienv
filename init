@@ -35,6 +35,11 @@ function mpienv() {
                 python ~/.mpienv/mpienv_info.py $*
             }
             ;;
+        "autodiscover" )
+            {
+                python ~/.mpienv/mpienv_autodiscover.py $*
+            }
+            ;;
         * )
             echo "mpienv [ERROR]: Unknown command '$command'"
             ;;

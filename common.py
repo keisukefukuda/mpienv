@@ -1,10 +1,10 @@
 # coding: utf-8
 
+from subprocess import call, check_output, PIPE, Popen
 import distutils.spawn
 import glob
 import os.path
 import re
-from subprocess import call, check_output, PIPE, Popen
 import sys
 
 root_dir = os.path.join(os.path.expanduser('~'), '.mpienv')
@@ -37,12 +37,23 @@ def get_info(prefix):
 
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
+    if not os.path.exists(mpi_h):
+        sys.stderr.write("Error: {}/include/mpi.h was not found. "
+                         "MPI is not intsalled in this path or only runtime".format(
+                             prefix))
+
+    # Check MPICH
+    ret = call(['grep', 'MPICH_VERSION', '-q', mpi_h])
+    if ret == 0:
+        return get_info_mpich(prefix)
+
     # Check mvapich
-    ret = call(['grep', '-i', 'MVAPICH2_VERSION', '-q', mpi_h])
+    ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
     if ret == 0:
         return get_info_mvapich(prefix)
 
-    ret = call(['grep', '-i', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
+    # Check Open MPI
+    ret = call(['grep', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
     if ret == 0:
         return get_info_ompi(prefix)
     
@@ -57,6 +68,41 @@ def get_label(prefix):
 def is_active(prefix):
     prefix = os.path.realpath(prefix)
     shims = os.path.realpath(os.path.join(root_dir, 'shims'))
+
+def get_info_mpich(prefix):
+    info = {}
+
+    label = get_label(prefix)
+
+    # Run mpiexec --version and extract some information
+    mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
+    out = check_output([mpiexec, '--version'],
+                       encoding=sys.getdefaultencoding())
+
+    # Parse 'Configure options' section
+    # Config options are like this:
+    # '--disable-option-checking' '--prefix=NONE' '--enable-cuda' '--disable-fortran' '--cache-file=/dev/null'
+    m = re.search(r'Configure options:\s+(.*)$', out, re.MULTILINE)
+    conf_str = m.group(1)
+    conf_list = [s.replace("'",'') for s in re.findall(r'\'[^\']+\'', conf_str)]
+
+    m = re.search(r'Version:\s+(\S+)', out, re.MULTILINE)
+    ver = m.group(1)
+
+    if os.path.islink(prefix):
+        path = os.path.realpath(prefix)
+    else:path = prefix
+
+    info['label'] = label
+    info['type'] = 'MPICH'
+    info['active'] = is_active(prefix)
+    info['version'] = ver
+    info['path'] = path
+    info['configure'] = conf_list[0]
+    info['conf_params'] = conf_list
+    info['default_name'] = "mpich-{}".format(ver)
+
+    return info
 
 def get_info_mvapich(prefix):
     info = {}
@@ -75,33 +121,9 @@ def get_info_mvapich(prefix):
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
 
-    # Run mpiexec --version and extract some information
-    mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-    out = check_output([mpiexec, '--version'],
-                       encoding=sys.getdefaultencoding())
-
-    # Parse 'Configure options' section
-    # Config options are like this:
-    # '--disable-option-checking' '--prefix=NONE' '--enable-cuda' '--disable-fortran' '--cache-file=/dev/null'
-    m = re.search(r'Configure options:\s+(.*)$', out, re.MULTILINE)
-    conf_str = m.group(1)
-    conf_list = [s.replace("'",'') for s in re.findall(r'\'[^\']+\'', conf_str)]
-
-    if os.path.islink(prefix):
-        path = os.path.realpath(prefix)
-    else:path = prefix
-    
-    # Check if it's active
-    active = is_active(prefix)
-
-    info['label'] = label
-    info['type'] = 'MVAPICH'
-    info['active'] = active
     info['version'] = mv_ver
+    info['type'] = 'MVAPICH'
     info['mpich_ver'] = mch_ver
-    info['path'] = path
-    info['configure'] = conf_list[0]
-    info['conf_params'] = conf_list
     info['default_name'] = "mvapich-{}".format(mv_ver)
 
     return info
@@ -126,17 +148,13 @@ def get_info_ompi(prefix):
 
     ver = "{}.{}.{}".format(major, minor, rel)
 
-    # Check if it's active
-    mpiexec = os.path.realpath(os.path.join(prefix, 'bin', 'mpiexec'))
-    active = (which('mpiexec') == mpiexec)
-
     if os.path.islink(prefix):
         path = os.path.realpath(prefix)
     else:path = prefix
 
     info['label'] = label
     info['type'] = 'Open MPI'
-    info['active'] = active
+    info['active'] = is_active(prefix)
     info['version'] = ver
     info['prefix'] = prefix
     info['path'] = path
