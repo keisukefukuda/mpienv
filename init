@@ -52,5 +52,6 @@ function mpienv() {
             ;;
     esac
 }
+
 EOF
 )
