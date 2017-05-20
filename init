@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ROOT=$(dirname $0)
+ROOT=$(cd $ROOT; pwd) # Normalize the path
 
 if [ ! -f $ROOT/shims ]; then
     G=$ROOT/version_global
@@ -12,34 +13,38 @@ fi
 export PATH=$ROOT/shims/bin:${PATH:-}
 export LD_LIBRARY_PATH=$ROOT/shims/lib:$ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
 
+echo ROOT=$ROOT
+
+source <(cat <<EOF
 function mpienv() {
-    command="$1"
+    echo ROOT=$ROOT
+    command="\$1"
     shift
 
-    case "$command" in
+    case "\$command" in
         "use" )
             {
-                python $ROOT/mpienv_use.py $*
+                python $ROOT/mpienv_use.py \$*
             }
             ;;
         "add" )
             {
-                python $ROOT/mpienv_add.py $*
+                python $ROOT/mpienv_add.py \$*
             }
             ;;
         "list" )
             {
-                python $ROOT/mpienv_list.py $*
+                python $ROOT/mpienv_list.py \$*
             }
             ;;
         "info" )
             {
-                python $ROOT/mpienv_info.py $*
+                python $ROOT/mpienv_info.py \$*
             }
             ;;
         "autodiscover" )
             {
-                python $ROOT/mpienv_autodiscover.py $*
+                python $ROOT/mpienv_autodiscover.py \$*
             }
             ;;
         * )
@@ -47,3 +52,5 @@ function mpienv() {
             ;;
     esac
 }
+EOF
+)
