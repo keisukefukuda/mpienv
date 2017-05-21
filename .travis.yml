@@ -17,7 +17,7 @@ cache:
   - directories:
       - mpi
 
-before_install:
+before_script:
   - sh ./.travis_mpi_install.sh
 
 install:
