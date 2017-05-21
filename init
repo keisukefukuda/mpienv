@@ -2,15 +2,15 @@
 
 export MPIENV_ROOT="$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)"
 
-if [ ! -f $ROOT/shims ]; then
-    G=$ROOT/version_global
+if [ ! -f $MPIENV_ROOT/shims ]; then
+    G=$MPIENV_ROOT/version_global
     if [ -f $G ]; then
-        ln -s $(cat $G) $ROOT/shims
+        ln -s $(cat $G) $MPIENV_ROOT/shims
     fi
 fi
 
-export PATH=$ROOT/shims/bin:${PATH:-}
-export LD_LIBRARY_PATH=$ROOT/shims/lib:$ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
+export PATH=$MPIENV_ROOT/shims/bin:${PATH:-}
+export LD_LIBRARY_PATH=$MPIENV_ROOT/shims/lib:$MPIENV_ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
 
 function mpienv() {
     declare -r root=$MPIENV_ROOT
