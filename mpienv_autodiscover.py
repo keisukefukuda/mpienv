@@ -47,14 +47,17 @@ def main():
                               "'{}'".format(dirpath, name))
                         print()
                     else:
+                        print("Found {}".format(mpiexec))
+                        print(manager.get_info(dirpath))
                         # Install the new MPI
-                        try:
-                            name = manager.add(dirpath)
-                            print("Added {} as {}".format(dirpath, name))
-                        except RuntimeError as e:
-                            print("Error occured while "
-                                  "adding {}".format(dirpath))
-                            print(e)
+                        if False:
+                            try:
+                                name = manager.add(dirpath)
+                                print("Added {} as {}".format(dirpath, name))
+                            except RuntimeError as e:
+                                print("Error occured while "
+                                      "adding {}".format(dirpath))
+                                print(e)
 
                     checked.add(dirpath)
 

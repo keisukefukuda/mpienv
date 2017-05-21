@@ -155,29 +155,42 @@ class Manager(object):
         """Obtain information of the MPI installed under prefix."""
 
         prefix = os.path.join(self._vers_dir, name)
+        mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
-        if not os.path.exists(mpi_h):
-            sys.stderr.write("Error: {}/include/mpi.h was not found. "
+        if not os.path.exists(mpiexec):
+            sys.stderr.write("Error: {} was not found. "
                              "MPI is not intsalled in this "
-                             "path or only runtime".format(prefix))
+                             "path or only runtime".format(mpiexec))
 
-        # Check MPICH
-        ret = call(['grep', 'MPICH_VERSION', '-q', mpi_h])
-        if ret == 0:
-            return _get_info_mpich(prefix)
+        enc = sys.getdefaultencoding()
+        ver_str = check_output([mpiexec, '--version']).decode(enc)
 
-        # Check mvapich
-        ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
-        if ret == 0:
-            return _get_info_mvapich(prefix)
-
-        # Check Open MPI
-        ret = call(['grep', 'OMPI_MAJOR_VERSION', '-q', mpi_h])
-        if ret == 0:
+        if re.search(r'OpenRTE', ver_str, re.MULTILINE):
             return _get_info_ompi(prefix)
 
-        raise RuntimeError("MPI is not installed on '{}'".format(prefix))
+        if re.search(r'HYDRA', ver_str, re.MULTILINE):
+            # MPICH or MVAPICH
+            # if mpi.h is installed, check it to identiy
+            # the MPI type.
+            # This is because MVAPCIH uses MPICH's mpiexec,
+            # so we cannot distinguish them only from mpiexec.
+            if os.path.exists(mpi_h):
+                ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
+                if ret == 0:
+                    # MVAPICH
+                    return _get_info_mvapich(prefix)
+                else:
+                    # MPICH
+                    return _get_info_mpich(prefix)
+            else:
+                # on some platform, sometimes only runtime
+                # is installed and developemnt kit (i.e. compilers)
+                # are not installed.
+                # In this case, we assume it's mpich.
+                return _get_info_mpich(prefix)
+
+        raise RuntimeError("Unknown MPI type '{}'".format(mpiexec))
 
     def items(self):
         return self._installed.items()
