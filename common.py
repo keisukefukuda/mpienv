@@ -242,7 +242,7 @@ class Manager(object):
 
     def use(self, name):
         if name not in self:
-            sys.stderr.write("mpienv: Error: "
+            sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
         exit(-1)

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-ROOT=$(dirname $0)
-ROOT=$(cd $ROOT; pwd) # Normalize the path
+export MPIENV_ROOT="$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)"
 
 if [ ! -f $ROOT/shims ]; then
     G=$ROOT/version_global
@@ -13,45 +12,39 @@ fi
 export PATH=$ROOT/shims/bin:${PATH:-}
 export LD_LIBRARY_PATH=$ROOT/shims/lib:$ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
 
-echo ROOT=$ROOT
-
-source <(cat <<EOF
 function mpienv() {
-    echo ROOT=$ROOT
-    command="\$1"
+    declare -r root=$MPIENV_ROOT
+    declare -r command="$1"
     shift
 
-    case "\$command" in
+    case "$command" in
         "use" )
             {
-                python $ROOT/mpienv_use.py \$*
+                python $root/mpienv_use.py $*
             }
             ;;
         "add" )
             {
-                python $ROOT/mpienv_add.py \$*
+                python $root/mpienv_add.py $*
             }
             ;;
         "list" )
             {
-                python $ROOT/mpienv_list.py \$*
+                python $root/mpienv_list.py $*
             }
             ;;
         "info" )
             {
-                python $ROOT/mpienv_info.py \$*
+                python $root/mpienv_info.py $*
             }
             ;;
         "autodiscover" )
             {
-                python $ROOT/mpienv_autodiscover.py \$*
+                python $root/mpienv_autodiscover.py $*
             }
             ;;
         * )
-            echo "mpienv [ERROR]: Unknown command '\$command'"
+            echo "mpienv [ERROR]: Unknown command '$command'"
             ;;
     esac
 }
-
-EOF
-)
