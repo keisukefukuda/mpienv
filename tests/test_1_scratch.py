@@ -11,7 +11,7 @@ ProjDir = os.path.abspath(
 
 
 def bash_session(cmd):
-    p=  Popen(["/bin/bash"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    p = Popen(["/bin/bash"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     enc = sys.getdefaultencoding()
     cmd = ". {}/init; {};\n".format(ProjDir, cmd)
 
