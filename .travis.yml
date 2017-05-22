@@ -16,7 +16,7 @@ python:
 cache:
   - pip: true
   - directories:
-      - mpi
+      - $HOME/mpi
 
 before_script:
   - sh ./.travis_mpi_install.sh
