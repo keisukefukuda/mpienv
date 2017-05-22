@@ -1,7 +1,9 @@
 # coding: utf-8
 
+import argparse
 import os
 import os.path
+import pprint
 import sys
 
 from common import manager
@@ -16,19 +18,27 @@ default_search_paths = [
 
 
 def main():
-    if len(sys.argv) == 1:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--add', dest='add',
+                        action="store_true", default=None)
+    parser.add_argument('paths', nargs='+')
+
+    args = parser.parse_args()
+
+    search_paths = args.paths
+    to_add = args.add
+
+    if len(search_paths) == 0:
         search_paths = default_search_paths
-    else:
-        err = False
-        for p in sys.argv[1:]:
-            if not os.path.isdir(p):
-                sys.stderr.write("Error: '{}' is not a directory\n".format(p))
-                err = True
 
-        if err:
-            exit(-1)
+    err = False
+    for p in search_paths:
+        if not os.path.isdir(p):
+            sys.stderr.write("Error: '{}' is not a directory\n".format(p))
+            err = True
 
-        search_paths = sys.argv[1:]
+    if err:
+        exit(-1)
 
     checked = set()
 
@@ -47,10 +57,11 @@ def main():
                               "'{}'".format(dirpath, name))
                         print()
                     else:
+                        print("--------------------------------------")
                         print("Found {}".format(mpiexec))
-                        print(manager.get_info(dirpath))
+                        pprint.pprint(manager.get_info(dirpath))
                         # Install the new MPI
-                        if False:
+                        if to_add:
                             try:
                                 name = manager.add(dirpath)
                                 print("Added {} as {}".format(dirpath, name))
@@ -59,6 +70,7 @@ def main():
                                       "adding {}".format(dirpath))
                                 print(e)
 
+                        print()
                     checked.add(dirpath)
 
 

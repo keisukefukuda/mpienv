@@ -19,8 +19,9 @@ def bash_session(cmd):
     return out.decode(enc), err.decode(enc), p.returncode
 
 
-class TestOK(unittest.TestCase):
-    def test_ok(self):
+class TestList(unittest.TestCase):
+    def test_list_empty(self):
+        # It outputs nothing if no MPI is installed yet.
         o, e, r = bash_session("mpienv list")
         self.assertEqual(0, r)
         self.assertEqual("", o)

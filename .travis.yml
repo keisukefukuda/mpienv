@@ -1,4 +1,5 @@
 language: python
+
 python:
   # - "2.6"
   # - "2.7"
@@ -22,6 +23,7 @@ before_script:
 
 install:
   - pip install -r requirements.txt
+
 script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8

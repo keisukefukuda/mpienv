@@ -139,6 +139,9 @@ class Manager(object):
         self._vers_dir = os.path.join(root_dir, 'versions')
         self._load_info()
 
+        if not os.path.exists(self._vers_dir):
+            os.mkdir(self._vers_dir)
+
     def root_dir(self):
         return self._root_dir
 
