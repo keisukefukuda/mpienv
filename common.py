@@ -256,12 +256,25 @@ class Manager(object):
 
         return name
 
+    def rm(self, name):
+        if name not in self:
+            raise RuntimeError("No such MPI: '{}'".format(name))
+
+        info = self.get_info(name)
+        if info['active']:
+            sys.stderr.write("You cannot remove active MPI: '{}'\n".format(name))
+            exit(-1)
+
+        path = os.path.join(self._vers_dir, name)
+        os.remove(path)
+
+
     def use(self, name):
         if name not in self:
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
-        exit(-1)
+            exit(-1)
 
         dst = os.path.join(self._root_dir, 'shims')
 

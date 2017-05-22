@@ -26,3 +26,4 @@ class TestList(unittest.TestCase):
         self.assertEqual(0, r)
         self.assertEqual("", o)
         self.assertEqual("", e)
+
