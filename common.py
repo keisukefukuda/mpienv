@@ -136,7 +136,8 @@ def _get_info_ompi(prefix):
 class Manager(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
-        self._vers_dir = os.path.join(root_dir, 'versions')
+        self._vers_dir = os.environ.get("MPIENV_VERSIONS_DIR",
+                                        os.path.join(root_dir, 'versions'))
         self._load_info()
 
         if not os.path.exists(self._vers_dir):
