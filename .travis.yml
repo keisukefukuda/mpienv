@@ -18,6 +18,14 @@ cache:
   - directories:
       - $HOME/mpi
 
+addons:
+  apt:
+    sources:
+      - debian-sid
+      - ubuntu-toolchain-r-test
+    packages:
+      - ibverbs-utils
+
 before_script:
   - sh ./.travis_mpi_install.sh
 
