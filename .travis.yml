@@ -25,6 +25,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - ibverbs-utils
+      - libibverbs-dev
 
 before_script:
   - sh ./.travis_mpi_install.sh
