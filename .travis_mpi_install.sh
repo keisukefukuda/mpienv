@@ -7,6 +7,9 @@ PREFIX=$HOME/mpi
 
 # Open MPI 2.1.1
 cd $HOME/tmp
+
+ls $PREFIX
+
 for VER in 2.1.1 1.10.7; do
     if [ ! -x $PREFIX/openmpi-${VER}/bin/mpiexec ]; then
         echo "==============================================="
