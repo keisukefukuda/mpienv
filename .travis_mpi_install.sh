@@ -25,6 +25,7 @@ for VER in 2.1.1 1.10.7; do
         cd ..
     else
         echo "Open MPI ${VER} looks good."
+        $PREFIX/openmpi-${VER}/bin/mpiexec --version
     fi
 done
 
@@ -44,6 +45,7 @@ for VER in 3.2; do
         cd ..
     else
         echo "MPICH ${VER} looks good."
+        $PREFIX/mpich-${VER}/bin/mpiexec --version
     fi
 done
 
@@ -63,5 +65,6 @@ for VER in 2.2; do
         cd ..
     else
         echo "MPVAPICH ${VER} looks good."
+        $PREFIX/mvapich2-2.2/bin/mpiexec --version
     fi
 done
