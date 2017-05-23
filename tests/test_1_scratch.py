@@ -20,7 +20,7 @@ def bash_session(cmd):
         os.rmdir
     if type(cmd) == list:
         cmd = ";".join(cmd)
-        
+
     p = Popen(["/bin/bash"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     enc = sys.getdefaultencoding()
     cmd = (". {}/init;"
@@ -52,13 +52,13 @@ class TestAutoDiscover(unittest.TestCase):
             "mpienv autodiscover ~/mpi | grep Found | sort"
         ])
 
-        lines = [re.search(r'(/mpi/.*)$', ln).group(1) for ln in o.split("\n") if len(ln) > 0]
+        lines = [re.search(r'(/mpi/.*)$', ln).group(1)
+                 for ln in o.split("\n") if len(ln) > 0]
 
         self.assertEqual(['/mpi/mpich-3.2/bin/mpiexec',
                           '/mpi/mvapich2-2.2/bin/mpiexec',
                           '/mpi/openmpi-1.10.7/bin/mpiexec',
                           '/mpi/openmpi-2.1.1/bin/mpiexec'], lines)
-        
 
     def test_autodiscover_add(self):
         out, err, ret = bash_session([

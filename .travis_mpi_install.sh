@@ -57,7 +57,7 @@ for VER in 2.2; do
         wget --no-check-certificate http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-${VER}.tar.gz
         tar -xf mvapich2-${VER}.tar.gz
         cd mvapich2-${VER}
-        ./configure --disable-fortran --prefix=$PREFIX/mvapich2-2.2
+        ./configure --disable-fortran --prefix=$PREFIX/mvapich2-2.2 --without-ibverbs
         make -j4
         make install
         cd ..
