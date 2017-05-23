@@ -9,7 +9,9 @@ if __name__ == '__main__':
     max_label_len = max(len(name) for name in manager.keys())
 
     print("\nInstalled MPIs:\n")
-    for name, info in manager.items():
+    lst = [info for name,info in manager.items()]
+    lst.sort(key=lambda x: x['name'])
+    for info in lst:
         print(" {} {:<{width}} -> {}".format(
             "*" if info['active'] else " ",
             info['name'],
