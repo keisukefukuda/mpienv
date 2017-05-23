@@ -4,6 +4,7 @@ import argparse
 
 from common import manager
 
+
 def main():
     parser = argparse.ArgumentParser(description="mpienv-add")
     parser.add_argument('targets', type=str, nargs='+')

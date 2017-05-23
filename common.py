@@ -263,12 +263,12 @@ class Manager(object):
 
         info = self.get_info(name)
         if info['active']:
-            sys.stderr.write("You cannot remove active MPI: '{}'\n".format(name))
+            sys.stderr.write("You cannot remove active MPI: "
+                             "'{}'\n".format(name))
             exit(-1)
 
         path = os.path.join(self._vers_dir, name)
         os.remove(path)
-
 
     def use(self, name):
         if name not in self:
