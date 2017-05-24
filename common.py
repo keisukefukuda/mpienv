@@ -56,9 +56,6 @@ def _get_info_mpich(prefix):
     else:
         path = prefix
 
-    for bin in ['mpiexec', 'mpicc', 'mpicxx']:
-        info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
-
     info['type'] = 'MPICH'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -118,9 +115,6 @@ def _get_info_ompi(prefix):
     else:
         path = prefix
 
-    for bin in ['mpiexec', 'mpicc', 'mpicxx']:
-        info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
-
     info['type'] = 'Open MPI'
     info['active'] = is_active(prefix)
     info['version'] = ver
@@ -170,8 +164,10 @@ class Manager(object):
         enc = sys.getdefaultencoding()
         ver_str = check_output([mpiexec, '--version']).decode(enc)
 
+        info = None
+
         if re.search(r'OpenRTE', ver_str, re.MULTILINE):
-            return _get_info_ompi(prefix)
+            info = _get_info_ompi(prefix)
 
         if re.search(r'HYDRA', ver_str, re.MULTILINE):
             # MPICH or MVAPICH
@@ -183,18 +179,25 @@ class Manager(object):
                 ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
                 if ret == 0:
                     # MVAPICH
-                    return _get_info_mvapich(prefix)
+                    info = _get_info_mvapich(prefix)
                 else:
                     # MPICH
-                    return _get_info_mpich(prefix)
+                    info = _get_info_mpich(prefix)
             else:
                 # on some platform, sometimes only runtime
                 # is installed and developemnt kit (i.e. compilers)
                 # are not installed.
                 # In this case, we assume it's mpich.
-                return _get_info_mpich(prefix)
+                info = _get_info_mpich(prefix)
 
-        raise RuntimeError("Unknown MPI type '{}'".format(mpiexec))
+        if info is None:
+            raise RuntimeError("Unknown MPI type '{}'".format(mpiexec))
+
+        for bin in ['mpiexec', 'mpicc', 'mpicxx']:
+            info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
+
+        return info 
+
 
     def items(self):
         return self._installed.items()
