@@ -10,11 +10,14 @@ import sys
 
 
 def which(cmd):
-    sys.stderr.write("which(): cmd = '{}'".format(cmd))
-    out = os.path.realpath(distutils.spawn.find_executable(cmd))
-    if type(out) == bytes:
-        out = out.decode(sys.getdefaultencoding())
-    return out
+    exe = distutils.spawn.find_executable(cmd)
+    if exe is None:
+        return None
+
+    exe = os.path.realpath(exe)
+    if type(exe) == bytes:
+        exe = exe.decode(sys.getdefaultencoding())
+    return exe
 
 
 def filter_path(proj_root, paths):
