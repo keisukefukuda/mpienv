@@ -4,6 +4,7 @@ import distutils.spawn
 import glob
 import os.path
 import re
+import shutil
 from subprocess import call
 from subprocess import check_output
 import sys
@@ -93,7 +94,7 @@ def _get_info_mvapich(prefix):
     info['version'] = mv_ver
     info['type'] = 'MVAPICH'
     info['mpich_ver'] = mch_ver
-    info['default_name'] = "mvapich-{}".format(mv_ver)
+    info['default_name'] = "mvapich2-{}".format(mv_ver)
 
     return info
 
@@ -129,7 +130,7 @@ def _get_info_ompi(prefix):
     info['path'] = path
     info['configure'] = ""
     info['conf_params'] = []
-    info['default_name'] = "ompi-{}".format(ver)
+    info['default_name'] = "openmpi-{}".format(ver)
 
     return info
 
@@ -275,6 +276,18 @@ class Manager(object):
 
         path = os.path.join(self._vers_dir, name)
         os.remove(path)
+
+    def rename(self, name_from, name_to):
+        if name_from not in self:
+            raise RuntimeError("No such MPI: '{}'".format(name_from))
+
+        if name_to in self:
+            raise RuntimeError("Name '{}' already exists".format(name_to))
+
+        path_from = os.path.join(self._vers_dir, name_from)
+        path_to = os.path.join(self._vers_dir, name_to)
+
+        shutil.move(path_from, path_to)
 
     def use(self, name):
         if name not in self:
