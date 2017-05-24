@@ -16,6 +16,39 @@ default_search_paths = [
     os.path.expanduser("~/local"),
 ]
 
+def check_valid_paths(paths):
+    err = False
+    for p in search_paths:
+        if not os.path.isdir(p):
+            sys.stderr.write("Error: '{}' is not a directory\n".format(p))
+            err = True
+
+    if err:
+        exit(-1)
+
+def investigate_path(path, to_add):
+    mpiexec = os.path.join(path, 'bin', 'mpiexec')
+    if os.path.isfile(mpiexec):
+        # Exclude mpienv's own directory
+        name = manager.is_installed(dirpath)
+        if name:
+            print("{}\n\t Already known as "
+                  "'{}'".format(dirpath, name))
+            print()
+        else:
+            print("--------------------------------------")
+            print("Found {}".format(mpiexec))
+            pprint.pprint(manager.get_info(dirpath))
+            # Install the new MPI
+            if to_add:
+                try:
+                    name = manager.add(dirpath)
+                    print("Added {} as {}".format(dirpath, name))
+                except RuntimeError as e:
+                    print("Error occured while "
+                          "adding {}".format(dirpath))
+                    print(e)
+                    print()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -31,14 +64,7 @@ def main():
     if len(search_paths) == 0:
         search_paths = default_search_paths
 
-    err = False
-    for p in search_paths:
-        if not os.path.isdir(p):
-            sys.stderr.write("Error: '{}' is not a directory\n".format(p))
-            err = True
-
-    if err:
-        exit(-1)
+    check_valid_paths(search_paths)
 
     checked = set()
 
@@ -46,33 +72,8 @@ def main():
         for (dirpath, dirs, files) in os.walk(path):
             if dirpath in checked:
                 continue
-            if 'bin'in dirs:
-                bin = os.path.join(dirpath, 'bin')
-                mpiexec = os.path.join(bin, 'mpiexec')
-                if os.path.isfile(mpiexec):
-                    # Exclude mpienv's own directory
-                    name = manager.is_installed(dirpath)
-                    if name:
-                        print("{}\n\t Already known as "
-                              "'{}'".format(dirpath, name))
-                        print()
-                    else:
-                        print("--------------------------------------")
-                        print("Found {}".format(mpiexec))
-                        pprint.pprint(manager.get_info(dirpath))
-                        # Install the new MPI
-                        if to_add:
-                            try:
-                                name = manager.add(dirpath)
-                                print("Added {} as {}".format(dirpath, name))
-                            except RuntimeError as e:
-                                print("Error occured while "
-                                      "adding {}".format(dirpath))
-                                print(e)
-
-                        print()
-                    checked.add(dirpath)
-
+            investigate_path(dirpath)
+            checked.add(dirpath)
 
 if __name__ == "__main__":
     main()
