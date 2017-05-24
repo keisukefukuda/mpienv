@@ -94,7 +94,7 @@ def _get_info_mvapich(prefix):
     info['version'] = mv_ver
     info['type'] = 'MVAPICH'
     info['mpich_ver'] = mch_ver
-    info['default_name'] = "mvapich-{}".format(mv_ver)
+    info['default_name'] = "mvapich2-{}".format(mv_ver)
 
     return info
 
@@ -130,7 +130,7 @@ def _get_info_ompi(prefix):
     info['path'] = path
     info['configure'] = ""
     info['conf_params'] = []
-    info['default_name'] = "ompi-{}".format(ver)
+    info['default_name'] = "openmpi-{}".format(ver)
 
     return info
 

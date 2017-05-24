@@ -16,14 +16,14 @@ ProjDir = os.path.abspath(
 
 print("Platform: {}".format(platform.platform()))
 if re.search(r'linux', platform.platform(), re.I):
-    mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
-                '/mpi/mvapich2-2.2/bin/mpiexec',
-                '/mpi/openmpi-1.10.7/bin/mpiexec',
-                '/mpi/openmpi-2.1.1/bin/mpiexec']
+    mpi_list = ['mpich-3.2',
+                'mvapich2-2.2',
+                'openmpi-1.10.7',
+                'openmpi-2.1.1']
 else:
-    mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
-                '/mpi/openmpi-1.10.7/bin/mpiexec',
-                '/mpi/openmpi-2.1.1/bin/mpiexec']
+    mpi_list = ['mpich-3.2',
+                'openmpi-1.10.7',
+                'openmpi-2.1.1']
 
 
 def bash_session(cmd):
@@ -32,7 +32,7 @@ def bash_session(cmd):
     if os.path.exists(ver_dir):
         os.rmdir
     if type(cmd) == list:
-        cmd = ";".join(cmd)
+        cmd = " && ".join(cmd)
 
     p = Popen(["/bin/bash"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     enc = sys.getdefaultencoding()
@@ -65,9 +65,7 @@ class TestAutoDiscover(unittest.TestCase):
             "mpienv autodiscover -v ~/mpi | grep Found | sort"
         ])
 
-        sys.stderr.write(err)
-
-        lines = [re.search(r'(/mpi/.*)$', ln).group(1)
+        lines = [re.search(r'/mpi/([^/]*)/bin/mpiexec', ln).group(1)
                  for ln in out.split("\n") if len(ln) > 0]
 
         self.assertEqual(mpi_list, lines)
@@ -77,9 +75,23 @@ class TestAutoDiscover(unittest.TestCase):
             "mpienv autodiscover -v --add ~/mpi",
             "mpienv list"
         ])
-
-        sys.stderr.write(err)
-
         lines = sorted(ln for ln in out.split("\n") if re.search('^Found', ln))
-        lines = [re.search(r'(/mpi/.*)$', ln).group(0) for ln in lines]
+        lines = [re.search(r'/mpi/([^/]*)/bin/mpiexec', ln).group(1)
+                 for ln in lines]
         self.assertEqual(mpi_list, lines)
+
+
+class TestRename(unittest.TestCase):
+    def test_rename(self):
+        out, err, ret = bash_session([
+            "mpienv autodiscover --add ~/mpi",
+            "mpienv rename mpich-3.2 mpich-3.2x",
+            "mpienv list"
+        ])
+
+        should = [re.sub(r'mpich-3.2', 'mpich-3.2x', m) for m in mpi_list]
+
+        lines = [ln for ln in out.split("\n") if re.search('->', ln)]
+        lines = sorted([re.search(r'([^/ ]*)\s+->', ln).group(1)
+                        for ln in lines])
+        self.assertEqual(should, lines)
