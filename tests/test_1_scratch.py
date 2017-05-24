@@ -14,6 +14,7 @@ ProjDir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..'))
 
 
+print("Platform: {}".format(platform.platform()))
 if re.search(r'linux', platform.platform(), re.I):
     mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
                 '/mpi/mvapich2-2.2/bin/mpiexec',
