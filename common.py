@@ -10,8 +10,9 @@ import sys
 
 
 def which(cmd):
+    sys.stderr.write("which(): cmd = '{}'".format(cmd))
     out = os.path.realpath(distutils.spawn.find_executable(cmd))
-    if not type(out) == str:
+    if type(out) == bytes:
         out = out.decode(sys.getdefaultencoding())
     return out
 
