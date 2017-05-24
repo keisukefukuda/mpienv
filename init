@@ -33,6 +33,11 @@ function mpienv() {
                 python $root/mpienv_rm.py $*
             }
             ;;
+        "rename" )
+            {
+                python $root/mpienv_rename.py $*
+            }
+            ;;
         "list" )
             {
                 python $root/mpienv_list.py $*
