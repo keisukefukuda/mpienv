@@ -10,7 +10,10 @@ import sys
 
 
 def which(cmd):
-    return os.path.realpath(distutils.spawn.find_executable(cmd))
+    out = os.path.realpath(distutils.spawn.find_executable(cmd))
+    if not type(out) == str:
+        out = out.decode(sys.getdefaultencoding())
+    return out
 
 
 def filter_path(proj_root, paths):
