@@ -11,8 +11,9 @@ import sys
 
 def which(cmd):
     exe = distutils.spawn.find_executable(cmd)
-    if exe is None: return None
-    
+    if exe is None:
+        return None
+
     exe = os.path.realpath(exe)
     if type(exe) == bytes:
         exe = exe.decode(sys.getdefaultencoding())
