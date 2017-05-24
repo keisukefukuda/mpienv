@@ -175,15 +175,12 @@ class Manager(object):
             # the MPI type.
             # This is because MVAPCIH uses MPICH's mpiexec,
             # so we cannot distinguish them only from mpiexec.
-            if os.path.exists(mpi_h):
-                ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
-                if ret == 0:
-                    # MVAPICH
-                    info = _get_info_mvapich(prefix)
-                else:
-                    # MPICH
-                    info = _get_info_mpich(prefix)
+            ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
+            if ret == 0:
+                # MVAPICH
+                info = _get_info_mvapich(prefix)
             else:
+                # MPICH
                 # on some platform, sometimes only runtime
                 # is installed and developemnt kit (i.e. compilers)
                 # are not installed.

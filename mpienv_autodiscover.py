@@ -18,6 +18,10 @@ default_search_paths = [
 
 _verbose = None
 
+def printv(s):
+    if _verbose:
+        sys.stderr.write(s + "\n")
+
 def check_valid_paths(paths):
     err = False
     for p in paths:
@@ -31,7 +35,7 @@ def check_valid_paths(paths):
 def investigate_path(path, to_add):
     mpiexec = os.path.join(path, 'bin', 'mpiexec')
     if os.path.isfile(mpiexec):
-        if verbose: print("checking {}".format(mpiexec))
+        printv("checking {}".format(mpiexec))
 
         # Exclude mpienv's own directory
         name = manager.is_installed(path)
@@ -54,12 +58,11 @@ def investigate_path(path, to_add):
                     print(e)
                     print()
     else:
-        if verbose:
-            print("No such file '{}'".format(mpiexec))
+        printv("No such file '{}'".format(mpiexec))
                     
 
 def main():
-    global verbose
+    global _verbose
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--add', dest='add',
@@ -72,7 +75,7 @@ def main():
 
     search_paths = args.paths
     to_add = args.add
-    verbose = args.verbose
+    _verbose = args.verbose
 
     if len(search_paths) == 0:
         search_paths = default_search_paths

@@ -7,12 +7,23 @@ import sys
 import re
 import tempfile
 import shutil
+import platform
 
 
 ProjDir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..'))
 
 
+if re.search(r'linux', platform.platform(), re.I):
+    mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
+                '/mpi/mvapich2-2.2/bin/mpiexec',
+                '/mpi/openmpi-1.10.7/bin/mpiexec',
+                '/mpi/openmpi-2.1.1/bin/mpiexec']
+else:
+    mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
+                '/mpi/openmpi-1.10.7/bin/mpiexec',
+                '/mpi/openmpi-2.1.1/bin/mpiexec']
+    
 def bash_session(cmd):
     ver_dir = tempfile.mkdtemp()
 
@@ -55,21 +66,14 @@ class TestAutoDiscover(unittest.TestCase):
         lines = [re.search(r'(/mpi/.*)$', ln).group(1)
                  for ln in o.split("\n") if len(ln) > 0]
 
-        self.assertEqual(['/mpi/mpich-3.2/bin/mpiexec',
-                          '/mpi/mvapich2-2.2/bin/mpiexec',
-                          '/mpi/openmpi-1.10.7/bin/mpiexec',
-                          '/mpi/openmpi-2.1.1/bin/mpiexec'], lines)
+        self.assertEqual(mpi_list, lines)
 
     def test_autodiscover_add(self):
         out, err, ret = bash_session([
-            "mpienv autodiscover --add ~/mpi",
+            "mpienv autodiscover -v --add ~/mpi",
             "mpienv list"
         ])
 
         lines = sorted(ln for ln in out.split("\n") if re.search('^Found', ln))
         lines = [re.search(r'(/mpi/.*)$', ln).group(0) for ln in lines]
-        self.assertEqual(['/mpi/mpich-3.2/bin/mpiexec',
-                          '/mpi/mvapich2-2.2/bin/mpiexec',
-                          '/mpi/openmpi-1.10.7/bin/mpiexec',
-                          '/mpi/openmpi-2.1.1/bin/mpiexec'],
-                         lines)
+        self.assertEqual(mpi_list, lines)
