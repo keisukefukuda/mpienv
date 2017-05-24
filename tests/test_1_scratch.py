@@ -65,7 +65,7 @@ class TestAutoDiscover(unittest.TestCase):
         ])
 
         sys.stderr.write(err)
-        
+
         lines = [re.search(r'(/mpi/.*)$', ln).group(1)
                  for ln in out.split("\n") if len(ln) > 0]
 
