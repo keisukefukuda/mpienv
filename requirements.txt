@@ -1,3 +1,4 @@
 nose
 hacking
 autopep8
+codeclimate-test-reporter
