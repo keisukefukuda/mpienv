@@ -60,12 +60,14 @@ class TestList(unittest.TestCase):
 
 class TestAutoDiscover(unittest.TestCase):
     def test_autodiscover(self):
-        o, e, r = bash_session([
-            "mpienv autodiscover ~/mpi | grep Found | sort"
+        out, err, ret = bash_session([
+            "mpienv autodiscover -v ~/mpi | grep Found | sort"
         ])
 
+        sys.stderr.write(err)
+        
         lines = [re.search(r'(/mpi/.*)$', ln).group(1)
-                 for ln in o.split("\n") if len(ln) > 0]
+                 for ln in out.split("\n") if len(ln) > 0]
 
         self.assertEqual(mpi_list, lines)
 
@@ -74,6 +76,8 @@ class TestAutoDiscover(unittest.TestCase):
             "mpienv autodiscover -v --add ~/mpi",
             "mpienv list"
         ])
+
+        sys.stderr.write(err)
 
         lines = sorted(ln for ln in out.split("\n") if re.search('^Found', ln))
         lines = [re.search(r'(/mpi/.*)$', ln).group(0) for ln in lines]
