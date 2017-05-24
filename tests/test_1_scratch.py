@@ -89,6 +89,10 @@ class TestRename(unittest.TestCase):
             "mpienv list"
         ])
 
+        self.assertEqual(0, ret)
+
+        print(out)
+
         should = [re.sub(r'mpich-3.2', 'mpich-3.2x', m) for m in mpi_list]
 
         lines = [ln for ln in out.split("\n") if re.search('->', ln)]
