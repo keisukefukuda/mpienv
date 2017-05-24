@@ -16,9 +16,11 @@ default_search_paths = [
     os.path.expanduser("~/local"),
 ]
 
+_verbose = None
+
 def check_valid_paths(paths):
     err = False
-    for p in search_paths:
+    for p in paths:
         if not os.path.isdir(p):
             sys.stderr.write("Error: '{}' is not a directory\n".format(p))
             err = True
@@ -29,30 +31,40 @@ def check_valid_paths(paths):
 def investigate_path(path, to_add):
     mpiexec = os.path.join(path, 'bin', 'mpiexec')
     if os.path.isfile(mpiexec):
+        if verbose: print("checking {}".format(mpiexec))
+
         # Exclude mpienv's own directory
-        name = manager.is_installed(dirpath)
+        name = manager.is_installed(path)
         if name:
             print("{}\n\t Already known as "
-                  "'{}'".format(dirpath, name))
+                  "'{}'".format(path, name))
             print()
         else:
             print("--------------------------------------")
             print("Found {}".format(mpiexec))
-            pprint.pprint(manager.get_info(dirpath))
+            pprint.pprint(manager.get_info(path))
             # Install the new MPI
             if to_add:
                 try:
-                    name = manager.add(dirpath)
-                    print("Added {} as {}".format(dirpath, name))
+                    name = manager.add(path)
+                    print("Added {} as {}".format(path, name))
                 except RuntimeError as e:
                     print("Error occured while "
-                          "adding {}".format(dirpath))
+                          "adding {}".format(path))
                     print(e)
                     print()
+    else:
+        if verbose:
+            print("No such file '{}'".format(mpiexec))
+                    
 
 def main():
+    global verbose
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--add', dest='add',
+                        action="store_true", default=None)
+    parser.add_argument('-v', '--verbose', dest='verbose',
                         action="store_true", default=None)
     parser.add_argument('paths', nargs='+')
 
@@ -60,6 +72,7 @@ def main():
 
     search_paths = args.paths
     to_add = args.add
+    verbose = args.verbose
 
     if len(search_paths) == 0:
         search_paths = default_search_paths
@@ -72,7 +85,7 @@ def main():
         for (dirpath, dirs, files) in os.walk(path):
             if dirpath in checked:
                 continue
-            investigate_path(dirpath)
+            investigate_path(dirpath, to_add)
             checked.add(dirpath)
 
 if __name__ == "__main__":
