@@ -23,7 +23,8 @@ else:
     mpi_list = ['/mpi/mpich-3.2/bin/mpiexec',
                 '/mpi/openmpi-1.10.7/bin/mpiexec',
                 '/mpi/openmpi-2.1.1/bin/mpiexec']
-    
+
+
 def bash_session(cmd):
     ver_dir = tempfile.mkdtemp()
 

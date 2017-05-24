@@ -18,9 +18,11 @@ default_search_paths = [
 
 _verbose = None
 
+
 def printv(s):
     if _verbose:
         sys.stderr.write(s + "\n")
+
 
 def check_valid_paths(paths):
     err = False
@@ -31,6 +33,7 @@ def check_valid_paths(paths):
 
     if err:
         exit(-1)
+
 
 def investigate_path(path, to_add):
     mpiexec = os.path.join(path, 'bin', 'mpiexec')
@@ -59,7 +62,7 @@ def investigate_path(path, to_add):
                     print()
     else:
         printv("No such file '{}'".format(mpiexec))
-                    
+
 
 def main():
     global _verbose
@@ -90,6 +93,7 @@ def main():
                 continue
             investigate_path(dirpath, to_add)
             checked.add(dirpath)
+
 
 if __name__ == "__main__":
     main()

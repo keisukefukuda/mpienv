@@ -193,8 +193,7 @@ class Manager(object):
         for bin in ['mpiexec', 'mpicc', 'mpicxx']:
             info[bin] = os.path.realpath(os.path.join(prefix, 'bin', bin))
 
-        return info 
-
+        return info
 
     def items(self):
         return self._installed.items()
