@@ -84,11 +84,14 @@ class TestAutoDiscover(unittest.TestCase):
 class TestRename(unittest.TestCase):
     def test_rename(self):
         out, err, ret = bash_session([
+            "ls ~/mpi",
             "mpienv autodiscover --add ~/mpi",
             "mpienv rename mpich-3.2 mpich-3.2x",
             "mpienv list"
         ])
 
+        if ret != 0:
+            print(err)
         self.assertEqual(0, ret)
 
         print(out)
