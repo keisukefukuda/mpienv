@@ -15,7 +15,7 @@ def main():
     args = parser.parse_args()
 
     # Create a link
-    manager.add(args.name, args.path)
+    manager.add(args.path, args.name)
 
 
 if __name__ == "__main__":

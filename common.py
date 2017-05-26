@@ -222,6 +222,7 @@ class Manager(object):
     def is_installed(self, path):
         # Find mpiexec in the path or something and check if it is already
         # under our control.
+        assert type(path) == str or type(path) == bytes
         mpiexec = None
         path = os.path.realpath(path)
         if os.path.isdir(path):
