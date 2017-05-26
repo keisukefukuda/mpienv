@@ -93,10 +93,10 @@ def _get_info_mvapich(prefix):
 
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
                           encoding=sys.getdefaultencoding(),
-                          stdout=DEVNULL, stderr=DEVNULL)
+                          stderr=DEVNULL)
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
                            encoding=sys.getdefaultencoding(),
-                           stdout=DEVNULL, stderr=DEVNULL)
+                           stderr=DEVNULL)
 
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
