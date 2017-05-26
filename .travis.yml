@@ -24,7 +24,6 @@ addons:
   apt:
     sources:
       - debian-sid
-      - ubuntu-toolchain-r-test
     packages:
       - ibverbs-utils
       - libibverbs-dev
