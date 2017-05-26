@@ -28,6 +28,7 @@ addons:
     packages:
       - ibverbs-utils
       - libibverbs-dev
+      - zsh
 
 before_script:
   - sh ./.travis_mpi_install.sh
