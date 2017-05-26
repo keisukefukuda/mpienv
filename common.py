@@ -9,6 +9,12 @@ from subprocess import call
 from subprocess import check_output
 import sys
 
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
+
 
 def which(cmd):
     exe = distutils.spawn.find_executable(cmd)
@@ -84,9 +90,11 @@ def _get_info_mvapich(prefix):
         raise RuntimeError("Error: Cannot find {}".format(mpi_h))
 
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
-                          encoding=sys.getdefaultencoding())
+                          encoding=sys.getdefaultencoding(),
+                          stdout=DEVNULL, stderr=DEVNULL)
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding())
+                           encoding=sys.getdefaultencoding(),
+                           stdout=DEVNULL, stderr=DEVNULL)
 
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
@@ -103,14 +111,18 @@ def _get_info_ompi(prefix):
     info = {}
 
     # Get the Open MPI version
+    # TODO: avoid using mpi.h
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
     major_s = check_output(['grep', '-E', 'define OMPI_MAJOR_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding())
+                           encoding=sys.getdefaultencoding(),
+                           stderr=DEVNULL)
     minor_s = check_output(['grep', '-E', 'define OMPI_MINOR_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding())
+                           encoding=sys.getdefaultencoding(),
+                           stderr=DEVNULL)
     rel_s = check_output(['grep', '-E', 'define OMPI_RELEASE_VERSION', mpi_h],
-                         encoding=sys.getdefaultencoding())
+                         encoding=sys.getdefaultencoding(),
+                         stderr=DEVNULL)
 
     major = re.search(r'\d+', major_s).group(0)
     minor = re.search(r'\d+', minor_s).group(0)
@@ -183,7 +195,7 @@ class Manager(object):
             # the MPI type.
             # This is because MVAPCIH uses MPICH's mpiexec,
             # so we cannot distinguish them only from mpiexec.
-            ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h])
+            ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h], stderr=DEVNULL)
             if ret == 0:
                 # MVAPICH
                 info = _get_info_mvapich(prefix)
