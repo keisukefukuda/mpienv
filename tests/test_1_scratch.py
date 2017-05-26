@@ -1,13 +1,14 @@
 # coding:utf-8
 
 import os.path
-import unittest
-from subprocess import Popen, PIPE
-import sys
-import re
-import tempfile
-import shutil
 import platform
+import re
+import shutil
+from subprocess import PIPE
+from subprocess import Popen
+import sys
+import tempfile
+import unittest
 
 
 ProjDir = os.path.abspath(
@@ -47,7 +48,7 @@ def bash_session(cmd):
 
     shutil.rmtree(ver_dir)
 
-    return out.decode(enc), err.decode(enc), p.returncode
+    return out.decode(enc), err.decode(enc), ret
 
 
 class TestList(unittest.TestCase):

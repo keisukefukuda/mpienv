@@ -1,5 +1,6 @@
 # coding: utf-8
 
+
 class OmpiInfoNode(object):
     def __init__(self):
         self._value = None

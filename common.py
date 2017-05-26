@@ -12,7 +12,7 @@ import sys
 from ompi import parse_ompi_info
 
 try:
-    from subprocess import DEVNULL # py3k
+    from subprocess import DEVNULL  # py3k
 except ImportError:
     import os
     DEVNULL = open(os.devnull, 'wb')
@@ -108,19 +108,21 @@ def _get_info_mvapich(prefix):
 
     return info
 
+
 def _call_ompi_info(bin):
     out = check_output([bin, '--all', '--parsable'], stderr=DEVNULL)
     out = out.decode(sys.getdefaultencoding())
 
     return parse_ompi_info(out)
-    
+
+
 def _get_info_ompi(prefix):
     info = {}
-    
-    s = _call_ompi_info(os.path.join(prefix, 'bin', 'ompi_info'))
+
+    s = _call_ompi_info(os.path.join(prefix, 'bin', 'ompi_info'))  # NOQA
 
     # Get the Open MPI version
-    # TODO: avoid using mpi.h
+    # TODO(keisukefukuda): avoid using mpi.h
     mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
     major_s = check_output(['grep', '-E', 'define OMPI_MAJOR_VERSION', mpi_h],
@@ -204,7 +206,8 @@ class Manager(object):
             # the MPI type.
             # This is because MVAPCIH uses MPICH's mpiexec,
             # so we cannot distinguish them only from mpiexec.
-            ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h], stderr=DEVNULL)
+            ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h],
+                       stderr=DEVNULL)
             if ret == 0:
                 # MVAPICH
                 info = _get_info_mvapich(prefix)
