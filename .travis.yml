@@ -1,5 +1,7 @@
 language: python
 
+sudo: false
+
 python:
   # - "2.6"
   # - "2.7"
@@ -26,9 +28,7 @@ addons:
     packages:
       - ibverbs-utils
       - libibverbs-dev
-
-before_install:
-  - sudo apt-get update
+      - zsh
 
 before_script:
   - sh ./.travis_mpi_install.sh
