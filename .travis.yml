@@ -29,9 +29,6 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
 
-before_install:
-  - sudo apt-get update
-
 before_script:
   - sh ./.travis_mpi_install.sh
 
