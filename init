@@ -21,6 +21,9 @@ function mpienv() {
         "use" )
             {
                 python $root/mpienv_use.py $*
+                if [ ! -n "$ZSH_VERSION" ]; then
+                    rehash
+                fi
             }
             ;;
         "add" )
