@@ -28,7 +28,6 @@ addons:
     packages:
       - ibverbs-utils
       - libibverbs-dev
-      - zsh
 
 before_install:
   - sudo apt-get update
