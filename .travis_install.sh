@@ -18,8 +18,10 @@ if [ ! -x $HOME/zsh/bin/zsh ]; then
     make -j2
     make install
     cd
+else
+    echo zsh is ready
+    $HOME/zsh/bin/zsh --version
 fi
-
 
 PREFIX=$HOME/mpi
 

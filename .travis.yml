@@ -37,6 +37,7 @@ install:
   - pip install -r requirements.txt
 
 script:
+  - export PATH=$HOME/zsh/bin:$PATH
   - which zsh
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
