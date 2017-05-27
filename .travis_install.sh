@@ -69,7 +69,9 @@ for VER in 3.2; do
         tar -xf mpich-${VER}.tar.gz
         cd mpich-${VER}
         echo ./configure
-        ./configure --disable-fortran \
+        ./configure --enable-fortran=no \
+                    --enable-silent-rules \
+                    --disable-dependency-tracking \
                     --prefix=$PREFIX/mpich-${VER}  >/dev/null 2>&1
         echo make
         make -j4  >/dev/null 2>&1
