@@ -6,7 +6,7 @@ mkdir -p $HOME/tmp
 
 # Install zsh
 if [ -x $HOME/zsh/bin/zsh ]; then
-    rm -f --no-check-certificate
+    rm -f zsh-5.3.1.tar.gz
     rm -rf zsh  # clear zsh/ directory
     
     mkdir $HOME/zsh
