@@ -19,18 +19,19 @@ cache:
   - pip: true
   - directories:
       - $HOME/mpi
+      - $HOME/zsh
 
 addons:
   apt:
     sources:
       - debian-sid
+      - ubuntu-toolchain-r-test
     packages:
       - ibverbs-utils
       - libibverbs-dev
-      - zsh
 
 before_script:
-  - sh ./.travis_mpi_install.sh
+  - sh ./.travis_install.sh
 
 install:
   - pip install -r requirements.txt

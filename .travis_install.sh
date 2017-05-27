@@ -3,6 +3,19 @@
 mkdir -p $HOME/mpi
 mkdir -p $HOME/tmp
 
+
+# Install zsh
+mkdir $HOME/zsh
+wget 'https://downloads.sourceforge.net/project/zsh/zsh/5.3.1/zsh-5.3.1.tar.gz?r=http%3A%2F%2Fzsh.sourceforge.net%2FArc%2Fsource.html&ts=1495843150&use_mirror=jaist' -O zsh-5.3.1.tar.gz
+
+tar -xf zsh-5.3.1.tar.gz
+cd zsh-5.3.1
+./configure --prefix=$HOME/zsh
+make -j2
+make install
+cd
+
+
 PREFIX=$HOME/mpi
 
 # Open MPI 2.1.1
