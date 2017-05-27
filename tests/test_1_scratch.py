@@ -1,5 +1,6 @@
 # coding:utf-8
 
+import json
 import os.path
 import platform
 import re
@@ -25,6 +26,13 @@ else:
     mpi_list = ['mpich-3.2',
                 'openmpi-1.10.7',
                 'openmpi-2.1.1']
+
+mpi_vers = {
+    'mpich-3.2': '3.2',
+    'mvapich2-2.2': '2.2',
+    'openmpi-1.10.7': '1.10.7',
+    'openmpi-2.1.1': '2.1.1',
+}
 
 
 def sh_session(cmd):
@@ -81,6 +89,28 @@ class TestAutoDiscover(unittest.TestCase):
         lines = [re.search(r'/mpi/([^/]*)/bin/mpiexec', ln).group(1)
                  for ln in lines]
         self.assertEqual(mpi_list, lines)
+
+    def test_list(self):
+        out, err, ret = sh_session([
+            "mpienv autodiscover -q --add ~/mpi",
+            "mpienv list --json"
+        ])
+        self.assertEqual(0, ret)
+
+        data = json.loads(out)
+        self.assertEqual(mpi_list, sorted(data.keys()))
+
+    def test_info(self):
+        for mpi in mpi_list:
+            out, err, ret = sh_session([
+                "mpienv autodiscover -q --add ~/mpi",
+                "mpienv info {} --json".format(mpi)
+            ])
+            self.assertEqual(0, ret)
+
+            data = json.loads(out)
+            self.assertEqual(mpi, data['name'])
+            self.assertEqual(mpi_vers[mpi], data['version'])
 
 
 class TestRename(unittest.TestCase):
