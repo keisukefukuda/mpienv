@@ -14,9 +14,12 @@ if [ ! -x $HOME/zsh/bin/zsh ]; then
 
     tar -xf zsh-5.3.1.tar.gz
     cd zsh-5.3.1
-    ./configure --prefix=$HOME/zsh
-    make -j2
-    make install
+    echo configure
+    ./configure --prefix=$HOME/zsh >/dev/null 2>&1
+    echo make
+    make -j2  >/dev/null 2>&1
+    echo make install
+    make install >/dev/null 2>&1
     cd
 else
     echo zsh is ready
