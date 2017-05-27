@@ -291,7 +291,8 @@ class Manager(object):
             raise RuntimeError("No such MPI: '{}'".format(name))
 
         info = self.get_info(name)
-        if info['active']:
+
+        if not info.get('broken') and info['active']:
             sys.stderr.write("You cannot remove active MPI: "
                              "'{}'\n".format(name))
             exit(-1)
@@ -316,6 +317,14 @@ class Manager(object):
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
+            exit(-1)
+
+        info = self.get_info(name)
+
+        if info.get('broken'):
+            sys.stderr.write("mpienv-use: Error: "
+                             "'{}' seems to be broken. Maybe it is removed.\n"
+                             "".format(name))
             exit(-1)
 
         dst = os.path.join(self._root_dir, 'shims')
