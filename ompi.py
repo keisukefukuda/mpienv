@@ -17,6 +17,17 @@ class OmpiInfo(object):
         self._dict[prop] = value
 
 
+def _parse_single_val(val):
+    if val in ['true', 'yes']:
+        val = True
+    if val in ['false', 'no']:
+        val = False
+    if val in ['none']:
+        val = None
+
+    return val
+
+
 def parse_ompi_info(out):
     info = OmpiInfo()
     lines = out.split("\n")
@@ -27,14 +38,7 @@ def parse_ompi_info(out):
             continue
         m = re.search(r'^(.*):([^:]+)?$', line)
 
-        key, val = m.group(1), m.group(2)
-
-        if val in ['true', 'yes']:
-            val = True
-        if val in ['false', 'no']:
-            val = False
-        if val in ['none']:
-            val = None
+        key, val = m.group(1), _parse_single_val(m.group(2))
 
         info.set(key, val)
 
