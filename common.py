@@ -18,6 +18,12 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 
+class BrokenSymlinkError(Exception):
+    def __init__(self, message, path):
+        super(BrokenSymlinkError).__init__(self, message)
+        self.path = path
+
+
 def which(cmd):
     exe = distutils.spawn.find_executable(cmd)
     if exe is None:
@@ -175,9 +181,13 @@ class Manager(object):
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
         if not os.path.exists(mpiexec):
-            sys.stderr.write("Error: {} was not found. "
-                             "MPI is not intsalled in this "
-                             "path or only runtime".format(mpiexec))
+            # This means the symlink under versions/ directory
+            # is broken.
+            # (The installed MPI has been removed after registration)
+            return {
+                'name': name,
+                'broken': True,
+            }
 
         enc = sys.getdefaultencoding()
         ver_str = check_output([mpiexec, '--version']).decode(enc)
