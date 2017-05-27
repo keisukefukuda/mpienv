@@ -2,6 +2,10 @@ language: python
 
 sudo: false
 
+env:
+  - TEST_SHELL_CMD=zsh
+  - TEST_SHELL_CMD=bash
+
 python:
   # - "2.6"
   # - "2.7"
