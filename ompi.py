@@ -1,43 +1,45 @@
 # coding: utf-8
 
+import re
 
-class OmpiInfoNode(object):
+
+class OmpiInfo(object):
     def __init__(self):
-        self._value = None
         self._dict = {}
 
-    def _get_value(self):
-        return self._value
+    def get(self, prop):
+        if prop not in self._dict:
+            return None
 
-    def _set_value(self, v):
-        self._value = v
+        return self._dict[prop]
 
-    def __getitem__(self, key):
-        return self._dict[key]
+    def set(self, prop, value):
+        self._dict[prop] = value
 
-    def __setitem__(self, key, val):
-        self._dict[key] = val
 
-    def __contains__(self, key):
-        return self._dict.__contains__(key)
+def _parse_single_val(val):
+    if val in ['true', 'yes']:
+        val = True
+    if val in ['false', 'no']:
+        val = False
+    if val in ['none']:
+        val = None
 
-    value = property(_get_value, _set_value)
+    return val
 
 
 def parse_ompi_info(out):
-    root = OmpiInfoNode()
+    info = OmpiInfo()
     lines = out.split("\n")
 
     for line in lines:
-        items = line.split(':')
-        val = items[-1]
-        items = items[:-1]
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        m = re.search(r'^(.*):([^:]+)?$', line)
 
-        node = root
-        for i in items:
-            if i not in node:
-                node[i] = OmpiInfoNode()
-            node = node[i]
-        node['value'] = val
+        key, val = m.group(1), _parse_single_val(m.group(2))
 
-    return root
+        info.set(key, val)
+
+    return info

@@ -119,27 +119,10 @@ def _call_ompi_info(bin):
 def _get_info_ompi(prefix):
     info = {}
 
-    s = _call_ompi_info(os.path.join(prefix, 'bin', 'ompi_info'))  # NOQA
+    ompi = _call_ompi_info(os.path.join(prefix, 'bin', 'ompi_info'))
 
-    # Get the Open MPI version
-    # TODO(keisukefukuda): avoid using mpi.h
-    mpi_h = os.path.join(prefix, 'include', 'mpi.h')
-
-    major_s = check_output(['grep', '-E', 'define OMPI_MAJOR_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding(),
-                           stderr=DEVNULL)
-    minor_s = check_output(['grep', '-E', 'define OMPI_MINOR_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding(),
-                           stderr=DEVNULL)
-    rel_s = check_output(['grep', '-E', 'define OMPI_RELEASE_VERSION', mpi_h],
-                         encoding=sys.getdefaultencoding(),
-                         stderr=DEVNULL)
-
-    major = re.search(r'\d+', major_s).group(0)
-    minor = re.search(r'\d+', minor_s).group(0)
-    rel = re.search(r'\d+', rel_s).group(0)
-
-    ver = "{}.{}.{}".format(major, minor, rel)
+    ver = ompi.get('ompi:version:full')
+    mpi_ver = ompi.get('mpi-api:version:full')
 
     if os.path.islink(prefix):
         path = os.path.realpath(prefix)
@@ -149,11 +132,15 @@ def _get_info_ompi(prefix):
     info['type'] = 'Open MPI'
     info['active'] = is_active(prefix)
     info['version'] = ver
+    info['mpi_version'] = mpi_ver
     info['prefix'] = prefix
     info['path'] = path
     info['configure'] = ""
     info['conf_params'] = []
     info['default_name'] = "openmpi-{}".format(ver)
+    info['c'] = ompi.get('bindings:c')
+    info['c++'] = ompi.get('bindings:cxx')
+    info['fortran'] = ompi.get('bindings:mpif.h')
 
     return info
 

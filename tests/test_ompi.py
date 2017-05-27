@@ -5,7 +5,7 @@ import unittest
 import ompi
 
 
-OmpiInfo = """
+Text = """
 package:Open MPI keisukefukuda@KeisukenoMacBook-Pro.local Distribution
 ompi:version:full:2.1.1
 ompi:version:repo:v2.1.0-100-ga2fdb5b
@@ -47,8 +47,7 @@ mca:mca:base:param:mca_component_show_load_errors:enumerator:value:0:false
 
 class TestOmpi(unittest.TestCase):
     def test_ompi_info(self):
-        root = ompi.parse_ompi_info(OmpiInfo)
-        self.assertEqual("2.1.1", root['ident']['value'])
-        self.assertEqual("2.1.1", root['ompi']['version']['full']['value'])
-        self.assertEqual("77", root['compiler']['fortran']
-                         ['value']['true']['value'])
+        info = ompi.parse_ompi_info(Text)
+        self.assertEqual("2.1.1", info.get('ident'))
+        self.assertEqual("2.1.1", info.get('ompi:version:full'))
+        self.assertEqual("77", info.get('compiler:fortran:value:true'))
