@@ -1,5 +1,6 @@
 # coding:utf-8
 
+import json
 import os.path
 import platform
 import re
@@ -81,6 +82,17 @@ class TestAutoDiscover(unittest.TestCase):
         lines = [re.search(r'/mpi/([^/]*)/bin/mpiexec', ln).group(1)
                  for ln in lines]
         self.assertEqual(mpi_list, lines)
+
+    def test_info(self):
+        out, err, ret = sh_session([
+            "mpienv autodiscover -q --add ~/mpi",
+            "mpienv list --json"
+        ])
+        self.assertEqual(0, ret)
+
+        print(out)
+        data = json.loads(out)
+        self.assertEqual(mpi_list, sorted(data.keys()))
 
 
 class TestRename(unittest.TestCase):

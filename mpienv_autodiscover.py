@@ -17,6 +17,7 @@ default_search_paths = [
 ]
 
 _verbose = None
+_quiet = None
 
 
 def printv(s):
@@ -43,34 +44,41 @@ def investigate_path(path, to_add):
         # Exclude mpienv's own directory
         name = manager.is_installed(path)
         if name:
-            print("{}\n\t Already known as "
-                  "'{}'".format(path, name))
-            print()
+            if not _quiet:
+                print("{}\n\t Already known as "
+                      "'{}'".format(path, name))
+                print()
         else:
-            print("--------------------------------------")
-            print("Found {}".format(mpiexec))
-            pprint.pprint(manager.get_info(path))
+            if not _quiet:
+                print("--------------------------------------")
+                print("Found {}".format(mpiexec))
+                pprint.pprint(manager.get_info(path))
             # Install the new MPI
             if to_add:
                 try:
                     name = manager.add(path)
-                    print("Added {} as {}".format(path, name))
+                    if not _quiet:
+                        print("Added {} as {}".format(path, name))
                 except RuntimeError as e:
-                    print("Error occured while "
-                          "adding {}".format(path))
-                    print(e)
-                    print()
+                    if not _quiet:
+                        print("Error occured while "
+                              "adding {}".format(path))
+                        print(e)
+                        print()
     else:
         printv("No such file '{}'".format(mpiexec))
 
 
 def main():
     global _verbose
+    global _quiet
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--add', dest='add',
                         action="store_true", default=None)
     parser.add_argument('-v', '--verbose', dest='verbose',
+                        action="store_true", default=None)
+    parser.add_argument('-q', '--quiet', dest='quiet',
                         action="store_true", default=None)
     parser.add_argument('paths', nargs='+')
 
@@ -79,6 +87,12 @@ def main():
     search_paths = args.paths
     to_add = args.add
     _verbose = args.verbose
+    _quiet = args.quiet
+
+    if _verbose and _quiet:
+        sys.stderr.write("Error: -q and -v cannot "
+                         "specified at the same time.\n")
+        exit(-1)
 
     if len(search_paths) == 0:
         search_paths = default_search_paths
