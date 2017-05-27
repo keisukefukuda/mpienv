@@ -59,8 +59,8 @@ def _get_info_mpich(prefix):
 
     # Run mpiexec --version and extract some information
     mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-    out = check_output([mpiexec, '--version'],
-                       encoding=sys.getdefaultencoding())
+    out = check_output([mpiexec, '--version'])
+    out = out.decode(sys.getdefaultencoding())
 
     # Parse 'Configure options' section
     # Config options are like this:
@@ -98,11 +98,12 @@ def _get_info_mvapich(prefix):
         raise RuntimeError("Error: Cannot find {}".format(mpi_h))
 
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
-                          encoding=sys.getdefaultencoding(),
                           stderr=DEVNULL)
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding(),
                            stderr=DEVNULL)
+
+    mv_ver = mv_ver.decode(sys.getdefaultencoding())
+    mch_ver = mv_ver.decode(sys.getdefaultencoding())
 
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
