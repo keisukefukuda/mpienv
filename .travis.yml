@@ -1,5 +1,11 @@
 language: python
 
+sudo: false
+
+env:
+  - TEST_SHELL_CMD=zsh
+  - TEST_SHELL_CMD=bash
+
 python:
   # - "2.6"
   # - "2.7"
@@ -17,6 +23,7 @@ cache:
   - pip: true
   - directories:
       - $HOME/mpi
+      - $HOME/zsh
 
 addons:
   apt:
@@ -28,12 +35,14 @@ addons:
       - libibverbs-dev
 
 before_script:
-  - sh ./.travis_mpi_install.sh
+  - sh ./.travis_install.sh
 
 install:
   - pip install -r requirements.txt
 
 script:
+  - export PATH=$HOME/zsh/bin:$PATH
+  - which zsh
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")

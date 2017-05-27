@@ -27,7 +27,8 @@ else:
                 'openmpi-2.1.1']
 
 
-def bash_session(cmd):
+def sh_session(cmd):
+    shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
     if os.path.exists(ver_dir):
@@ -35,7 +36,7 @@ def bash_session(cmd):
     if type(cmd) == list:
         cmd = " && ".join(cmd)
 
-    p = Popen(["/bin/bash"], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     enc = sys.getdefaultencoding()
     cmd = (". {}/init;"
            "export MPIENV_VERSIONS_DIR={};"
@@ -54,7 +55,7 @@ def bash_session(cmd):
 class TestList(unittest.TestCase):
     def test_list_empty(self):
         # It outputs nothing if no MPI is installed yet.
-        o, e, r = bash_session("mpienv list")
+        o, e, r = sh_session("mpienv list")
         self.assertEqual(0, r)
         self.assertEqual("", o)
         self.assertEqual("", e)
@@ -62,7 +63,7 @@ class TestList(unittest.TestCase):
 
 class TestAutoDiscover(unittest.TestCase):
     def test_autodiscover(self):
-        out, err, ret = bash_session([
+        out, err, ret = sh_session([
             "mpienv autodiscover -v ~/mpi | grep Found | sort"
         ])
 
@@ -72,7 +73,7 @@ class TestAutoDiscover(unittest.TestCase):
         self.assertEqual(mpi_list, lines)
 
     def test_autodiscover_add(self):
-        out, err, ret = bash_session([
+        out, err, ret = sh_session([
             "mpienv autodiscover -v --add ~/mpi",
             "mpienv list"
         ])
@@ -84,7 +85,7 @@ class TestAutoDiscover(unittest.TestCase):
 
 class TestRename(unittest.TestCase):
     def test_rename(self):
-        out, err, ret = bash_session([
+        out, err, ret = sh_session([
             "ls ~/mpi",
             "mpienv autodiscover --add ~/mpi",
             "mpienv rename mpich-3.2 mpich-3.2x",
