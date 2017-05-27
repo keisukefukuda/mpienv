@@ -12,7 +12,16 @@ fi
 export PATH=$MPIENV_ROOT/shims/bin:${PATH:-}
 export LD_LIBRARY_PATH=$MPIENV_ROOT/shims/lib:$MPIENV_ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
 
+function usage() {
+    echo "Usage: mpienv [command] [options...]"
+}
+
 function mpienv() {
+    if [ "0" = "${#*}" ]; then
+        usage
+        return -1
+    fi
+
     declare -r root=$MPIENV_ROOT
     declare -r command="$1"
     shift
