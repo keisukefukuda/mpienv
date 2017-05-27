@@ -18,6 +18,12 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 
+class BrokenSymlinkError(Exception):
+    def __init__(self, message, path):
+        super(BrokenSymlinkError).__init__(self, message)
+        self.path = path
+
+
 def which(cmd):
     exe = distutils.spawn.find_executable(cmd)
     if exe is None:
@@ -175,9 +181,13 @@ class Manager(object):
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
         if not os.path.exists(mpiexec):
-            sys.stderr.write("Error: {} was not found. "
-                             "MPI is not intsalled in this "
-                             "path or only runtime".format(mpiexec))
+            # This means the symlink under versions/ directory
+            # is broken.
+            # (The installed MPI has been removed after registration)
+            return {
+                'name': name,
+                'broken': True,
+            }
 
         enc = sys.getdefaultencoding()
         ver_str = check_output([mpiexec, '--version']).decode(enc)
@@ -281,7 +291,8 @@ class Manager(object):
             raise RuntimeError("No such MPI: '{}'".format(name))
 
         info = self.get_info(name)
-        if info['active']:
+
+        if not info.get('broken') and info['active']:
             sys.stderr.write("You cannot remove active MPI: "
                              "'{}'\n".format(name))
             exit(-1)
@@ -306,6 +317,14 @@ class Manager(object):
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
+            exit(-1)
+
+        info = self.get_info(name)
+
+        if info.get('broken'):
+            sys.stderr.write("mpienv-use: Error: "
+                             "'{}' seems to be broken. Maybe it is removed.\n"
+                             "".format(name))
             exit(-1)
 
         dst = os.path.join(self._root_dir, 'shims')

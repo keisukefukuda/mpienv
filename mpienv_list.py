@@ -7,6 +7,20 @@ import sys
 from common import manager
 
 
+def _print_info(info, max_label_len):
+    if info.get('broken'):
+        print("   {:<{width}} -> *** broken ***".format(
+            info['name'],
+            width=max_label_len
+        ))
+    else:
+        print(" {} {:<{width}} -> {}".format(
+            "*" if info['active'] else " ",
+            info['name'],
+            info['path'],
+            width=max_label_len))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--json', action="store_true",
@@ -26,10 +40,5 @@ if __name__ == '__main__':
     else:
         print("\nInstalled MPIs:\n")
         for info in lst:
-            print(" {} {:<{width}} -> {}".format(
-                "*" if info['active'] else " ",
-                info['name'],
-                info['path'],
-                width=max_label_len))
-
+            _print_info(info, max_label_len)
         print()

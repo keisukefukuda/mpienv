@@ -112,6 +112,22 @@ class TestAutoDiscover(unittest.TestCase):
             self.assertEqual(mpi, data['name'])
             self.assertEqual(mpi_vers[mpi], data['version'])
 
+    def test_list_broken(self):
+        out, err, ret = sh_session([
+            "mpienv autodiscover -q --add ~/mpi",
+            "mv ~/mpi/mpich-3.2 /tmp",
+            "mpienv list --json"
+        ])
+
+        try:
+            print(out)
+            data = json.loads(out)
+            self.assertTrue(data['mpich-3.2']['broken'])
+        finally:
+            out, err, ret = sh_session([
+                "mv /tmp/mpich-3.2 ~/mpi/",
+            ])
+
 
 class TestRename(unittest.TestCase):
     def test_rename(self):

@@ -25,7 +25,7 @@ def printv(s):
         sys.stderr.write(s + "\n")
 
 
-def prints(s):
+def prints(s=""):
     if not _quiet:
         print(s)
 
