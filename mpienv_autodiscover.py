@@ -25,6 +25,11 @@ def printv(s):
         sys.stderr.write(s + "\n")
 
 
+def prints(s):
+    if not _quiet:
+        print(s)
+
+
 def check_valid_paths(paths):
     err = False
     for p in paths:
@@ -44,27 +49,23 @@ def investigate_path(path, to_add):
         # Exclude mpienv's own directory
         name = manager.is_installed(path)
         if name:
-            if not _quiet:
-                print("{}\n\t Already known as "
-                      "'{}'".format(path, name))
-                print()
+            prints("{}\n\t Already known as "
+                   "'{}'".format(path, name))
+            prints()
         else:
-            if not _quiet:
-                print("--------------------------------------")
-                print("Found {}".format(mpiexec))
-                pprint.pprint(manager.get_info(path))
+            prints("--------------------------------------")
+            prints("Found {}".format(mpiexec))
+            prints(pprint.pformat(manager.get_info(path)))
             # Install the new MPI
             if to_add:
                 try:
                     name = manager.add(path)
-                    if not _quiet:
-                        print("Added {} as {}".format(path, name))
+                    prints("Added {} as {}".format(path, name))
                 except RuntimeError as e:
-                    if not _quiet:
-                        print("Error occured while "
-                              "adding {}".format(path))
-                        print(e)
-                        print()
+                    prints("Error occured while "
+                          "adding {}".format(path))
+                    prints(e)
+                    prints()
     else:
         printv("No such file '{}'".format(mpiexec))
 
