@@ -14,9 +14,12 @@ if [ ! -x $HOME/zsh/bin/zsh ]; then
 
     tar -xf zsh-5.3.1.tar.gz
     cd zsh-5.3.1
-    ./configure --prefix=$HOME/zsh
-    make -j2
-    make install
+    echo configure
+    ./configure --prefix=$HOME/zsh >/dev/null 2>&1
+    echo make
+    make -j2  >/dev/null 2>&1
+    echo make install
+    make install >/dev/null 2>&1
     cd
 else
     echo zsh is ready
@@ -39,9 +42,13 @@ for VER in 2.1.1 1.10.7; do
         wget --no-check-certificate https://www.open-mpi.org/software/ompi/v${VER_SHORT}/downloads/openmpi-${VER}.tar.gz
         tar -xf openmpi-${VER}.tar.gz
         cd openmpi-${VER}
-        ./configure --prefix=$PREFIX/openmpi-${VER} --disable-mpi-fortran
-        make -j4
-        make install
+        echo ./configure --prefix=$PREFIX/openmpi-${VER} --disable-mpi-fortran
+        ./configure --prefix=$PREFIX/openmpi-${VER} \
+                    --disable-mpi-fortran >/dev/null 2>&1
+        echo make
+        make -j4 >/dev/null 2>&1
+        echo make install
+        make install >/dev/null 2>&1
         cd ..
     else
         echo "Open MPI ${VER} looks good."
@@ -61,9 +68,13 @@ for VER in 3.2; do
         wget --no-check-certificate http://www.mpich.org/static/downloads/${VER}/mpich-${VER}.tar.gz
         tar -xf mpich-${VER}.tar.gz
         cd mpich-${VER}
-        ./configure --disable-fortran --prefix=$PREFIX/mpich-${VER}
-        make -j4
-        make install
+        echo ./configure
+        ./configure --disable-fortran \
+                    --prefix=$PREFIX/mpich-${VER}  >/dev/null 2>&1
+        echo make
+        make -j4  >/dev/null 2>&1
+        echo make install
+        make install  >/dev/null 2>&1
         cd ..
     else
         echo "MPICH ${VER} looks good."
@@ -83,9 +94,13 @@ for VER in 2.2; do
         wget --no-check-certificate http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-${VER}.tar.gz
         tar -xf mvapich2-${VER}.tar.gz
         cd mvapich2-${VER}
-        ./configure --disable-fortran --prefix=$PREFIX/mvapich2-2.2 --disable-mcast
-        make -j4
-        make install
+        echo ./configure
+        ./configure --disable-fortran --prefix=$PREFIX/mvapich2-2.2 \
+                    --disable-mcast  >/dev/null 2>&1
+        echo make
+        make -j4 >/dev/null 2>&1
+        echo make install
+        make install >/dev/null 2>&1
         cd ..
     else
         echo "MPVAPICH ${VER} looks good."
