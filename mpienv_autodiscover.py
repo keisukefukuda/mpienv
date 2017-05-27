@@ -63,7 +63,7 @@ def investigate_path(path, to_add):
                     prints("Added {} as {}".format(path, name))
                 except RuntimeError as e:
                     prints("Error occured while "
-                          "adding {}".format(path))
+                           "adding {}".format(path))
                     prints(e)
                     prints()
     else:

@@ -28,10 +28,10 @@ else:
                 'openmpi-2.1.1']
 
 mpi_vers = {
-    'mpich-3.2'      : '3.2',
-    'mvapich2-2.2'   : '2.2',
-    'openmpi-1.10.7' : '1.10.7',
-    'openmpi-2.1.1'  : '2.1.1',
+    'mpich-3.2': '3.2',
+    'mvapich2-2.2': '2.2',
+    'openmpi-1.10.7': '1.10.7',
+    'openmpi-2.1.1': '2.1.1',
 }
 
 
@@ -100,7 +100,7 @@ class TestAutoDiscover(unittest.TestCase):
         data = json.loads(out)
         self.assertEqual(mpi_list, sorted(data.keys()))
 
-    def test_list(self):
+    def test_info(self):
         for mpi in mpi_list:
             out, err, ret = sh_session([
                 "mpienv autodiscover -q --add ~/mpi",

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('--json', action="store_true",
                         default=None)
     args = parser.parse_args()
-    
+
     if len(manager.keys()) == 0:
         exit(0)
 
