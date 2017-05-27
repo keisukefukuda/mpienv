@@ -128,6 +128,7 @@ class TestAutoDiscover(unittest.TestCase):
                 "mv /tmp/mpich-3.2 ~/mpi/",
             ])
 
+
 class TestRename(unittest.TestCase):
     def test_rename(self):
         out, err, ret = sh_session([
