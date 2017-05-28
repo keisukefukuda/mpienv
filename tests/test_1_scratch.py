@@ -51,6 +51,9 @@ def sh_session(cmd):
 
     out, err = p.communicate(cmd.encode(enc))
     ret = p.returncode
+    print("sh_session: out={}".format(out))
+    print("sh_session: err={}".format(err))
+    print("sh_session: ret={}".format(ret))
 
     shutil.rmtree(ver_dir)
 
