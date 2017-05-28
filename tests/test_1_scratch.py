@@ -36,23 +36,29 @@ def sh_session(cmd):
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
-    if os.path.exists(ver_dir):
-        os.rmdir
-    if type(cmd) == list:
-        cmd = " && ".join(cmd)
+    try:
+        if os.path.exists(ver_dir):
+            os.rmdir
+        if type(cmd) == list:
+            cmd = " && ".join(cmd)
 
-    p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
-    enc = sys.getdefaultencoding()
-    cmd = (". {}/init;"
-           "export MPIENV_VERSIONS_DIR={};"
-           "set -eu; {}\n".format(ProjDir,
-                                  ver_dir,
-                                  cmd))
+        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        enc = sys.getdefaultencoding()
+        cmd = (". {}/init;"
+               "export MPIENV_VERSIONS_DIR={};"
+               "set -eu; {}\n".format(ProjDir,
+                                      ver_dir,
+                                      cmd))
 
-    out, err = p.communicate(cmd.encode(enc))
-    ret = p.returncode
+        out, err = p.communicate(cmd.encode(enc))
+        ret = p.returncode
 
-    shutil.rmtree(ver_dir)
+        if ret != 0:
+            print("sh_session(): return code != 0")
+            print("sh_session(): out={}".format(out))
+            print("sh_session(): err={}".format(err))
+    finally:
+        shutil.rmtree(ver_dir)
 
     return out.decode(enc), err.decode(enc), ret
 
