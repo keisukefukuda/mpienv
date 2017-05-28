@@ -117,7 +117,7 @@ class TestAutoDiscover(unittest.TestCase):
         ])
 
         try:
-            print(out)
+            print("out={}".format(out))
             data = json.loads(out)
             self.assertTrue(data['mpich-3.2']['broken'])
         finally:
