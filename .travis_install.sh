@@ -28,12 +28,15 @@ fi
 
 PREFIX=$HOME/mpi
 
-# Open MPI 2.1.1
 cd $HOME/tmp
 
+echo ls $PREFIX
 ls $PREFIX
 
-for VER in 2.1.1 1.10.7; do
+# Remove Open MPI version which we no longer use
+rm -rf $PREFIX/openmpi-1.10*
+
+for VER in 2.1.1; do
     if [ ! -x $PREFIX/openmpi-${VER}/bin/mpiexec ]; then
         echo "==============================================="
         echo "Installing Open MPI ${VER}"
@@ -69,7 +72,9 @@ for VER in 3.2; do
         tar -xf mpich-${VER}.tar.gz
         cd mpich-${VER}
         echo ./configure
-        ./configure --disable-fortran \
+        ./configure --enable-fortran=no \
+                    --enable-silent-rules \
+                    --disable-dependency-tracking \
                     --prefix=$PREFIX/mpich-${VER}  >/dev/null 2>&1
         echo make
         make -j4  >/dev/null 2>&1

@@ -24,14 +24,26 @@ class BrokenSymlinkError(Exception):
         self.path = path
 
 
+def decode(s):
+    if type(s) == bytes:
+        return s.decode(sys.getdefaultencoding())
+    else:
+        return s
+
+
+def encode(s):
+    if type(s) == str:
+        return s.encode(sys.getdefaultencoding())
+    else:
+        return s
+
+
 def which(cmd):
     exe = distutils.spawn.find_executable(cmd)
     if exe is None:
         return None
 
-    exe = os.path.realpath(exe)
-    if type(exe) == bytes:
-        exe = exe.decode(sys.getdefaultencoding())
+    exe = decode(os.path.realpath(exe))
     return exe
 
 
@@ -59,8 +71,7 @@ def _get_info_mpich(prefix):
 
     # Run mpiexec --version and extract some information
     mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-    out = check_output([mpiexec, '--version'],
-                       encoding=sys.getdefaultencoding())
+    out = decode(check_output([mpiexec, '--version']))
 
     # Parse 'Configure options' section
     # Config options are like this:
@@ -98,11 +109,12 @@ def _get_info_mvapich(prefix):
         raise RuntimeError("Error: Cannot find {}".format(mpi_h))
 
     mv_ver = check_output(['grep', '-E', 'define *MVAPICH2_VERSION', mpi_h],
-                          encoding=sys.getdefaultencoding(),
                           stderr=DEVNULL)
     mch_ver = check_output(['grep', '-E', 'define *MPICH_VERSION', mpi_h],
-                           encoding=sys.getdefaultencoding(),
                            stderr=DEVNULL)
+
+    mv_ver = decode(mv_ver)
+    mch_ver = decode(mch_ver)
 
     mv_ver = re.search(r'"([.0-9]+)"', mv_ver).group(1)
     mch_ver = re.search(r'"([.0-9]+)"', mch_ver).group(1)
@@ -117,7 +129,7 @@ def _get_info_mvapich(prefix):
 
 def _call_ompi_info(bin):
     out = check_output([bin, '--all', '--parsable'], stderr=DEVNULL)
-    out = out.decode(sys.getdefaultencoding())
+    out = decode(out)
 
     return parse_ompi_info(out)
 
@@ -189,8 +201,7 @@ class Manager(object):
                 'broken': True,
             }
 
-        enc = sys.getdefaultencoding()
-        ver_str = check_output([mpiexec, '--version']).decode(enc)
+        ver_str = decode(check_output([mpiexec, '--version']))
 
         info = None
 

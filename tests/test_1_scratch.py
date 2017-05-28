@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding:utf-8 -*-
 
 import json
 import os.path
@@ -20,17 +20,14 @@ print("Platform: {}".format(platform.platform()))
 if re.search(r'linux', platform.platform(), re.I):
     mpi_list = ['mpich-3.2',
                 'mvapich2-2.2',
-                'openmpi-1.10.7',
                 'openmpi-2.1.1']
 else:
     mpi_list = ['mpich-3.2',
-                'openmpi-1.10.7',
                 'openmpi-2.1.1']
 
 mpi_vers = {
     'mpich-3.2': '3.2',
     'mvapich2-2.2': '2.2',
-    'openmpi-1.10.7': '1.10.7',
     'openmpi-2.1.1': '2.1.1',
 }
 
@@ -39,23 +36,29 @@ def sh_session(cmd):
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
-    if os.path.exists(ver_dir):
-        os.rmdir
-    if type(cmd) == list:
-        cmd = " && ".join(cmd)
+    try:
+        if os.path.exists(ver_dir):
+            os.rmdir
+        if type(cmd) == list:
+            cmd = " && ".join(cmd)
 
-    p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
-    enc = sys.getdefaultencoding()
-    cmd = (". {}/init;"
-           "export MPIENV_VERSIONS_DIR={};"
-           "set -eu; {}\n".format(ProjDir,
-                                  ver_dir,
-                                  cmd))
+        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        enc = sys.getdefaultencoding()
+        cmd = (". {}/init;"
+               "export MPIENV_VERSIONS_DIR={};"
+               "set -eu; {}\n".format(ProjDir,
+                                      ver_dir,
+                                      cmd))
 
-    out, err = p.communicate(cmd.encode(enc))
-    ret = p.returncode
+        out, err = p.communicate(cmd.encode(enc))
+        ret = p.returncode
 
-    shutil.rmtree(ver_dir)
+        if ret != 0:
+            print("sh_session(): return code != 0")
+            print("sh_session(): out={}".format(out))
+            print("sh_session(): err={}".format(err))
+    finally:
+        shutil.rmtree(ver_dir)
 
     return out.decode(enc), err.decode(enc), ret
 
@@ -70,6 +73,15 @@ class TestList(unittest.TestCase):
 
 
 class TestAutoDiscover(unittest.TestCase):
+    def setUp(self):
+        if os.environ.get("TRAVIS", None):
+            self.tmpdir = tempfile.mkdtemp(dir=os.path.expanduser("~"))
+        else:
+            self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
     def test_autodiscover(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -v ~/mpi | grep Found | sort"
@@ -115,17 +127,17 @@ class TestAutoDiscover(unittest.TestCase):
     def test_list_broken(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -q --add ~/mpi",
-            "mv ~/mpi/mpich-3.2 /tmp",
+            "mv ~/mpi/mpich-3.2 {}/".format(self.tmpdir),
             "mpienv list --json"
         ])
 
         try:
-            print(out)
+            self.assertEqual(0, ret)
             data = json.loads(out)
             self.assertTrue(data['mpich-3.2']['broken'])
         finally:
             out, err, ret = sh_session([
-                "mv /tmp/mpich-3.2 ~/mpi/",
+                "mv {}/mpich-3.2 ~/mpi/".format(self.tmpdir),
             ])
 
 
