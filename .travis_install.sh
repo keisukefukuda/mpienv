@@ -33,7 +33,7 @@ cd $HOME/tmp
 
 ls $PREFIX
 
-for VER in 2.1.1 1.10.7; do
+for VER in 2.1.1; do
     if [ ! -x $PREFIX/openmpi-${VER}/bin/mpiexec ]; then
         echo "==============================================="
         echo "Installing Open MPI ${VER}"
