@@ -51,9 +51,6 @@ def sh_session(cmd):
 
     out, err = p.communicate(cmd.encode(enc))
     ret = p.returncode
-    print("sh_session: out={}".format(out))
-    print("sh_session: err={}".format(err))
-    print("sh_session: ret={}".format(ret))
 
     shutil.rmtree(ver_dir)
 
@@ -70,6 +67,15 @@ class TestList(unittest.TestCase):
 
 
 class TestAutoDiscover(unittest.TestCase):
+    def setUp(self):
+        if os.environ.get("TRAVIS", None):
+            self.tmpdir=tempfile.mkdtemp(dir=os.path.expanduser("~"))
+        else:
+            self.tmpdir=tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+            
     def test_autodiscover(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -v ~/mpi | grep Found | sort"
@@ -115,19 +121,18 @@ class TestAutoDiscover(unittest.TestCase):
     def test_list_broken(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -q --add ~/mpi",
-            "mv ~/mpi/mpich-3.2 /tmp",
+            "mv ~/mpi/mpich-3.2 {}/".format(self.tmpdir),
             "mpienv list --json"
         ])
 
         try:
-            print("out={}".format(out))
+            self.assertEqual(0, ret)
             data = json.loads(out)
             self.assertTrue(data['mpich-3.2']['broken'])
         finally:
             out, err, ret = sh_session([
-                "mv /tmp/mpich-3.2 ~/mpi/",
+                "mv {}/mpich-3.2 ~/mpi/".format(self.tmpdir),
             ])
-
 
 class TestRename(unittest.TestCase):
     def test_rename(self):
