@@ -69,13 +69,13 @@ class TestList(unittest.TestCase):
 class TestAutoDiscover(unittest.TestCase):
     def setUp(self):
         if os.environ.get("TRAVIS", None):
-            self.tmpdir=tempfile.mkdtemp(dir=os.path.expanduser("~"))
+            self.tmpdir = tempfile.mkdtemp(dir=os.path.expanduser("~"))
         else:
-            self.tmpdir=tempfile.mkdtemp()
+            self.tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
-            
+
     def test_autodiscover(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -v ~/mpi | grep Found | sort"
@@ -133,6 +133,7 @@ class TestAutoDiscover(unittest.TestCase):
             out, err, ret = sh_session([
                 "mv {}/mpich-3.2 ~/mpi/".format(self.tmpdir),
             ])
+
 
 class TestRename(unittest.TestCase):
     def test_rename(self):
