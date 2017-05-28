@@ -28,10 +28,13 @@ fi
 
 PREFIX=$HOME/mpi
 
-# Open MPI 2.1.1
 cd $HOME/tmp
 
+echo ls $PREFIX
 ls $PREFIX
+
+# Remove Open MPI version which we no longer use
+rm -rf $PREFIX/openmpi-1.10*
 
 for VER in 2.1.1; do
     if [ ! -x $PREFIX/openmpi-${VER}/bin/mpiexec ]; then
