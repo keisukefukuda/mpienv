@@ -7,13 +7,13 @@ from subprocess import check_output
 import sys
 
 try:
-    from mpi4py import MPI
+    from mpi4py import MPI  # NOQA
     _mpi4py_available = True
 except ImportError:
     _mpi4py_available = False
-    
 
-from common import manager
+
+# from common import manager
 
 
 def _find_mpi4py_lib(path):
@@ -44,7 +44,7 @@ def _find_linked_mpi_lib(lib):
     else:
         sys.stderr.write("The platform is not Linux nor MacOS. Unsupported.\n")
         exit(-1)
-            
+
 
 def main():
     if not _mpi4py_available:
@@ -70,7 +70,7 @@ def main():
     lib = libs.pop()
     sys.stderr.write("{}\n".format(lib))
     _find_linked_mpi_lib(lib)
-        
+
 
 if __name__ == "__main__":
     main()
