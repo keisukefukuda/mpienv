@@ -7,6 +7,8 @@ import re
 import shutil
 from subprocess import call
 from subprocess import check_output
+from subprocess import PIPE
+from subprocess import Popen
 import sys
 
 from ompi import parse_ompi_info
@@ -201,7 +203,9 @@ class Manager(object):
                 'broken': True,
             }
 
-        ver_str = decode(check_output([mpiexec, '--version']))
+        p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
+        out, err =p.communicate()
+        ver_str = decode(out + err)
 
         info = None
 
@@ -228,6 +232,7 @@ class Manager(object):
                 info = _get_info_mpich(prefix)
 
         if info is None:
+            sys.stderr.write("ver_str = {}\n".format(ver_str))
             raise RuntimeError("Unknown MPI type '{}'".format(mpiexec))
 
         for bin in ['mpiexec', 'mpicc', 'mpicxx']:
