@@ -73,7 +73,7 @@ def _glob_list(dire, pat_list):
     if type(dire) is list or type(dire) is tuple:
         dire = os.path.join(*dire)
 
-    # list of lists 
+    # list of lists
     lol = [glob.glob(os.path.join(dire, p)) for p in pat_list]
 
     # return flattened list
@@ -379,7 +379,6 @@ class Manager(object):
             src = f
             shutil.copy(src, dst)
 
-
     def _use_mpich(self, prefix):
         shims = os.path.join(self._root_dir, 'shims')
 
@@ -389,9 +388,9 @@ class Manager(object):
                                 'parkill'])
 
         lib_files = _glob_list([prefix, 'lib'],
-                                ['lib*mpi*.*',
-                                 'lib*mpl*.*',
-                                 'libopa.*'])
+                               ['lib*mpi*.*',
+                                'lib*mpl*.*',
+                                'libopa.*'])
 
         inc_files = _glob_list([prefix, 'include'],
                                ['mpi*.h',
@@ -408,7 +407,7 @@ class Manager(object):
         for f in inc_files:
             self._mirror_file(f, os.path.join(shims, 'include'))
 
-         
+
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
              os.path.join(os.path.expanduser('~'), '.mpienv'))
 manager = Manager(_root_dir)
