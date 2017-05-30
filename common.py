@@ -68,6 +68,18 @@ def is_active(prefix):
     return mpiexec1 == mpiexec2
 
 
+def _glob_list(dire, pat_list):
+    """Glob all patterns `pat` in `directory`"""
+    if type(dire) is list or type(dire) is tuple:
+        dire = os.path.join(*dire)
+
+    # list of lists 
+    lol = [glob.glob(os.path.join(dire, p)) for p in pat_list]
+
+    # return flattened list
+    return [item for sublist in lol for item in sublist]
+
+
 def _get_info_mpich(prefix):
     info = {}
 
@@ -343,25 +355,60 @@ class Manager(object):
                              "".format(name))
             exit(-1)
 
-        dst = os.path.join(self._root_dir, 'shims')
+        shims = os.path.join(self._root_dir, 'shims')
 
-        # check if `name` is the currently active one,
-        # and do nothing if so
-        cur_mpi = os.path.realpath(os.path.join(self._root_dir, 'shims'))
-        trg_mpi = os.path.realpath(os.path.join(self._vers_dir, name))
+        if os.path.exists(shims):
+            shutil.rmtree(shims)
+        os.mkdir(shims)
 
-        if cur_mpi == trg_mpi:
-            print("You are already using {}".format(name))
-            return True
+        for d in ['include', 'lib', 'bin']:
+            os.mkdir(os.path.join(shims, d))
 
-        if os.path.exists(dst):
-            os.remove(dst)
+        self._use_mpich(info['path'])
 
-        src = os.path.realpath(os.path.join(self._vers_dir, name))
+    def _mirror_file(self, f, dst_dir):
+        dst = os.path.join(dst_dir, os.path.basename(f))
 
-        os.symlink(src, dst)
+        if os.path.islink(f):
+            src = os.path.realpath(f)
+            os.symlink(src, dst)
+        elif os.path.isdir(f):
+            src = f
+            os.symlink(src, dst)
+        else:
+            src = f
+            shutil.copy(src, dst)
 
 
+    def _use_mpich(self, prefix):
+        shims = os.path.join(self._root_dir, 'shims')
+
+        bin_files = _glob_list([prefix, 'bin'],
+                               ['hydra_*',
+                                'mpi*',
+                                'parkill'])
+
+        lib_files = _glob_list([prefix, 'lib'],
+                                ['lib*mpi*.*',
+                                 'lib*mpl*.*',
+                                 'libopa.*'])
+
+        inc_files = _glob_list([prefix, 'include'],
+                               ['mpi*.h',
+                                'mpi*.mod',
+                                'opa*.h',
+                                'primitives'])
+
+        for f in bin_files:
+            self._mirror_file(f, os.path.join(shims, 'bin'))
+
+        for f in lib_files:
+            self._mirror_file(f, os.path.join(shims, 'lib'))
+
+        for f in inc_files:
+            self._mirror_file(f, os.path.join(shims, 'include'))
+
+         
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
              os.path.join(os.path.expanduser('~'), '.mpienv'))
 manager = Manager(_root_dir)
