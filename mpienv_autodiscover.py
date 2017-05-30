@@ -30,16 +30,16 @@ def prints(s=""):
         print(s)
 
 
-def check_valid_paths(paths):
-    err = False
+def filter_valid_paths(paths, warn=True):
+    ret = []
     for p in paths:
-        if not os.path.isdir(p):
-            sys.stderr.write("Error: '{}' is not a directory\n".format(p))
-            err = True
+        if os.path.isdir(p):
+            ret.append(p)
+        else:
+            if warn:
+                sys.stderr.write("Error: '{}' is not a directory\n".format(p))
 
-    if err:
-        exit(-1)
-
+    return ret
 
 def investigate_path(path, to_add):
     mpiexec = os.path.join(path, 'bin', 'mpiexec')
@@ -81,7 +81,7 @@ def main():
                         action="store_true", default=None)
     parser.add_argument('-q', '--quiet', dest='quiet',
                         action="store_true", default=None)
-    parser.add_argument('paths', nargs='+')
+    parser.add_argument('paths', nargs='*')
 
     args = parser.parse_args()
 
@@ -97,8 +97,12 @@ def main():
 
     if len(search_paths) == 0:
         search_paths = default_search_paths
+        using_default = True
+    else:
+        using_default = False
 
-    check_valid_paths(search_paths)
+    search_paths = filter_valid_paths(search_paths,
+                                      warn=(not using_default))
 
     checked = set()
 

@@ -357,4 +357,6 @@ class Manager(object):
         os.symlink(src, dst)
 
 
-manager = Manager(os.path.join(os.path.expanduser('~'), '.mpienv'))
+_root_dir = (os.environ.get("MPIENV_ROOT", None) or
+             os.path.join(os.path.expanduser('~'), '.mpienv'))
+manager = Manager(_root_dir)
