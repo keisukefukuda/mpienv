@@ -41,6 +41,7 @@ def filter_valid_paths(paths, warn=True):
 
     return ret
 
+
 def investigate_path(path, to_add):
     mpiexec = os.path.join(path, 'bin', 'mpiexec')
     if os.path.isfile(mpiexec):

@@ -204,7 +204,7 @@ class Manager(object):
             }
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
-        out, err =p.communicate()
+        out, err = p.communicate()
         ver_str = decode(out + err)
 
         info = None
