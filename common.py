@@ -348,8 +348,10 @@ class Manager(object):
             exit(-1)
 
         shims = os.path.join(self._root_dir, 'shims')
-        if not os.path.exists(shims):
-            os.mkdir(shims)
+        if os.path.exists(shims):
+            shutil.rmtree(shims)
+
+        os.mkdir(shims)
 
         for d in ['bin', 'lib', 'include']:
             dr = os.path.join(shims, d)
@@ -415,11 +417,39 @@ class Manager(object):
         for f in inc_files:
             self._mirror_file(f, os.path.join(shims, 'include'))
 
-    def _use_mvapich(prefix):
+    def _use_mvapich(self, prefix):
         pass
 
-    def _use_openmpi(prefix):
-        pass
+    def _use_openmpi(self, prefix):
+        shims = os.path.join(self._root_dir, 'shims')
+
+        bin_files = _glob_list([prefix, 'bin'],
+                               ['mpi*',
+                                'ompi-*',
+                                'ompi_*',
+                                'orte*',
+                                'opal_'])
+
+        lib_files = _glob_list([prefix, 'bin'],
+                               ['libmpi*',
+                                'libmca*',
+                                'libompi*',
+                                'libopen-pal*',
+                                'libopen-rte*',
+                                'openmpi',
+                                'pkgconfig'])
+
+        inc_files = _glob_list([prefix, 'include'],
+                               ['mpi*.h', 'openmpi'])
+
+        for f in bin_files:
+            self._mirror_file(f, os.path.join(shims, 'bin'))
+
+        for f in lib_files:
+            self._mirror_file(f, os.path.join(shims, 'lib'))
+
+        for f in inc_files:
+            self._mirror_file(f, os.path.join(shims, 'include'))
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
