@@ -347,6 +347,15 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
+        shims = os.path.join(self._root_dir, 'shims')
+        if not os.path.exists(shims):
+            os.mkdir(shims)
+
+        for d in ['bin', 'lib', 'include']:
+            dr = os.path.join(shims, d)
+            if not os.path.exists(dr):
+                os.mkdir(dr)
+
         info = self.get_info(name)
 
         if info.get('broken'):
@@ -355,16 +364,15 @@ class Manager(object):
                              "".format(name))
             exit(-1)
 
-        shims = os.path.join(self._root_dir, 'shims')
-
-        if os.path.exists(shims):
-            shutil.rmtree(shims)
-        os.mkdir(shims)
-
-        for d in ['include', 'lib', 'bin']:
-            os.mkdir(os.path.join(shims, d))
-
-        self._use_mpich(info['path'])
+        if info['type'] == 'MPICH':
+            self._use_mpich(info['path'])
+        elif info['type'] == 'Open MPI':
+            self._use_openmpi(info['path'])
+        elif info['type'] == 'MVAPICH':
+            self._use_mvapich(info['path'])
+        else:
+            raise RuntimeError('Internal Error: '
+                               'unknown MPI type: "{}"'.format(info['type']))
 
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))
@@ -406,6 +414,12 @@ class Manager(object):
 
         for f in inc_files:
             self._mirror_file(f, os.path.join(shims, 'include'))
+
+    def _use_mvapich(prefix):
+        pass
+
+    def _use_openmpi(prefix):
+        pass
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
