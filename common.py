@@ -418,7 +418,12 @@ class Manager(object):
             self._mirror_file(f, os.path.join(shims, 'include'))
 
     def _use_mvapich(self, prefix):
-        pass
+        self._use_mpich(prefix)
+        libexec_files = _glob_list([prefix, 'libexec'],
+                                   ['osu-micro-benchmarks'])
+        shims = os.path.join(self._root_dir, 'shims')
+        for f in libexec_files:
+            self._mirror_file(f, os.path.join(shims, 'libexec'))
 
     def _use_openmpi(self, prefix):
         shims = os.path.join(self._root_dir, 'shims')
