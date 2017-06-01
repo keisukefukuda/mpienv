@@ -12,6 +12,7 @@ from subprocess import Popen
 import sys
 
 from ompi import parse_ompi_info
+from py import PyLib
 
 try:
     from subprocess import DEVNULL  # py3k
@@ -360,6 +361,8 @@ class Manager(object):
         src = os.path.realpath(os.path.join(self._vers_dir, name))
 
         os.symlink(src, dst)
+
+        pylib = PyLib()
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
