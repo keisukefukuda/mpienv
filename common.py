@@ -354,7 +354,7 @@ class Manager(object):
 
         os.mkdir(shims)
 
-        for d in ['bin', 'lib', 'include']:
+        for d in ['bin', 'lib', 'include', 'libexec']:
             dr = os.path.join(shims, d)
             if not os.path.exists(dr):
                 os.mkdir(dr)
@@ -377,6 +377,10 @@ class Manager(object):
             raise RuntimeError('Internal Error: '
                                'unknown MPI type: "{}"'.format(info['type']))
 
+        if True:
+            pylib = PyLib(self._root_dir)
+            pylib.use(name)
+
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))
 
@@ -387,8 +391,9 @@ class Manager(object):
             src = f
             os.symlink(src, dst)
         else:
+            # ordinary files
             src = f
-            shutil.copy(src, dst)
+            os.symlink(src, dst)
 
     def _use_mpich(self, prefix):
         shims = os.path.join(self._root_dir, 'shims')
@@ -456,8 +461,6 @@ class Manager(object):
 
         for f in inc_files:
             self._mirror_file(f, os.path.join(shims, 'include'))
-
-        pylib = PyLib()
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
