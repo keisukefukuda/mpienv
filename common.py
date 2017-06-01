@@ -68,6 +68,18 @@ def is_active(prefix):
     return mpiexec1 == mpiexec2
 
 
+def _glob_list(dire, pat_list):
+    """Glob all patterns `pat` in `directory`"""
+    if type(dire) is list or type(dire) is tuple:
+        dire = os.path.join(*dire)
+
+    # list of lists
+    lol = [glob.glob(os.path.join(dire, p)) for p in pat_list]
+
+    # return flattened list
+    return [item for sublist in lol for item in sublist]
+
+
 def _get_info_mpich(prefix):
     info = {}
 
@@ -335,6 +347,17 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
+        shims = os.path.join(self._root_dir, 'shims')
+        if os.path.exists(shims):
+            shutil.rmtree(shims)
+
+        os.mkdir(shims)
+
+        for d in ['bin', 'lib', 'include']:
+            dr = os.path.join(shims, d)
+            if not os.path.exists(dr):
+                os.mkdir(dr)
+
         info = self.get_info(name)
 
         if info.get('broken'):
@@ -343,23 +366,95 @@ class Manager(object):
                              "".format(name))
             exit(-1)
 
-        dst = os.path.join(self._root_dir, 'shims')
+        if info['type'] == 'MPICH':
+            self._use_mpich(info['path'])
+        elif info['type'] == 'Open MPI':
+            self._use_openmpi(info['path'])
+        elif info['type'] == 'MVAPICH':
+            self._use_mvapich(info['path'])
+        else:
+            raise RuntimeError('Internal Error: '
+                               'unknown MPI type: "{}"'.format(info['type']))
 
-        # check if `name` is the currently active one,
-        # and do nothing if so
-        cur_mpi = os.path.realpath(os.path.join(self._root_dir, 'shims'))
-        trg_mpi = os.path.realpath(os.path.join(self._vers_dir, name))
+    def _mirror_file(self, f, dst_dir):
+        dst = os.path.join(dst_dir, os.path.basename(f))
 
-        if cur_mpi == trg_mpi:
-            print("You are already using {}".format(name))
-            return True
+        if os.path.islink(f):
+            src = os.path.realpath(f)
+            os.symlink(src, dst)
+        elif os.path.isdir(f):
+            src = f
+            os.symlink(src, dst)
+        else:
+            src = f
+            shutil.copy(src, dst)
 
-        if os.path.exists(dst):
-            os.remove(dst)
+    def _use_mpich(self, prefix):
+        shims = os.path.join(self._root_dir, 'shims')
 
-        src = os.path.realpath(os.path.join(self._vers_dir, name))
+        bin_files = _glob_list([prefix, 'bin'],
+                               ['hydra_*',
+                                'mpi*',
+                                'parkill'])
 
-        os.symlink(src, dst)
+        lib_files = _glob_list([prefix, 'lib'],
+                               ['lib*mpi*.*',
+                                'lib*mpl*.*',
+                                'libopa.*'])
+
+        inc_files = _glob_list([prefix, 'include'],
+                               ['mpi*.h',
+                                'mpi*.mod',
+                                'opa*.h',
+                                'primitives'])
+
+        for f in bin_files:
+            self._mirror_file(f, os.path.join(shims, 'bin'))
+
+        for f in lib_files:
+            self._mirror_file(f, os.path.join(shims, 'lib'))
+
+        for f in inc_files:
+            self._mirror_file(f, os.path.join(shims, 'include'))
+
+    def _use_mvapich(self, prefix):
+        self._use_mpich(prefix)
+        libexec_files = _glob_list([prefix, 'libexec'],
+                                   ['osu-micro-benchmarks'])
+        shims = os.path.join(self._root_dir, 'shims')
+        for f in libexec_files:
+            self._mirror_file(f, os.path.join(shims, 'libexec'))
+
+    def _use_openmpi(self, prefix):
+        shims = os.path.join(self._root_dir, 'shims')
+
+        bin_files = _glob_list([prefix, 'bin'],
+                               ['mpi*',
+                                'ompi-*',
+                                'ompi_*',
+                                'orte*',
+                                'opal_'])
+
+        lib_files = _glob_list([prefix, 'bin'],
+                               ['libmpi*',
+                                'libmca*',
+                                'libompi*',
+                                'libopen-pal*',
+                                'libopen-rte*',
+                                'openmpi',
+                                'pkgconfig'])
+
+        inc_files = _glob_list([prefix, 'include'],
+                               ['mpi*.h', 'openmpi'])
+
+        for f in bin_files:
+            self._mirror_file(f, os.path.join(shims, 'bin'))
+
+        for f in lib_files:
+            self._mirror_file(f, os.path.join(shims, 'lib'))
+
+        for f in inc_files:
+            self._mirror_file(f, os.path.join(shims, 'include'))
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
