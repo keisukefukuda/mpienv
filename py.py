@@ -5,11 +5,8 @@ import errno
 import glob
 import os
 import os.path
-import platform
 import re
-import shutil
 from subprocess import check_call
-from subprocess import check_output
 import sys
 
 
@@ -45,8 +42,8 @@ class PyModule(object):
 
     def install(self):
         PATH = os.path.join(self._root_dir, 'versions', self._name, 'bin')
-        LD =os.path.join(self._root_dir, 'versions', self._name, 'lib')
-        
+        LD = os.path.join(self._root_dir, 'versions', self._name, 'lib')
+
         env = os.environ.copy()
         env['PATH'] = "{}:{}".format(PATH, env['PATH'])
         env['LD_LIBRARY_PATH'] = "{}:{}".format(LD, env['LD_LIBRARY_PATH'])
@@ -62,7 +59,9 @@ class PyModule(object):
         if pypath is None:
             pypath = [self._pylib_dir]
         else:
-            paths = [p for p in pypath.split(':') if p.find(self._root_dir) < 0]
+            # Split path and remove directories managed by mpienv
+            paths = [p for p in pypath.split(':')
+                     if p.find(self._root_dir) < 0]
             paths[:0] = [self._pylib_dir]
             pypath = ':'.join(paths)
 
@@ -72,4 +71,3 @@ class PyModule(object):
 class MPI4Py(PyModule):
     def __init__(self, root_dir, name):
         super(MPI4Py, self).__init__('mpi4py', root_dir, name)
-
