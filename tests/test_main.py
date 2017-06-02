@@ -180,7 +180,7 @@ class TestUseMPI4Py(unittest.TestCase):
         # and causes error on CUDA-equpped environment.
         mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
         print("mpis={}".format(mpis))
-        
+
         out, err, ret = sh_session([
             "mpienv autodiscover --add ~/mpi >/dev/null",
             *("mpienv use {}; mpiexec -n 2 python -c '{}'".format(mpi, prog)
@@ -190,4 +190,3 @@ class TestUseMPI4Py(unittest.TestCase):
         self.assertEqual(0, ret)
         self.assertEqual("", err.strip())
         self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
-        
