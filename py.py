@@ -48,7 +48,8 @@ class PyModule(object):
         env['PATH'] = "{}:{}".format(PATH, env['PATH'])
 
         if env.get('LD_LIBRARY_PATH'):
-            env['LD_LIBRARY_PATH'] = "{}:{}".format(LD, env.get('LD_LIBRARY_PATH'))
+            env['LD_LIBRARY_PATH'] = "{}:{}".format(LD,
+                                                    env.get('LD_LIBRARY_PATH'))
         else:
             env['LD_LIBRARY_PATH'] = "{}".format(LD)
 
