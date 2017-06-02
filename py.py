@@ -70,7 +70,11 @@ class PyLib(object):
                 cur_name = os.path.basename(mpi4py_dir)
                 print("current name = {}".format(name))
                 if name != cur_name:
-                    check_call(['pip', 'uninstall', '-y', 'mpi4py'])
+                    try:
+                        check_call(['pip', 'uninstall', '-y', 'mpi4py'])
+                    except:
+                        print("pip uninstall -y mpi4py failed: but lib is {}".format(self._lib))
+                        pass
 
         # Check if `name` is installed
         if not self.installed(name):
