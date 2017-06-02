@@ -280,7 +280,7 @@ class Manager(object):
             raise RuntimeError("todo: path={}".format(path))
 
         for name, info in self.items():
-            if info['mpiexec'] == mpiexec:
+            if info.get('mpiexec', None) == mpiexec:
                 return name
 
         return None
