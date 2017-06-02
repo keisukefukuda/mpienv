@@ -42,7 +42,7 @@ def sh_session(cmd, env={}):
         if type(cmd) == list:
             cmd = " && ".join(cmd)
 
-        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE, env=env)
+        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         enc = sys.getdefaultencoding()
         cmd = (". {}/init;"
                "export MPIENV_VERSIONS_DIR={};"
