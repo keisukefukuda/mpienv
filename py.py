@@ -63,7 +63,7 @@ class PyModule(object):
             paths = [p for p in pypath.split(':')
                      if p.find(self._root_dir) < 0]
             paths[:0] = [self._pylib_dir]
-            pypath = ':'.join(paths)
+        pypath = ':'.join(paths)
 
         print("export PYTHONPATH={}".format(pypath))
 
