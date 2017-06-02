@@ -188,7 +188,9 @@ class TestUseMPI4Py(unittest.TestCase):
 
         out, err, ret = sh_session([
             "export TMPDIR=/tmp",  # Avoid Open MPI error
-            "mpienv autodiscover --add ~/mpi >/dev/null"
+            "mpienv autodiscover --add ~/mpi >/dev/null",
+            "mpienv list",
+            "mpiexec --version"
         ] + cmds)
 
         self.assertEqual(0, ret)
