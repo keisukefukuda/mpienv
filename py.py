@@ -57,7 +57,7 @@ class PyModule(object):
     def use(self):
         pypath = os.environ.get('PYTHONPATH', None)
         if pypath is None:
-            pypath = [self._pylib_dir]
+            paths = [self._pylib_dir]
         else:
             # Split path and remove directories managed by mpienv
             paths = [p for p in pypath.split(':')
