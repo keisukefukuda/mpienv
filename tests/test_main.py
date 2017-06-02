@@ -55,8 +55,13 @@ def sh_session(cmd):
 
         if ret != 0:
             print("sh_session(): return code != 0")
-            print("sh_session(): out={}".format(out))
-            print("sh_session(): err={}".format(err))
+            print("----------------------------------")
+            print("sh_session(): out=")
+            print(out.decode(sys.getdefaultencoding()))
+            print("----------------------------------")
+            print("sh_session(): err=")
+            print(err.decode(sys.getdefaultencoding()))
+            print("----------------------------------")
     finally:
         shutil.rmtree(ver_dir)
 
@@ -162,3 +167,27 @@ class TestRename(unittest.TestCase):
         lines = sorted([re.search(r'([^/ ]*)\s+->', ln).group(1)
                         for ln in lines])
         self.assertEqual(should, lines)
+
+
+class TestUseMPI4Py(unittest.TestCase):
+    def test_mpi4py(self):
+        prog = ("from mpi4py import MPI;"
+                "import sys;"
+                "sys.stdout.write(str(MPI.COMM_WORLD.Get_rank()));")
+
+        # Eliminate mvapich test
+        # Because the sample mvapich is not configured '--with-cuda'
+        # and causes error on CUDA-equpped environment.
+        mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
+        print("mpis={}".format(mpis))
+        
+        out, err, ret = sh_session([
+            "mpienv autodiscover --add ~/mpi >/dev/null",
+            *("mpienv use {}; mpiexec -n 2 python -c '{}'".format(mpi, prog)
+              for mpi in mpis),
+        ])
+
+        self.assertEqual(0, ret)
+        self.assertEqual("", err.strip())
+        self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
+        
