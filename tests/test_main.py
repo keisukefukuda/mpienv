@@ -183,16 +183,15 @@ class TestUseMPI4Py(unittest.TestCase):
         # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
         cmds = ["mpienv use --python {}; "
+                "mpienv list >&2;"
+                "mpiexec --version >&2;"
                 "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
         out, err, ret = sh_session([
             "export TMPDIR=/tmp",  # Avoid Open MPI error
             "mpienv autodiscover --add ~/mpi >/dev/null",
-        ] + cmds + [
-            "mpienv list >&2",
-            "mpiexec --version >&2"
-        ])
+        ] + cmds)
 
         self.assertEqual(0, ret)
         self.assertIsNotNone(re.match(r'^(01|10){1}$', out.strip()))
