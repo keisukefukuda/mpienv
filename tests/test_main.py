@@ -183,8 +183,7 @@ class TestUseMPI4Py(unittest.TestCase):
         # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
         cmds = ["mpienv use --python {}; "
-                "mpienv list >&2;"
-                "mpiexec --version >&2;"
+                "env | grep PYTHONPATH >&2;"
                 "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
