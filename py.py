@@ -46,7 +46,11 @@ class PyModule(object):
 
         env = os.environ.copy()
         env['PATH'] = "{}:{}".format(PATH, env['PATH'])
-        env['LD_LIBRARY_PATH'] = "{}:{}".format(LD, env['LD_LIBRARY_PATH'])
+
+        if env.get('LD_LIBRARY_PATH'):
+            env['LD_LIBRARY_PATH'] = "{}:{}".format(LD, env.get('LD_LIBRARY_PATH'))
+        else:
+            env['LD_LIBRARY_PATH'] = "{}".format(LD)
 
         sys.stderr.write("Installing {} for {} ...\n".format(self._libname,
                                                              self._name))

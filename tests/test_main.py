@@ -32,7 +32,7 @@ mpi_vers = {
 }
 
 
-def sh_session(cmd):
+def sh_session(cmd, env={}):
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
@@ -42,7 +42,7 @@ def sh_session(cmd):
         if type(cmd) == list:
             cmd = " && ".join(cmd)
 
-        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE, env=env)
         enc = sys.getdefaultencoding()
         cmd = (". {}/init;"
                "export MPIENV_VERSIONS_DIR={};"
