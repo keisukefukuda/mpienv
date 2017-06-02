@@ -12,7 +12,7 @@ from subprocess import Popen
 import sys
 
 from ompi import parse_ompi_info
-from py import PyLib
+from py import MPI4Py
 
 try:
     from subprocess import DEVNULL  # py3k
@@ -378,8 +378,10 @@ class Manager(object):
                                'unknown MPI type: "{}"'.format(info['type']))
 
         if True:
-            pylib = PyLib(self._root_dir)
-            pylib.use(name)
+            mpi4py = MPI4Py(self._root_dir, name)
+            if not mpi4py.is_installed():
+                mpi4py.install()
+            mpi4py.use()
 
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))

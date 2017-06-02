@@ -29,7 +29,7 @@ function mpienv() {
     case "$command" in
         "use" )
             {
-                python $root/mpienv_use.py $*
+                eval $(python $root/mpienv_use.py $*)
                 if [ ! -n "$ZSH_VERSION" ]; then
                     rehash
                 fi
