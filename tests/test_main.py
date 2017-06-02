@@ -180,7 +180,8 @@ class TestUseMPI4Py(unittest.TestCase):
         # and causes error on CUDA-equpped environment.
         mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
-        cmds = ["mpienv use {}; mpiexec -n 2 python -c '{}'".format(mpi, prog)
+        cmds = ["mpienv use --python {}; "
+                "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
         out, err, ret = sh_session([
