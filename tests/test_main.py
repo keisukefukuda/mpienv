@@ -32,7 +32,7 @@ mpi_vers = {
 }
 
 
-def sh_session(cmd, env={}):
+def sh_session(cmd):
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
@@ -178,12 +178,10 @@ class TestUseMPI4Py(unittest.TestCase):
         # Eliminate mvapich test
         # Because the sample mvapich is not configured '--with-cuda'
         # and causes error on CUDA-equpped environment.
-        mpis = ['mpich-3.2']
-        # mpis = ['mpich-3.2', 'openmpi-2.1.1']
+        mpis = ['mpich-3.2', 'openmpi-2.1.1']
         # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
         cmds = ["mpienv use --python {}; "
-                "env | grep PYTHONPATH >&2;"
                 "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
@@ -193,4 +191,4 @@ class TestUseMPI4Py(unittest.TestCase):
         ] + cmds)
 
         self.assertEqual(0, ret)
-        self.assertIsNotNone(re.match(r'^(01|10){1}$', out.strip()))
+        self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
