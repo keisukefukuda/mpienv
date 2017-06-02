@@ -341,7 +341,7 @@ class Manager(object):
 
         shutil.move(path_from, path_to)
 
-    def use(self, name):
+    def use(self, name, python=False):
         if name not in self:
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
