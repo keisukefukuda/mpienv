@@ -179,12 +179,14 @@ class TestUseMPI4Py(unittest.TestCase):
         # Because the sample mvapich is not configured '--with-cuda'
         # and causes error on CUDA-equpped environment.
         mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
-        print("mpis={}".format(mpis))
+
+        cmds = ["mpienv use {}; mpiexec -n 2 python -c '{}'".format(mpi, prog)
+                for mpi in mpis]
 
         out, err, ret = sh_session([
+            "export TMPDIR=/tmp",  # Avoid Open MPI error
             "mpienv autodiscover --add ~/mpi >/dev/null",
-            *("mpienv use {}; mpiexec -n 2 python -c '{}'".format(mpi, prog)
-              for mpi in mpis),
+            *cmds,
         ])
 
         self.assertEqual(0, ret)
