@@ -186,9 +186,8 @@ class TestUseMPI4Py(unittest.TestCase):
         out, err, ret = sh_session([
             "export TMPDIR=/tmp",  # Avoid Open MPI error
             "mpienv autodiscover --add ~/mpi >/dev/null",
-            *cmds,
+            *cmds
         ])
 
         self.assertEqual(0, ret)
-        self.assertEqual("", err.strip())
         self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
