@@ -11,8 +11,8 @@ from subprocess import PIPE
 from subprocess import Popen
 import sys
 
-from ompi import parse_ompi_info
-from py import MPI4Py
+from mpienv.ompi import parse_ompi_info
+from mpienv.py import MPI4Py
 
 try:
     from subprocess import DEVNULL  # py3k
