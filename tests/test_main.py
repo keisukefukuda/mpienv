@@ -35,7 +35,7 @@ mpi_vers = {
 def sh_session(cmd, env={}):
     env2 = os.environ.copy()
     env2.update(env)
-    env2 = {k : env2[k] for k in env2 if env2[k] is not None}
+    env2 = {k: env2[k] for k in env2 if env2[k] is not None}
 
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
@@ -194,8 +194,7 @@ class TestUseMPI4Py(unittest.TestCase):
             out, err, ret = sh_session([
                 'export TMPDIR=/tmp',  # Avoid Open MPI error
                 'mpienv autodiscover --add ~/mpi >/dev/null',
-            ] + cmds, env={'PYTHONPATH' : pp})
+            ] + cmds, env={'PYTHONPATH': pp})
 
             self.assertEqual(0, ret)
             self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
-        
