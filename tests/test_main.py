@@ -32,7 +32,11 @@ mpi_vers = {
 }
 
 
-def sh_session(cmd):
+def sh_session(cmd, env={}):
+    env2 = os.environ.copy()
+    env2.update(env)
+    env2 = {k: env2[k] for k in env2 if env2[k] is not None}
+
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
@@ -42,7 +46,8 @@ def sh_session(cmd):
         if type(cmd) == list:
             cmd = " && ".join(cmd)
 
-        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE,
+                  env=env2)
         enc = sys.getdefaultencoding()
         cmd = (". {}/init;"
                "export MPIENV_VERSIONS_DIR={};"
@@ -55,8 +60,13 @@ def sh_session(cmd):
 
         if ret != 0:
             print("sh_session(): return code != 0")
-            print("sh_session(): out={}".format(out))
-            print("sh_session(): err={}".format(err))
+            print("----------------------------------")
+            print("sh_session(): out=")
+            print(out.decode(sys.getdefaultencoding()))
+            print("----------------------------------")
+            print("sh_session(): err=")
+            print(err.decode(sys.getdefaultencoding()))
+            print("----------------------------------")
     finally:
         shutil.rmtree(ver_dir)
 
@@ -162,3 +172,51 @@ class TestRename(unittest.TestCase):
         lines = sorted([re.search(r'([^/ ]*)\s+->', ln).group(1)
                         for ln in lines])
         self.assertEqual(should, lines)
+
+
+class TestUseMPI4Py(unittest.TestCase):
+    def test_mpi4py(self):
+        prog = ("from mpi4py import MPI;"
+                "import sys;"
+                "sys.stdout.write(str(MPI.COMM_WORLD.Get_rank()));")
+
+        # Eliminate mvapich test
+        # Because the sample mvapich is not configured '--with-cuda'
+        # and causes error on CUDA-equpped environment.
+        mpis = ['mpich-3.2', 'openmpi-2.1.1']
+        # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
+
+        cmds = ["mpienv use --mpi4py {}; "
+                "mpiexec -n 2 python -c '{}'".format(mpi, prog)
+                for mpi in mpis]
+
+        for pp in ["", None]:
+            out, err, ret = sh_session([
+                'export TMPDIR=/tmp',  # Avoid Open MPI error
+                'mpienv autodiscover --add ~/mpi >/dev/null',
+            ] + cmds, env={'PYTHONPATH': pp})
+
+            self.assertEqual(0, ret)
+            self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
+
+
+class TestUseMPI4PyError(unittest.TestCase):
+    def test_mpi4py(self):
+        prog = ("from mpi4py import MPI;"
+                "import sys;"
+                "sys.stdout.write(str(MPI.COMM_WORLD.Get_rank()));")
+
+        # If `use` is used without --mpi4py option,
+        # mpi4py script should cause an error.
+        for pp in ["", None]:
+            out, err, ret = sh_session(
+                ['export TMPDIR=/tmp',  # Avoid Open MPI error
+                 'mpienv autodiscover --add ~/mpi >/dev/null',
+                 "mpienv use --mpi4py mpich-3.2",
+                 "mpienv use openmpi-2.1.1",
+                 "mpiexec -n 2 python -c '{}'".format(prog)],
+                env={'PYTHONPATH': pp})
+
+            print(out)
+            print(err)
+            self.assertTrue(ret != 0 or out == "00")

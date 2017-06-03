@@ -12,6 +12,7 @@ from subprocess import Popen
 import sys
 
 from ompi import parse_ompi_info
+from py import MPI4Py
 
 try:
     from subprocess import DEVNULL  # py3k
@@ -340,7 +341,7 @@ class Manager(object):
 
         shutil.move(path_from, path_to)
 
-    def use(self, name):
+    def use(self, name, mpi4py=False):
         if name not in self:
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
@@ -353,7 +354,7 @@ class Manager(object):
 
         os.mkdir(shims)
 
-        for d in ['bin', 'lib', 'include']:
+        for d in ['bin', 'lib', 'include', 'libexec']:
             dr = os.path.join(shims, d)
             if not os.path.exists(dr):
                 os.mkdir(dr)
@@ -376,6 +377,12 @@ class Manager(object):
             raise RuntimeError('Internal Error: '
                                'unknown MPI type: "{}"'.format(info['type']))
 
+        if mpi4py:
+            mpi4py = MPI4Py(self._root_dir, name)
+            if not mpi4py.is_installed():
+                mpi4py.install()
+            mpi4py.use()
+
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))
 
@@ -386,8 +393,9 @@ class Manager(object):
             src = f
             os.symlink(src, dst)
         else:
+            # ordinary files
             src = f
-            shutil.copy(src, dst)
+            os.symlink(src, dst)
 
     def _use_mpich(self, prefix):
         shims = os.path.join(self._root_dir, 'shims')
