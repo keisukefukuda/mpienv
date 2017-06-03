@@ -32,7 +32,7 @@ mpi_vers = {
 }
 
 
-def sh_session(cmd):
+def sh_session(cmd, env={}):
     shell_cmd = os.environ.get('TEST_SHELL_CMD', None) or "bash"
     ver_dir = tempfile.mkdtemp()
 
