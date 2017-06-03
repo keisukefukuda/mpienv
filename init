@@ -29,7 +29,8 @@ function mpienv() {
     case "$command" in
         "use" )
             {
-                eval $(python $root/mpienv_use.py $*)
+                eval $(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                           python $root/bin/use.py $*)
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi
@@ -37,32 +38,38 @@ function mpienv() {
             ;;
         "add" )
             {
-                python $root/mpienv_add.py $*
+               env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                   python $root/bin/add.py $*
             }
             ;;
         "rm" )
             {
-                python $root/mpienv_rm.py $*
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/rm.py $*
             }
             ;;
         "rename" )
             {
-                python $root/mpienv_rename.py $*
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/rename.py $*
             }
             ;;
         "list" )
             {
-                python $root/mpienv_list.py $*
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/list.py $*
             }
             ;;
         "info" )
             {
-                python $root/mpienv_info.py $*
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/info.py $*
             }
             ;;
         "autodiscover" )
             {
-                python $root/mpienv_autodiscover.py $*
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/autodiscover.py $*
             }
             ;;
         * )
