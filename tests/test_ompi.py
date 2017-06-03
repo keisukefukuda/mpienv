@@ -2,7 +2,7 @@
 
 import unittest
 
-import ompi
+import mpienv.ompi as ompi
 
 
 Text = """
