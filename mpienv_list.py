@@ -41,4 +41,4 @@ if __name__ == '__main__':
         print("\nInstalled MPIs:\n")
         for info in lst:
             _print_info(info, max_label_len)
-        print()
+        print("")
