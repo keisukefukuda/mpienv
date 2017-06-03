@@ -186,7 +186,7 @@ class TestUseMPI4Py(unittest.TestCase):
         mpis = ['mpich-3.2', 'openmpi-2.1.1']
         # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
-        cmds = ["mpienv use --python {}; "
+        cmds = ["mpienv use --mpi4py {}; "
                 "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
@@ -198,3 +198,25 @@ class TestUseMPI4Py(unittest.TestCase):
 
             self.assertEqual(0, ret)
             self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
+
+
+class TestUseMPI4PyError(unittest.TestCase):
+    def test_mpi4py(self):
+        prog = ("from mpi4py import MPI;"
+                "import sys;"
+                "sys.stdout.write(str(MPI.COMM_WORLD.Get_rank()));")
+
+        # If `use` is used without --mpi4py option,
+        # mpi4py script should cause an error.
+        for pp in ["", None]:
+            out, err, ret = sh_session(
+                ['export TMPDIR=/tmp',  # Avoid Open MPI error
+                 'mpienv autodiscover --add ~/mpi >/dev/null',
+                 "mpienv use --mpi4py mpich-3.2",
+                 "mpienv use openmpi-2.1.1",
+                 "mpiexec -n 2 python -c '{}'".format(prog)],
+                env={'PYTHONPATH': pp})
+
+            print(out)
+            print(err)
+            self.assertTrue(ret != 0 or out == "00")

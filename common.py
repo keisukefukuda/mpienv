@@ -341,7 +341,7 @@ class Manager(object):
 
         shutil.move(path_from, path_to)
 
-    def use(self, name, python=False):
+    def use(self, name, mpi4py=False):
         if name not in self:
             sys.stderr.write("mpienv-use: Error: "
                              "unknown MPI installation: "
@@ -377,7 +377,7 @@ class Manager(object):
             raise RuntimeError('Internal Error: '
                                'unknown MPI type: "{}"'.format(info['type']))
 
-        if True:
+        if mpi4py:
             mpi4py = MPI4Py(self._root_dir, name)
             if not mpi4py.is_installed():
                 mpi4py.install()
