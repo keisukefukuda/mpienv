@@ -130,6 +130,28 @@ You can switch the active MPI by
        
 Now the specified "mpich-3.2" is active. 
 
+## Running MPI application
+To run your MPI application, you need to specify a few options to the `mpiexsec` command.
+
+    $ # If you use Open MPI
+    $ mpienv list
+    
+    Installed MPIs:
+
+      mvapich2-2.2  -> /usr/local
+      openmpi-1.6.5 -> /usr
+    * openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
+    
+    $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -n ${NP} --hostfile ${HOSTFILE} ./your.app
+    
+    $ # If you use MPICH/MVAPICH
+    $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+
+`mpienv` will provide a sophisiticated way to invoke `mpiexec`,
+but as of now you need to do the ugly way to run applications.
+
+
+
 ## Using Python together
 
 If you use MPI with Python and want to swtich multiple MPI
