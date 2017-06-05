@@ -130,7 +130,7 @@ You can switch the active MPI by
        
 Now the specified "mpich-3.2" is active. 
 
-## Running MPI application
+## Running MPI applications
 To run your MPI application, you need to specify a few options to the `mpiexsec` command.
 
     $ # If you use Open MPI
@@ -184,5 +184,16 @@ to activate it.
     $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
     0
     1
+
+OK, now your `mpi4py` is properly set up. To run Python script on multiple nodes,
+you need to pass an additional environment variable: `PYTHONPATH`.
+
+    $ # If you use Open MPI
+    $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --hostfile ${HOSTFILE} ./your.app
+    
+    $ # If you use MPICH/MVAPICH
+    $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+
+
 
 
