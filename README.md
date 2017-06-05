@@ -26,18 +26,20 @@ If you downloaded `mpienv` to a different location, just replace the path.
 OK, let's see what `mpienv` does.
 
     $ mpienv list
+    
+    # no output
 
 The `list` command prints a list of MPI instances. As of now, there
 should be no output from the command because `mpienv` has no
 information about your system. Let's find MPI libraries on your system
 by hitting:
 
-    $ mpienv autodiscover
-    
 The `autodiscover` command will traverse the directories of you system
 and find all installed MPI libraries. The output would look like the
 following (it would take some time):
 
+    $ mpienv autodiscover
+    
     --------------------------------------
     Found /opt/local/bin/mpiexec
     {'active': False,
@@ -53,17 +55,18 @@ following (it would take some time):
 
     (...snip...)
 
-The `autodiscover` command searches several possible locations on your system. 
-If you have any idea of location where MPIs are installed, you can specify them:
+The command searches several possible locations on your system.  If
+you have any idea of location where MPIs are installed, you can
+specify them to save time:
 
     $ mpienv autodiscover path1 path2 ...
     
 After you find MPI installations on your system, you can register them
-to `mpienv` command.
+using `mpienv add` command.
 
     $ mpienv add /opt/local/bin
     
-Then, you check if the MPI is added properly:
+Let's check if the MPI is added properly:
 
     $ mpienv list
     
@@ -88,14 +91,15 @@ Let's assume your `mpienv list` shows the folloing:
        mpich-3.3a1   -> /opt/local
      * openmpi-2.1.1 -> /Users/keisukefukuda/mpi/openmpi-2.1.1
      
+
+The '*' mark indicates that the MPI "openmpi-2.1.1" is active, which
+means it's on the `$PATH` and `$LD_LIBRARYPATH` environment variables.
+You can check that `openmpi-2.1.1` is active.
+
     $ mpiexec --version
     mpiexec (OpenRTE) 2.1.1
 
     Report bugs to http://www.open-mpi.org/community/help/
-
-
-The '*' mark indicates that the MPI "openmpi-2.1.1" is active, which
-means it's on the `$PATH` and `$LD_LIBRARYPATH` environment variables.
 
 You can switch the active MPI by
 
