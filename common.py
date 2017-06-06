@@ -20,6 +20,31 @@ except ImportError:
     import os
     DEVNULL = open(os.devnull, 'wb')
 
+try:
+    import __builtin__
+except ImportError:
+    import builtins
+
+
+def yes_no_input(msg):
+    if hasattr(__builtins__, 'raw_input'):
+        input = raw_input
+    else:
+        input = builtins.input
+
+    try:
+        choice = input("{} [y/N]: ".format(msg)).lower()
+        while True:
+            if choice in ['y', 'ye', 'yes']:
+                return True
+            elif choice in ['n', 'no']:
+                return False
+            else:
+                choice = input(
+                    "Please respond with 'yes' or 'no' [y/N]: ").lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+
 
 class BrokenSymlinkError(Exception):
     def __init__(self, message, path):
@@ -218,6 +243,8 @@ class Manager(object):
         else:
             info = {'broken': False}
 
+        info['symlink'] = os.path.islink(prefix)
+
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
         ver_str = decode(out + err)
@@ -235,14 +262,14 @@ class Manager(object):
                        stderr=DEVNULL)
             if ret == 0:
                 # MVAPICH
-                info = _get_info_mvapich(prefix)
+                info.update(_get_info_mvapich(prefix))
             else:
                 # MPICH
                 # on some platform, sometimes only runtime
                 # is installed and developemnt kit (i.e. compilers)
                 # are not installed.
                 # In this case, we assume it's mpich.
-                info = _get_info_mpich(prefix)
+                info.update(_get_info_mpich(prefix))
 
         if info is None:
             sys.stderr.write("ver_str = {}\n".format(ver_str))
@@ -315,7 +342,7 @@ class Manager(object):
 
         return name
 
-    def rm(self, name):
+    def rm(self, name, prompt=False):
         if name not in self:
             raise RuntimeError("No such MPI: '{}'".format(name))
 
@@ -327,7 +354,12 @@ class Manager(object):
             exit(-1)
 
         path = os.path.join(self._vers_dir, name)
-        os.remove(path)
+
+        if (not prompt) or yes_no_input("Remove '{}' ?".format(name)):
+            if info['symlink']:
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
 
     def rename(self, name_from, name_to):
         if name_from not in self:
