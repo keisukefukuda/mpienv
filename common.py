@@ -100,14 +100,12 @@ def _get_info_mpich(prefix):
     ver = m.group(1)
 
     if os.path.islink(prefix):
-        path = os.path.realpath(prefix)
-    else:
-        path = prefix
+        prefix = os.path.realpath(prefix)
 
     info['type'] = 'MPICH'
     info['active'] = is_active(prefix)
     info['version'] = ver
-    info['path'] = path
+    info['prefix'] = prefix
     info['configure'] = conf_list[0]
     info['conf_params'] = conf_list
     info['default_name'] = "mpich-{}".format(ver)
@@ -158,16 +156,13 @@ def _get_info_ompi(prefix):
     mpi_ver = ompi.get('mpi-api:version:full')
 
     if os.path.islink(prefix):
-        path = os.path.realpath(prefix)
-    else:
-        path = prefix
+        prefix = os.path.realpath(prefix)
 
     info['type'] = 'Open MPI'
     info['active'] = is_active(prefix)
     info['version'] = ver
     info['mpi_version'] = mpi_ver
     info['prefix'] = prefix
-    info['path'] = path
     info['configure'] = ""
     info['conf_params'] = []
     info['default_name'] = "openmpi-{}".format(ver)
@@ -369,11 +364,11 @@ class Manager(object):
             exit(-1)
 
         if info['type'] == 'MPICH':
-            self._use_mpich(info['path'])
+            self._use_mpich(info['prefix'])
         elif info['type'] == 'Open MPI':
-            self._use_openmpi(info['path'])
+            self._use_openmpi(info['prefix'])
         elif info['type'] == 'MVAPICH':
-            self._use_mvapich(info['path'])
+            self._use_mvapich(info['prefix'])
         else:
             raise RuntimeError('Internal Error: '
                                'unknown MPI type: "{}"'.format(info['type']))

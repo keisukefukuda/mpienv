@@ -72,6 +72,12 @@ function mpienv() {
                     python $root/bin/autodiscover.py $*
             }
             ;;
+        "prefix" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/prefix.py $*
+            }
+            ;;
         * )
             echo "mpienv [ERROR]: Unknown command '$command'"
             ;;
