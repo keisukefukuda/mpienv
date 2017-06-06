@@ -11,17 +11,20 @@ _list = {
     'openmpi-1.10.7': {
         'type': 'openmpi',
         'ver': '1.10.7',
-        'url': 'https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.7.tar.bz2',
+        'url': ('https://www.open-mpi.org/software/ompi/'
+                'v1.10/downloads/openmpi-1.10.7.tar.bz2'),
     },
     'openmpi-2.0.3': {
         'type': 'openmpi',
         'ver': '2.0.3',
-        'url': 'https://www.open-mpi.org/software/ompi/v2.0/downloads/openmpi-2.0.3.tar.bz2',
+        'url': ('https://www.open-mpi.org/software/ompi/'
+                'v2.0/downloads/openmpi-2.0.3.tar.bz2'),
     },
     'openmpi-2.1.1': {
         'type': 'openmpi',
         'ver': '2.1.1',
-        'url': 'https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.bz2',
+        'url': ('https://www.open-mpi.org/software/ompi/'
+                'v2.1/downloads/openmpi-2.1.1.tar.bz2'),
     },
 }
 
@@ -45,7 +48,7 @@ class BaseInstaller(object):
                            os.path.basename(self.url))
 
         self.dir_path = os.path.join(self.manager.build_dir(),
-                                     dir_bname)
+                                     '{}-{}'.format(dir_bname, name))
 
     def clean(self):
         if os.path.exists(self.dir_path):
@@ -75,11 +78,12 @@ class BaseInstaller(object):
             pass
 
         self.config_args[:-1] = ['--prefix',
-                                 os.path.join(self.manager.mpi_dir(), self.name)]
+                                 os.path.join(self.manager.mpi_dir(),
+                                              self.name)]
 
         if not os.path.exists(self.dir_path):
             check_call(['tar', '-xf', self.local_file],
-                        cwd=self.manager.build_dir())
+                       cwd=self.manager.build_dir())
 
         # run configure scripts
         print("./configure " + str(self.config_args))
@@ -124,7 +128,6 @@ def create_installer(manager, mpi, name, conf_args=[]):
         exit(-1)
 
     mpi_type = _list[mpi]['type']
-    mpi_ver = _list[mpi]['ver']
 
     if mpi_type == 'openmpi':
         return OmpiInstaller(manager, mpi, name, conf_args)
