@@ -36,6 +36,12 @@ function mpienv() {
                 fi
             }
             ;;
+        "install" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/install.py $*
+            }
+            ;;
         "add" )
             {
                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \

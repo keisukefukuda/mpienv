@@ -208,6 +208,10 @@ class Manager(object):
         self._root_dir = root_dir
         self._vers_dir = os.environ.get("MPIENV_VERSIONS_DIR",
                                         os.path.join(root_dir, 'versions'))
+        self._cache_dir = os.environ.get("MPIENV_CACHE_DIR",
+                                         os.path.join(root_dir, 'cache'))
+        self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
+                                         os.path.join(root_dir, 'builds'))
         self._load_info()
 
         if not os.path.exists(self._vers_dir):
@@ -215,6 +219,12 @@ class Manager(object):
 
     def root_dir(self):
         return self._root_dir
+
+    def build_dir(self):
+        return self._build_dir
+
+    def cache_dir(self):
+        return self._cache_dir
 
     def _load_info(self):
         # Get the current status of the MPI environment.
