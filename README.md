@@ -167,7 +167,7 @@ To run your MPI application, you need to specify a few options to the `mpiexsec`
       openmpi-1.6.5 -> /usr
     * openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
     
-    $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -n ${NP} --hostfile ${HOSTFILE} ./your.app
+    $ mpiexec $(mpienv prefix) -n ${NP} --hostfile ${HOSTFILE} ./your.app
     
     $ # If you use MPICH/MVAPICH
     $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app

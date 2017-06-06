@@ -139,6 +139,8 @@ class TestAutoDiscover(unittest.TestCase):
             self.assertTrue('mpiexec' in data)
             self.assertTrue('mpicc' in data)
             self.assertTrue('mpicxx' in data)
+            self.assertTrue('default_name' in data)
+            self.assertTrue('prefix' in data)
 
     def test_list_broken(self):
         out, err, ret = sh_session([
@@ -192,7 +194,7 @@ class TestUseMPI4Py(unittest.TestCase):
         mpis = ['mpich-3.2', 'openmpi-2.1.1']
         # mpis = [mpi for mpi in mpi_list if mpi.find("mvapich") == -1]
 
-        cmds = ["mpienv use --mpi4py {}; "
+        cmds = ["mpienv use --mpi4py {};"
                 "mpiexec -n 2 python -c '{}'".format(mpi, prog)
                 for mpi in mpis]
 
@@ -203,6 +205,7 @@ class TestUseMPI4Py(unittest.TestCase):
             ] + cmds, env={'PYTHONPATH': pp})
 
             self.assertEqual(0, ret)
+            print(out.strip())
             self.assertIsNotNone(re.match(r'^(01|10){2}$', out.strip()))
 
 
