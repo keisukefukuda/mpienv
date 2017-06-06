@@ -348,7 +348,6 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        # TODO(keisukefukuda): Remove mpi4py lib too
         path = os.path.join(self._mpi_dir, name)
         os.remove(path)
 
