@@ -5,7 +5,6 @@ import errno
 import glob
 import os
 import os.path
-import re
 from subprocess import check_call
 import sys
 
