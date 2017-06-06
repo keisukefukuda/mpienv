@@ -174,6 +174,7 @@ def _get_info_ompi(prefix):
     info['c'] = ompi.get('bindings:c')
     info['c++'] = ompi.get('bindings:cxx')
     info['fortran'] = ompi.get('bindings:mpif.h')
+    info['default_name'] = "openmpi-{}".format(ver)
 
     return info
 
