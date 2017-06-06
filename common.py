@@ -216,7 +216,7 @@ class Manager(object):
                 'broken': True,
             }
         else:
-            info = {'broken' : False}
+            info = {'broken': False}
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
