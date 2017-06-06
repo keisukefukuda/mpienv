@@ -226,6 +226,8 @@ class Manager(object):
         mkdir_p(self._vers_dir)
         mkdir_p(self._mpi_dir)
         mkdir_p(self._pylib_dir)
+        mkdir_p(self._cache_dir)
+        mkdir_p(self._build_dir)
 
         self._load_info()
 
