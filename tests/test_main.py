@@ -135,6 +135,7 @@ class TestAutoDiscover(unittest.TestCase):
             self.assertEqual(mpi_vers[mpi], data['version'])
 
             self.assertTrue('default_name' in data)
+            self.assertTrue('prefix' in data)
 
     def test_list_broken(self):
         out, err, ret = sh_session([
