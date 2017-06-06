@@ -27,8 +27,8 @@ except ImportError:
 
 
 def yes_no_input(msg):
-    if hasattr(__builtins__, 'raw_input'):
-        input = raw_input
+    if hasattr(__builtin__, 'raw_input'):
+        input = __builtin__.raw_input
     else:
         input = builtins.input
 
