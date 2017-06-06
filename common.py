@@ -215,15 +215,15 @@ class Manager(object):
                 'name': name,
                 'broken': True,
             }
+        else:
+            info = {'broken' : False}
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
         ver_str = decode(out + err)
 
-        info = None
-
         if re.search(r'OpenRTE', ver_str, re.MULTILINE):
-            info = _get_info_ompi(prefix)
+            info.update(_get_info_ompi(prefix))
 
         if re.search(r'HYDRA', ver_str, re.MULTILINE):
             # MPICH or MVAPICH
