@@ -21,16 +21,13 @@ def mkdir_p(path):
 
 
 class PyModule(object):
-    def __init__(self, libname, root_dir, name):
-        pybin = os.path.realpath(sys.executable)
-        pybin_enc = re.sub(r'[^a-zA-Z0-9.]', '_', re.sub('^/', '', pybin))
+    def __init__(self, libname, manager, name):
+        self._manager = manager
 
         self._libname = libname
-        self._root_dir = os.path.abspath(root_dir)
-        self._pylib_dir = os.path.abspath(os.path.join(self._root_dir,
-                                                       'pylib',
-                                                       pybin_enc,
-                                                       name))
+        self._root_dir = manager.root_dir()
+        self._mpi_dir = manager.mpi_dir()
+        self._pylib_dir = os.path.join(manager.pylib_dir(), name)
         self._name = name
 
         if not os.path.exists(self._pylib_dir):
@@ -41,8 +38,8 @@ class PyModule(object):
         return len(libs) > 0
 
     def install(self):
-        PATH = os.path.join(self._root_dir, 'versions', self._name, 'bin')
-        LD = os.path.join(self._root_dir, 'versions', self._name, 'lib')
+        PATH = os.path.join(self._mpi_dir, 'bin')
+        LD = os.path.join(self._mpi_dir, 'lib')
 
         env = os.environ.copy()
         env['PATH'] = "{}:{}".format(PATH, env['PATH'])
@@ -74,5 +71,5 @@ class PyModule(object):
 
 
 class MPI4Py(PyModule):
-    def __init__(self, root_dir, name):
-        super(MPI4Py, self).__init__('mpi4py', root_dir, name)
+    def __init__(self, mgr, name):
+        super(MPI4Py, self).__init__('mpi4py', mgr, name)

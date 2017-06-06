@@ -50,6 +50,10 @@ def which(cmd):
     return exe
 
 
+def is_broken_symlink(path):
+    return os.path.islink(path) and not os.path.exists(path)
+
+
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
 
@@ -174,23 +178,40 @@ def _get_info_ompi(prefix):
     return info
 
 
+def mkdir_p(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 class Manager(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
-        self._vers_dir = os.environ.get("MPIENV_VERSIONS_DIR",
-                                        os.path.join(root_dir, 'versions'))
+        self._vers_dir = os.path.join(os.environ.get("MPIENV_VERSIONS_DIR") or
+                                      os.path.join(root_dir, 'versions'))
+        pybin = os.path.realpath(sys.executable)
+        pybin_enc = re.sub(r'[^a-zA-Z0-9.]', '_', re.sub('^/', '', pybin))
+
+        self._mpi_dir = os.path.join(self._vers_dir, 'mpi')
+        self._pylib_dir = os.path.join(self._vers_dir, 'pylib', pybin_enc)
         self._load_info()
 
-        if not os.path.exists(self._vers_dir):
-            os.mkdir(self._vers_dir)
+        mkdir_p(self._vers_dir)
+        mkdir_p(self._mpi_dir)
+        mkdir_p(self._pylib_dir)
 
     def root_dir(self):
         return self._root_dir
 
+    def mpi_dir(self):
+        return self._mpi_dir
+
+    def pylib_dir(self):
+        return self._pylib_dir
+
     def _load_info(self):
         # Get the current status of the MPI environment.
         self._installed = {}
-        for prefix in glob.glob(os.path.join(self._vers_dir, '*')):
+        for prefix in glob.glob(os.path.join(self._mpi_dir, '*')):
             name = os.path.split(prefix)[-1]
             info = self.get_info(prefix)
             info['name'] = name
@@ -198,12 +219,11 @@ class Manager(object):
 
     def get_info(self, name):
         """Obtain information of the MPI installed under prefix."""
-
-        prefix = os.path.join(self._vers_dir, name)
+        prefix = os.path.join(self._mpi_dir, name)
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
-        if not os.path.exists(mpiexec):
+        if is_broken_symlink(prefix):
             # This means the symlink under versions/ directory
             # is broken.
             # (The installed MPI has been removed after registration)
@@ -211,6 +231,8 @@ class Manager(object):
                 'name': name,
                 'broken': True,
             }
+        elif not os.path.exists(mpiexec):
+            return None
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
@@ -263,7 +285,7 @@ class Manager(object):
 
     def mpiexec(self, name):
         return os.path.realpath(os.path.join(
-            self._vers_dir, name, 'bin', 'mpiexec'))
+            self._mpi_dir, name, 'bin', 'mpiexec'))
 
     def is_installed(self, path):
         # Find mpiexec in the path or something and check if it is already
@@ -286,14 +308,18 @@ class Manager(object):
         return next(name for name, info in self.items() if info['active'])
 
     def add(self, prefix, name=None):
+        info = self.get_info(prefix)
+
+        if info is None:
+            sys.stderr.write("Cannot find MPI in {}\n".format(prefix))
+            exit(-1)
+
         n = self.is_installed(prefix)
         if n is not None:
             raise RuntimeError("{} is already managed "
                                "as '{}'".format(prefix, n))
 
-        info = self.get_info(prefix)
-
-        if name is not None:
+        if self._installed.get(name) is not None:
             raise RuntimeError("Specifed name '{}' is "
                                "already taken".format(name))
         else:
@@ -304,7 +330,7 @@ class Manager(object):
                                    "already used.".format(prefix, name))
 
         # dst -> src
-        dst = os.path.join(self._vers_dir, name)
+        dst = os.path.join(self._mpi_dir, name)
         src = prefix
 
         os.symlink(src, dst)
@@ -322,7 +348,8 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        path = os.path.join(self._vers_dir, name)
+        # TODO(keisukefukuda): Remove mpi4py lib too
+        path = os.path.join(self._mpi_dir, name)
         os.remove(path)
 
     def rename(self, name_from, name_to):
@@ -332,8 +359,8 @@ class Manager(object):
         if name_to in self:
             raise RuntimeError("Name '{}' already exists".format(name_to))
 
-        path_from = os.path.join(self._vers_dir, name_from)
-        path_to = os.path.join(self._vers_dir, name_to)
+        path_from = os.path.join(self._mpi_dir, name_from)
+        path_to = os.path.join(self._mpi_dir, name_to)
 
         shutil.move(path_from, path_to)
 
@@ -374,7 +401,7 @@ class Manager(object):
                                'unknown MPI type: "{}"'.format(info['type']))
 
         if mpi4py:
-            mpi4py = MPI4Py(self._root_dir, name)
+            mpi4py = MPI4Py(self, name)
             if not mpi4py.is_installed():
                 mpi4py.install()
             mpi4py.use()
