@@ -30,11 +30,10 @@ _list = {
 
 
 class BaseInstaller(object):
-    def __init__(self, manager, mpi, name, config_args):
+    def __init__(self, manager, mpi, name, verbose=False):
         self.mpi = mpi
         self.manager = manager
         self.name = name
-        self.config_args = config_args
 
         self.url = _list[mpi]['url']
 
@@ -47,8 +46,12 @@ class BaseInstaller(object):
                            '',
                            os.path.basename(self.url))
 
-        self.dir_path = os.path.join(self.manager.build_dir(),
-                                     '{}-{}'.format(dir_bname, name))
+        self.ext_path = os.path.join(self.manager.build_dir(),
+                                     name)
+        self.dir_path = os.path.join(self.ext_path,
+                                     dir_bname)
+        if not os.path.exists(self.dir_path):
+            os.makedirs(self.dir_path)
 
     def clean(self):
         if os.path.exists(self.dir_path):
@@ -60,35 +63,34 @@ class BaseInstaller(object):
             with open(self.local_file, 'w') as f:
                 check_call(['curl', self.url], stdout=f)
 
-    def configure(self):
+    def configure(self, conf_args):
         self.download()
+        self.clean()
 
         try:
-            idx = self.config_args.index('--prefix')
+            idx = conf_args.index('--prefix')
             if idx >= 0:
                 sys.stderr.write("Warning: --prefix argument is "
                                  "replaced by mpienv\n")
                 # remove --prefix xxxx
                 try:
-                    del(self.config_args[idx + 1])
+                    del(conf_args[idx + 1])
                 except IndexError:
                     pass
-                del(self.config_args[idx])
+                del(conf_args[idx])
         except ValueError:
             pass
 
-        self.config_args[:-1] = ['--prefix',
-                                 os.path.join(self.manager.mpi_dir(),
-                                              self.name)]
+        conf_args[:-1] = ['--prefix',
+                          os.path.join(self.manager.mpi_dir(),
+                                       self.name)]
 
         if not os.path.exists(self.dir_path):
             check_call(['tar', '-xf', self.local_file],
-                       cwd=self.manager.build_dir())
+                       cwd=self.ext_path)
 
         # run configure scripts
-        print("./configure " + str(self.config_args))
-        return
-        check_call(['./configure', *self.config_args],
+        check_call(['./configure', *conf_args],
                    shell=True, cwd=self.dir_path)
 
     def build(self):
@@ -102,18 +104,18 @@ class BaseInstaller(object):
 
 
 class OmpiInstaller(BaseInstaller):
-    def __init__(self, *args):
-        BaseInstaller.__init__(self, *args)
+    def __init__(self, *args, verbose=False):
+        BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
 class MpichInstaller(BaseInstaller):
-    def __init__(self, *args):
-        BaseInstaller.__init__(self, *args)
+    def __init__(self, *args, verbose=False):
+        BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
 class MvapichInstaller(BaseInstaller):
-    def __init__(self, *args):
-        BaseInstaller.__init__(self, *args)
+    def __init__(self, *args, verbose=False):
+        BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
 def list_avail():
@@ -121,7 +123,7 @@ def list_avail():
         print(k)
 
 
-def create_installer(manager, mpi, name, conf_args=[]):
+def create_installer(manager, mpi, name, verbose):
 
     if mpi not in _list.keys():
         sys.stderr.write("Error: Unknown MPI: '{}'\n".format(mpi))
@@ -130,10 +132,13 @@ def create_installer(manager, mpi, name, conf_args=[]):
     mpi_type = _list[mpi]['type']
 
     if mpi_type == 'openmpi':
-        return OmpiInstaller(manager, mpi, name, conf_args)
+        return OmpiInstaller(manager, mpi, name,
+                             verbose=verbose)
     elif mpi_type == 'mvapich':
-        return MvapichInstaller(manager, mpi, name, conf_args)
+        return MvapichInstaller(manager, mpi, name,
+                                verbose=verbose)
     elif mpi_type == 'mpich':
-        return MpichInstaller(manager, mpi, name, conf_args)
+        return MpichInstaller(manager, mpi, name,
+                              verbose=verbose)
 
     raise RuntimeError("")
