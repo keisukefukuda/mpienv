@@ -155,17 +155,17 @@ class BaseInstaller(object):
 
 
 class OmpiInstaller(BaseInstaller):
-    def __init__(self, *args, verbose=False):
+    def __init__(self, verbose=False, *args):
         BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
 class MpichInstaller(BaseInstaller):
-    def __init__(self, *args, verbose=False):
+    def __init__(self, verbose=False, *args):
         BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
 class MvapichInstaller(BaseInstaller):
-    def __init__(self, *args, verbose=False):
+    def __init__(self, verbose=False, *args):
         BaseInstaller.__init__(self, *args, verbose=verbose)
 
 
