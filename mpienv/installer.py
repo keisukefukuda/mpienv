@@ -7,24 +7,55 @@ import shutil
 from subprocess import check_call
 import sys
 
+_ompi_url = ('https://www.open-mpi.org/software/ompi/'
+             'v{}/downloads/openmpi-{}.tar.bz2')
+
+_mpich_url = ('http://www.mpich.org/static/'
+              'downloads/{}/mpich-{}.tar.gz')
+
+_mv_url = ('http://mvapich.cse.ohio-state.edu'
+           '/download/mvapich/mv2/mvapich2-{}.tar.gz')
+
 _list = {
     'openmpi-1.10.7': {
         'type': 'openmpi',
         'ver': '1.10.7',
-        'url': ('https://www.open-mpi.org/software/ompi/'
-                'v1.10/downloads/openmpi-1.10.7.tar.bz2'),
+        'url': _ompi_url.format('1.10', '1.10.7'),
     },
     'openmpi-2.0.3': {
         'type': 'openmpi',
         'ver': '2.0.3',
-        'url': ('https://www.open-mpi.org/software/ompi/'
-                'v2.0/downloads/openmpi-2.0.3.tar.bz2'),
+        'url': _ompi_url.format('2.0', '2.0.3'),
     },
     'openmpi-2.1.1': {
         'type': 'openmpi',
         'ver': '2.1.1',
-        'url': ('https://www.open-mpi.org/software/ompi/'
-                'v2.1/downloads/openmpi-2.1.1.tar.bz2'),
+        'url': _ompi_url.format('2.1', '2.1.1'),
+    },
+    'mpich-3.1.4': {
+        'type': 'mpich',
+        'ver': '3.1.4',
+        'url': _mpich_url.format('3.1.4', '3.1.4'),
+    },
+    'mpich-3.2': {
+        'type': 'mpich',
+        'ver': '3.2',
+        'url': _mpich_url.format('3.2', '3.2'),
+    },
+    'mpich-3.3a': {
+        'type': 'mpich',
+        'ver': '3.3a',
+        'url': _mpich_url.format('3.3a', '3.3a'),
+    },
+    'mvapich-2.2': {
+        'type': 'mvapich',
+        'ver': '2.2',
+        'url': _mv_url.format('2.2'),
+    },
+    'mvapich-2.3a': {
+        'type': 'mvapich',
+        'ver': '2.3a',
+        'url': _mv_url.format('2.3a'),
     },
 }
 
@@ -139,11 +170,15 @@ class MvapichInstaller(BaseInstaller):
 
 
 def list_avail():
-    for k in _list:
-        print(k)
+    for k in sorted(_list):
+        print(' ' + k)
 
 
 def create_installer(manager, mpi, name, verbose):
+    if name in manager:
+        sys.stderr.write("Error: MPI name "
+                         "'{}' already exists.\n".format(name))
+        exit(-1)
 
     if mpi not in _list.keys():
         sys.stderr.write("Error: Unknown MPI: '{}'\n".format(mpi))

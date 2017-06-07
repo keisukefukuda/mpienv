@@ -1,9 +1,11 @@
 # coding: utf-8
 
 import argparse
+import sys
 
 from common import manager
 from mpienv.installer import create_installer
+from mpienv.installer import list_avail
 
 
 def main():
@@ -18,6 +20,13 @@ def main():
                         help="Number of parallel make jobs")
     parser.add_argument('mpi', type=str, metavar="[MPI]",
                         help='MPI name')
+
+    try:
+        if sys.argv[1:].index('--list') >= 0:
+            list_avail()
+            exit(0)
+    except ValueError:
+        pass
 
     args = parser.parse_args()
 
