@@ -50,8 +50,11 @@ class BaseInstaller(object):
                                      name)
         self.dir_path = os.path.join(self.ext_path,
                                      dir_bname)
-        if not os.path.exists(self.dir_path):
-            os.makedirs(self.dir_path)
+
+        self.prefix = os.path.join(manager.mpi_dir(), name)
+
+        if not os.path.exists(self.ext_path):
+            os.makedirs(self.ext_path)
 
     def clean(self):
         if os.path.exists(self.dir_path):
@@ -65,8 +68,13 @@ class BaseInstaller(object):
 
     def configure(self, conf_args):
         self.download()
-        self.clean()
 
+        # Extract the archive files
+        if not os.path.exists(self.dir_path):
+            check_call(['tar', '-xf', self.local_file],
+                       cwd=self.ext_path)
+
+        # fix the configure argument
         try:
             idx = conf_args.index('--prefix')
             if idx >= 0:
@@ -74,33 +82,45 @@ class BaseInstaller(object):
                                  "replaced by mpienv\n")
                 # remove --prefix xxxx
                 try:
-                    del(conf_args[idx + 1])
+                    conf_args[idx:idx + 2] = []
                 except IndexError:
                     pass
-                del(conf_args[idx])
         except ValueError:
+            # If --prefix is not found
             pass
 
-        conf_args[:-1] = ['--prefix',
-                          os.path.join(self.manager.mpi_dir(),
-                                       self.name)]
+        # Check args = --help, or insert our --prefix argument
+        try:
+            idx = conf_args.index('--help')
+            if idx >= 0:
+                conf_args = ['--help']
+        except ValueError:
+            # if --help is not found
+            conf_args[:-1] = ['--prefix', self.prefix]
 
-        if not os.path.exists(self.dir_path):
-            check_call(['tar', '-xf', self.local_file],
-                       cwd=self.ext_path)
+        print(' '.join(['./configure', *conf_args]))
 
         # run configure scripts
+        assert(os.path.exists(self.dir_path))
         check_call(['./configure', *conf_args],
-                   shell=True, cwd=self.dir_path)
+                   cwd=self.dir_path)
 
-    def build(self):
+    def build(self, npar=1):
+        config_log = os.path.join(self.dir_path, 'config.log')
+        if not os.path.exists(config_log):
+            self.configure([])
+
         # run configure scripts
-        check_call(['make'],
+        check_call(['make', '-j', str(npar)],
                    shell=True, cwd=self.dir_path)
 
-    def install(self):
-        check_call(['make', 'install'],
-                   shell=True, cwd=self.dir_path)
+    def install(self, npar=1):
+        config_log = os.path.join(self.dir_path, 'config.log')
+        if not os.path.exists(config_log):
+            self.configure([])
+
+        check_call(['make', 'install', '-j', str(npar)],
+                   cwd=self.dir_path)
 
 
 class OmpiInstaller(BaseInstaller):
