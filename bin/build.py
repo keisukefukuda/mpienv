@@ -1,11 +1,9 @@
 # coding: utf-8
 
 import argparse
-import sys
 
 from common import manager
 from mpienv.installer import create_installer
-from mpienv.installer import list_avail
 
 
 def main():
