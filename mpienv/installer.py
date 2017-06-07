@@ -61,7 +61,7 @@ _list = {
 
 
 class BaseInstaller(object):
-    def __init__(self, manager, mpi, name, verbose=False):
+    def __init__(self, manager, mpi, name, verbose):
         self.mpi = mpi
         self.manager = manager
         self.name = name
@@ -155,18 +155,18 @@ class BaseInstaller(object):
 
 
 class OmpiInstaller(BaseInstaller):
-    def __init__(self, verbose=False, *args):
-        BaseInstaller.__init__(self, *args, verbose=verbose)
+    def __init__(self, *args):
+        BaseInstaller.__init__(self, *args)
 
 
 class MpichInstaller(BaseInstaller):
-    def __init__(self, verbose=False, *args):
-        BaseInstaller.__init__(self, *args, verbose=verbose)
+    def __init__(self, *args):
+        BaseInstaller.__init__(self, *args)
 
 
 class MvapichInstaller(BaseInstaller):
-    def __init__(self, verbose=False, *args):
-        BaseInstaller.__init__(self, *args, verbose=verbose)
+    def __init__(self, *args):
+        BaseInstaller.__init__(self, *args)
 
 
 def list_avail():
@@ -187,13 +187,10 @@ def create_installer(manager, mpi, name, verbose):
     mpi_type = _list[mpi]['type']
 
     if mpi_type == 'openmpi':
-        return OmpiInstaller(manager, mpi, name,
-                             verbose=verbose)
+        return OmpiInstaller(manager, mpi, name, verbose)
     elif mpi_type == 'mvapich':
-        return MvapichInstaller(manager, mpi, name,
-                                verbose=verbose)
+        return MvapichInstaller(manager, mpi, name, verbose)
     elif mpi_type == 'mpich':
-        return MpichInstaller(manager, mpi, name,
-                              verbose=verbose)
+        return MpichInstaller(manager, mpi, name, verbose)
 
     raise RuntimeError("")
