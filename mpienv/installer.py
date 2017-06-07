@@ -98,11 +98,11 @@ class BaseInstaller(object):
             # if --help is not found
             conf_args[:-1] = ['--prefix', self.prefix]
 
-        print(' '.join(['./configure', *conf_args]))
+        print(' '.join(['./configure'] + conf_args))
 
         # run configure scripts
         assert(os.path.exists(self.dir_path))
-        check_call(['./configure', *conf_args],
+        check_call(['./configure'] + conf_args,
                    cwd=self.dir_path)
 
     def build(self, npar=1):
