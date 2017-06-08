@@ -106,7 +106,7 @@ class BaseInstaller(object):
                        cwd=self.ext_path)
 
         opts = os.environ.get("MPIENV_CONFIGURE_OPTS")
-        if opts
+        if opts:
             conf_args = opts.split()
         else:
             conf_args = []
