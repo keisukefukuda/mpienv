@@ -10,14 +10,25 @@ echo "proj_dir=$proj_dir"
 cd ${test_dir}
 
 if [ ! -d "${test_dir}/shunit2" ] ; then
-    git clone https://github.com/kward/shunit2.git
+    git clone https://github.com/kward/shunit2.git ${test_dir}/shunit2
 fi
 
+TMPDIR=""
+
+oneTimeSetUp() {
+    TMPDIR=$(mktemp -d)
+}
+
+oneTimeTearDown() {
+    rm -rf $TMPDIR
+}
+
+. ${proj_dir}/init
+
+mpienv build mpich-3.2 --disable-fortran
 
 test_empty_list() {
-    TMPDIR=$(mktemp -d)
-    
-    rm -rf ${TMPDIR}
+    assertEquals 1 1
 }
 
 #-----------------------------------------------------------
