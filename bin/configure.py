@@ -16,15 +16,13 @@ def main():
                         help='Verbose')
     parser.add_argument('mpi', type=str, metavar="[MPI]",
                         help='MPI name', default=None)
-    parser.add_argument('conf_args', nargs=argparse.REMAINDER,
-                        default=[])
 
     args = parser.parse_args()
 
     inst = create_installer(manager, args.mpi, args.name,
                             verbose=args.verbose)
 
-    inst.configure(args.conf_args)
+    inst.configure()
 
 
 if __name__ == "__main__":

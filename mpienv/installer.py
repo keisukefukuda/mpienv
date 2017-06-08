@@ -97,13 +97,19 @@ class BaseInstaller(object):
             with open(self.local_file, 'w') as f:
                 check_call(['curl', self.url], stdout=f)
 
-    def configure(self, conf_args):
+    def configure(self):
         self.download()
 
         # Extract the archive files
         if not os.path.exists(self.dir_path):
             check_call(['tar', '-xf', self.local_file],
                        cwd=self.ext_path)
+
+        opts = os.environ.get("MPIENV_CONFIGURE_OPTS")
+        if opts
+            conf_args = opts.split()
+        else:
+            conf_args = []
 
         # fix the configure argument
         try:
@@ -139,7 +145,7 @@ class BaseInstaller(object):
     def build(self, npar=1):
         config_log = os.path.join(self.dir_path, 'config.log')
         if not os.path.exists(config_log):
-            self.configure([])
+            self.configure()
 
         # run configure scripts
         check_call(['make', '-j', str(npar)],
@@ -148,7 +154,7 @@ class BaseInstaller(object):
     def install(self, npar=1):
         config_log = os.path.join(self.dir_path, 'config.log')
         if not os.path.exists(config_log):
-            self.configure([])
+            self.configure()
 
         check_call(['make', 'install', '-j', str(npar)],
                    cwd=self.dir_path)

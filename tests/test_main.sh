@@ -25,8 +25,11 @@ oneTimeTearDown() {
 
 . ${proj_dir}/init
 
-mpienv build mpich-3.2
+#-----------------------------------------------------------
+env MPIENV_CONFIGURE_OPTS="--disable-fortram" \
+    mpienv build mpich-3.2
 
+#-----------------------------------------------------------
 test_empty_list() {
     assertEquals 1 1
 }
