@@ -17,7 +17,7 @@ def _print_info(info, max_label_len):
         print(" {} {:<{width}} -> {}".format(
             "*" if info['active'] else " ",
             info['name'],
-            info['path'],
+            info['prefix'],
             width=max_label_len))
 
 
