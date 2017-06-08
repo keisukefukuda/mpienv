@@ -28,6 +28,7 @@ oneTimeTearDown() {
 #-----------------------------------------------------------
 export MPIENV_CONFIGURE_OPTS="--disable-fortran"
 mpienv build mpich-3.2
+mpienv build openmpi-2.1.1
 
 #-----------------------------------------------------------
 test_empty_list() {
