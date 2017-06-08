@@ -184,6 +184,9 @@ def create_installer(manager, mpi, name, verbose):
         sys.stderr.write("Error: Unknown MPI: '{}'\n".format(mpi))
         exit(-1)
 
+    if name is None:
+        name = mpi
+
     mpi_type = _list[mpi]['type']
 
     if mpi_type == 'openmpi':

@@ -34,8 +34,8 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
 
-before_script:
-  - sh ./.travis_install.sh
+#before_script:
+#  - sh ./.travis_install.sh
 
 install:
   - pip install -r requirements.txt
