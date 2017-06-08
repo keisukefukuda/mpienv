@@ -25,7 +25,7 @@ oneTimeTearDown() {
 
 . ${proj_dir}/init
 
-mpienv build mpich-3.2 --disable-fortran
+mpienv build mpich-3.2
 
 test_empty_list() {
     assertEquals 1 1
