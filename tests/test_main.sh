@@ -26,7 +26,7 @@ oneTimeTearDown() {
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
-export MPIENV_CONFIGURE_OPTS="--disable-fortram" 
+export MPIENV_CONFIGURE_OPTS="--disable-fortran"
 mpienv build mpich-3.2
 
 #-----------------------------------------------------------
