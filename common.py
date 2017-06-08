@@ -20,6 +20,31 @@ except ImportError:
     import os
     DEVNULL = open(os.devnull, 'wb')
 
+try:
+    import __builtin__
+except ImportError:
+    import builtins
+
+
+def yes_no_input(msg):
+    if hasattr(__builtin__, 'raw_input'):
+        input = __builtin__.raw_input
+    else:
+        input = builtins.input
+
+    try:
+        choice = input("{} [y/N]: ".format(msg)).lower()
+        while True:
+            if choice in ['y', 'ye', 'yes']:
+                return True
+            elif choice in ['n', 'no']:
+                return False
+            else:
+                choice = input(
+                    "Please respond with 'yes' or 'no' [y/N]: ").lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+
 
 class BrokenSymlinkError(Exception):
     def __init__(self, message, path):
@@ -193,14 +218,27 @@ class Manager(object):
 
         self._mpi_dir = os.path.join(self._vers_dir, 'mpi')
         self._pylib_dir = os.path.join(self._vers_dir, 'pylib', pybin_enc)
-        self._load_info()
+        self._cache_dir = os.environ.get("MPIENV_CACHE_DIR",
+                                         os.path.join(root_dir, 'cache'))
+        self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
+                                         os.path.join(root_dir, 'builds'))
 
         mkdir_p(self._vers_dir)
         mkdir_p(self._mpi_dir)
         mkdir_p(self._pylib_dir)
+        mkdir_p(self._cache_dir)
+        mkdir_p(self._build_dir)
+
+        self._load_info()
 
     def root_dir(self):
         return self._root_dir
+
+    def build_dir(self):
+        return self._build_dir
+
+    def cache_dir(self):
+        return self._cache_dir
 
     def mpi_dir(self):
         return self._mpi_dir
@@ -223,6 +261,8 @@ class Manager(object):
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
+        info = {}
+
         if is_broken_symlink(prefix):
             # This means the symlink under versions/ directory
             # is broken.
@@ -232,16 +272,20 @@ class Manager(object):
                 'broken': True,
             }
         elif not os.path.exists(mpiexec):
+            # If `name` does not exist
             return None
+        else:
+            # If `name` exists (would be the most cases)
+            info['broken'] = False
+
+        info['symlink'] = os.path.islink(prefix)
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
         ver_str = decode(out + err)
 
-        info = None
-
         if re.search(r'OpenRTE', ver_str, re.MULTILINE):
-            info = _get_info_ompi(prefix)
+            info.update(_get_info_ompi(prefix))
 
         if re.search(r'HYDRA', ver_str, re.MULTILINE):
             # MPICH or MVAPICH
@@ -253,14 +297,14 @@ class Manager(object):
                        stderr=DEVNULL)
             if ret == 0:
                 # MVAPICH
-                info = _get_info_mvapich(prefix)
+                info.update(_get_info_mvapich(prefix))
             else:
                 # MPICH
                 # on some platform, sometimes only runtime
                 # is installed and developemnt kit (i.e. compilers)
                 # are not installed.
                 # In this case, we assume it's mpich.
-                info = _get_info_mpich(prefix)
+                info.update(_get_info_mpich(prefix))
 
         if info is None:
             sys.stderr.write("ver_str = {}\n".format(ver_str))
@@ -337,7 +381,7 @@ class Manager(object):
 
         return name
 
-    def rm(self, name):
+    def rm(self, name, prompt=False):
         if name not in self:
             raise RuntimeError("No such MPI: '{}'".format(name))
 
@@ -349,7 +393,12 @@ class Manager(object):
             exit(-1)
 
         path = os.path.join(self._mpi_dir, name)
-        os.remove(path)
+
+        if (not prompt) or yes_no_input("Remove '{}' ?".format(name)):
+            if info['symlink']:
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
 
     def rename(self, name_from, name_to):
         if name_from not in self:

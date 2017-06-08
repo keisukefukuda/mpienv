@@ -134,6 +134,11 @@ class TestAutoDiscover(unittest.TestCase):
             self.assertEqual(mpi, data['name'])
             self.assertEqual(mpi_vers[mpi], data['version'])
 
+            self.assertTrue('broken' in data)
+            self.assertTrue('symlink' in data)
+            self.assertTrue('mpiexec' in data)
+            self.assertTrue('mpicc' in data)
+            self.assertTrue('mpicxx' in data)
             self.assertTrue('default_name' in data)
             self.assertTrue('prefix' in data)
 
