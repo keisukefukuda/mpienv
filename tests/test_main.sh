@@ -56,7 +56,9 @@ test_empty_list() {
     assertEquals 0 $LEN
 }
 
-test_install() {
+test_1mpi() {
+    # Test installing a single MPI,
+    # and several operations on it.
     mpienv install mpich-3.2 >/dev/null 2>&1
 
     mpienv list | grep -qE 'mpich-3.2'
@@ -64,6 +66,64 @@ test_install() {
 
     mpienv list | grep -qE 'openmpi'
     assertEquals 1 $?
+
+    # Test json output
+    mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
+    assertEquals 0 $?
+
+    # Test rename
+    # rename mpich-3.2 -> my-cool-mpi
+    mpienv rename mpich-3.2 my-cool-mpi
+    mpienv list | grep -qE 'my-cool-mpi'
+    assertTrue $?
+
+    mpienv list | grep -qE 'mpich-3.2'
+    assertFalse $?
+
+    # Rename back to mpich-3.2
+    mpienv rename my-cool-mpi mpich-3.2
+    mpienv list | grep -qE 'mpich-3.2'
+    assertTrue $?
+
+    # Remove mpich-3.2
+    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+    mpienv use openmpi-2.1.1
+    mpienv rm mpich-3.2
+    assertTrue $?
+
+    mpienv list | grep -q mpich-3.2
+    assertFalse $?
+}
+
+test_2mpis() {
+    mpienv install mpich-3.2 >/dev/null 2>&1
+    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+
+    mpienv list | grep -qE 'mpich-3.2'
+    assertTrue $?
+
+    mpienv list | grep -qE 'openmpi-2.1.1'
+    assertTrue $?
+}
+
+get_key() {
+    key=$1
+    python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
+}
+
+test_info() {
+    mpienv install mpich-3.2 >/dev/null 2>&1
+    mpienv use mpich-3.2
+
+    mpienv info mpich-3.2 --json >a.json
+    mpienv info --json >b.json
+
+    diff -q a.json b.json >/dev/null
+    assertTrue $?
+
+    rm -f a.json b.json
+
+    assertEquals "False" "$(mpienv info --json | get_key "broken")"
 }
 
 #-----------------------------------------------------------
