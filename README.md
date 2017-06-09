@@ -123,7 +123,7 @@ Report bugs to http://www.open-mpi.org/community/help/
 
 ```
 
-You can switch the active MPI by
+You can switch the active MPI using `use` command.
 
 ```bash
 $ mpienv use mpich-3.2
@@ -153,7 +153,7 @@ HYDRA build details:
     Demux engines available:                 poll select
 ```
 
-Now the specified "mpich-3.2" is active. 
+"mpich-3.2" is now active. 
 
 ## Running MPI applications
 To run your MPI application, you need to specify a few options to the `mpiexsec` command.
@@ -168,16 +168,21 @@ Installed MPIs:
   openmpi-1.6.5 -> /usr
 * openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
 
-$ mpiexec $(mpienv prefix) -n ${NP} --hostfile ${HOSTFILE} ./your.app
-
-$ # If you use MPICH/MVAPICH
-$ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+$ mpiexec --prefix $(mpienv prefix) -n ${NP} --hostfile ${HOSTFILE} ./your.app
 ```
 
-`mpienv` will provide a sophisiticated way to invoke `mpiexec`,
-but as of now you need to do the ugly way to run applications.
+```bash
+$ # If you use MPICH/MVAPICH
+$ mpienv list
 
+Installed MPIs:
 
+* mvapich2-2.2  -> /usr/local
+  openmpi-1.6.5 -> /usr
+  openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
+
+$ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+```
 
 ## Using Python together
 
@@ -222,10 +227,10 @@ OK, now your `mpi4py` is properly set up. To run Python script on multiple nodes
 you need to pass an additional environment variable: `PYTHONPATH`.
 
 ````
-$ # If you use Open MPI
+$ # Open MPI
 $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --hostfile ${HOSTFILE} ./your.app
 
-$ # If you use MPICH/MVAPICH
+$ # MPICH/MVAPICH
 $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
 ```
 
