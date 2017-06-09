@@ -16,7 +16,7 @@ def main():
     parser.add_argument('-v', '--verbose', dest='verbose',
                         default=False, action='store_true',
                         help='Verbose')
-    parser.add_argument('-j', type=int, default=1, dest='npar',
+    parser.add_argument('-j', type=int, default=2, dest='npar',
                         help="Number of parallel make jobs")
     parser.add_argument('mpi', type=str, metavar="[MPI]",
                         help='MPI name')
@@ -33,7 +33,7 @@ def main():
     inst = create_installer(manager, args.mpi, args.name,
                             verbose=args.verbose)
 
-    inst.build(npar=args.npar)
+    inst.install(npar=args.npar)
 
 
 if __name__ == "__main__":

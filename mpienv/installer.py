@@ -100,6 +100,7 @@ class BaseInstaller(object):
     def configure(self):
         self.download()
 
+        print("ext_path={}".format(self.ext_path))
         # Extract the archive files
         if not os.path.exists(self.dir_path):
             check_call(['tar', '-xf', self.local_file],
@@ -133,7 +134,7 @@ class BaseInstaller(object):
                 conf_args = ['--help']
         except ValueError:
             # if --help is not found
-            conf_args[:-1] = ['--prefix', self.prefix]
+            conf_args += ['--prefix', self.prefix]
 
         print(' '.join(['./configure'] + conf_args))
 
@@ -143,19 +144,21 @@ class BaseInstaller(object):
                    cwd=self.dir_path)
 
     def build(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'config.log')
+        config_log = os.path.join(self.dir_path, 'Makefile')
         if not os.path.exists(config_log):
             self.configure()
 
-        # run configure scripts
+        # run make
+        print(' '.join(['make', '-j', str(npar)]))
         check_call(['make', '-j', str(npar)],
                    shell=True, cwd=self.dir_path)
 
     def install(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'config.log')
+        config_log = os.path.join(self.dir_path, 'Makefile')
         if not os.path.exists(config_log):
             self.configure()
 
+        print(' '.join(['make', 'install', '-j', str(npar)]))
         check_call(['make', 'install', '-j', str(npar)],
                    cwd=self.dir_path)
 
