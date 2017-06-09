@@ -202,7 +202,7 @@ every time you swtich to another MPI.
 
 `mpienv` supports this use case.
 
-```
+```bash
 $ mpienv use --mpi4py openmpi-2.1.1
 ```
 
@@ -210,7 +210,7 @@ This command installs an `mpi4py` instance on a specific location
 using `pip`'s `-t` option, and set `PYTHONPATH` environment variable
 to activate it.
 
-```
+```bash
 # Now openmpi-2.1.1 is active
 $ mpienv use mpich-3.2
 $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
@@ -226,7 +226,7 @@ $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank(
 OK, now your `mpi4py` is properly set up. To run Python script on multiple nodes,
 you need to pass an additional environment variable: `PYTHONPATH`.
 
-````
+```bash
 $ # Open MPI
 $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --hostfile ${HOSTFILE} ./your.app
 
