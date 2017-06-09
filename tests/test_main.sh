@@ -13,8 +13,15 @@ if [ ! -d "${test_dir}/shunit2" ] ; then
     git clone https://github.com/kward/shunit2.git ${test_dir}/shunit2
 fi
 
-export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test/
+export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
+
+export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
+echo MPIENV_BUILD_DIR=${HOME}/.mpienv-build
+
+export MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
+echo MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
+
 
 oneTimeSetUp() {
     rm -rf ${MPIENV_VERSIONS_DIR}
@@ -29,9 +36,6 @@ oneTimeTearDown() {
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
-MPIENV_BUILD_DIR=${MPIENV_BUILD_DIR:-$proj_dir/build}
-echo MPIENV_BUILD_DIR=${MPIENV_BUILD_DIR}
-
 export MPIENV_CONFIGURE_OPTS="--disable-fortran"
 if [ ! -f "${MPIENV_BUILD_DIR}/mpich-3.2/src/pm/hydra/mpiexec.hydra" ]; then
     echo "Building mpich-3.2"

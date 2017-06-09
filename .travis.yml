@@ -24,6 +24,9 @@ cache:
   - directories:
       - $HOME/mpi
       - $HOME/zsh
+      - $HOME/.mpienv-test
+      - $HOME/.mpienv-build
+      - $HOME/.mpienv-cache
 
 addons:
   apt:
