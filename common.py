@@ -176,6 +176,8 @@ def _get_info_ompi(prefix):
     info['fortran'] = ompi.get('bindings:mpif.h')
     info['default_name'] = "openmpi-{}".format(ver)
 
+    info['cuda'] = ompi.get('mca:opal:base:param:opal_built_with_cuda_support')
+
     return info
 
 
