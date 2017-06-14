@@ -24,13 +24,13 @@ $ . ~/.mpienv/init
 
 If you downloaded `mpienv` to a different location, just replace the path.
 
-```
+```bash
 $ . ${YOUR_MPIENV_DIRECTORY}/init
 ```
 
 OK, let's see what `mpienv` does.
 
-```
+```bash
 $ mpienv list
 
 # no output
@@ -123,7 +123,7 @@ Report bugs to http://www.open-mpi.org/community/help/
 
 ```
 
-You can switch the active MPI by
+You can switch the active MPI using `use` command.
 
 ```bash
 $ mpienv use mpich-3.2
@@ -153,29 +153,36 @@ HYDRA build details:
     Demux engines available:                 poll select
 ```
 
-Now the specified "mpich-3.2" is active. 
+"mpich-3.2" is now active. 
 
 ## Running MPI applications
 To run your MPI application, you need to specify a few options to the `mpiexsec` command.
 
-    $ # If you use Open MPI
-    $ mpienv list
-    
-    Installed MPIs:
+```bash
+$ # If you use Open MPI
+$ mpienv list
 
-      mvapich2-2.2  -> /usr/local
-      openmpi-1.6.5 -> /usr
-    * openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
-    
-    $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -n ${NP} --hostfile ${HOSTFILE} ./your.app
-    
-    $ # If you use MPICH/MVAPICH
-    $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+Installed MPIs:
 
-`mpienv` will provide a sophisiticated way to invoke `mpiexec`,
-but as of now you need to do the ugly way to run applications.
+  mvapich2-2.2  -> /usr/local
+  openmpi-1.6.5 -> /usr
+* openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
 
+$ mpiexec --prefix $(mpienv prefix) -n ${NP} --hostfile ${HOSTFILE} ./your.app
+```
 
+```bash
+$ # If you use MPICH/MVAPICH
+$ mpienv list
+
+Installed MPIs:
+
+* mvapich2-2.2  -> /usr/local
+  openmpi-1.6.5 -> /usr
+  openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
+
+$ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+```
 
 ## Using Python together
 
@@ -183,42 +190,49 @@ If you use MPI with Python and want to swtich multiple MPI
 installations, what annoys you is that `mpi4py` is tied to a single
 MPI when it is compiled and installed. This means that you have to do
 
-    $ pip uninstall mpi4py
-    
-    $ # switch MPI
-    
-    $ pip install mpi4py --no-cache
-    
+```bash
+$ pip uninstall mpi4py
+
+$ # switch MPI
+
+$ pip install mpi4py --no-cache
+```
+
 every time you swtich to another MPI.
 
 `mpienv` supports this use case.
 
-    $ mpienv use --mpi4py openmpi-2.1.1
-    
+```bash
+$ mpienv use --mpi4py openmpi-2.1.1
+```
+
 This command installs an `mpi4py` instance on a specific location
 using `pip`'s `-t` option, and set `PYTHONPATH` environment variable
 to activate it.
 
-    # Now openmpi-2.1.1 is active
-    $ mpienv use mpich-3.2
-    $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
-    
-    ### Error!
-    
-    $ mpienv use --mpi4py mpich-3.2
-    $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
-    0
-    1
+```bash
+# Now openmpi-2.1.1 is active
+$ mpienv use mpich-3.2
+$ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
+
+### Error!
+
+$ mpienv use --mpi4py mpich-3.2
+$ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank())"
+0
+1
+```
 
 OK, now your `mpi4py` is properly set up. To run Python script on multiple nodes,
 you need to pass an additional environment variable: `PYTHONPATH`.
 
-    $ # If you use Open MPI
-    $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --hostfile ${HOSTFILE} ./your.app
-    
-    $ # If you use MPICH/MVAPICH
-    $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+```bash
+$ # Open MPI
+$ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --hostfile ${HOSTFILE} ./your.app
 
+$ # MPICH/MVAPICH
+$ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+```
 
 
 

@@ -36,6 +36,30 @@ function mpienv() {
                 fi
             }
             ;;
+        "configure" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/configure.py $*
+            }
+            ;;
+        "build" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/build.py $*
+            }
+            ;;
+        "install" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/install.py $*
+            }
+            ;;
+        "clean" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/clean.py $*
+            }
+            ;;
         "add" )
             {
                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
@@ -70,6 +94,12 @@ function mpienv() {
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
                     python $root/bin/autodiscover.py $*
+            }
+            ;;
+        "prefix" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/prefix.py $*
             }
             ;;
         * )
