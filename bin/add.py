@@ -5,13 +5,16 @@ import argparse
 from common import manager
 
 
-def main():
-    parser = argparse.ArgumentParser(description="mpienv-add")
-    parser.add_argument('-n', '--name', metavar='name', dest='name', type=str,
-                        help='Name of an MPI installation')
-    parser.add_argument('path', metavar='path', type=str,
-                        help='Path in which an MPI is intalled')
+parser = argparse.ArgumentParser(
+    prog='mpienv add',
+    description='Add a MPI environment already installed in your host.')
+parser.add_argument('-n', '--name', metavar='name', dest='name', type=str,
+                    help='Name of an MPI installation')
+parser.add_argument('path', metavar='path', type=str,
+                    help='Path in which an MPI is intalled')
 
+
+def main():
     args = parser.parse_args()
 
     # Create a link

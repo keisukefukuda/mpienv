@@ -5,11 +5,13 @@ import argparse
 from common import manager
 
 
-def main():
-    parser = argparse.ArgumentParser(description="mpienv-add")
-    parser.add_argument('targets', type=str, nargs='+')
-    parser.add_argument('-i', action="store_true", default=False)
+parser = argparse.ArgumentParser(
+    prog='mpienv rm', description='Remove a specific MPI environment.')
+parser.add_argument('targets', type=str, nargs='+')
+parser.add_argument('-i', action="store_true", default=False)
 
+
+def main():
     args = parser.parse_args()
 
     # Remove a link
