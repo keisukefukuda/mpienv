@@ -43,7 +43,7 @@ def sh_session(cmd, env={}):
     try:
         if os.path.exists(ver_dir):
             os.rmdir
-        if type(cmd) == list:
+        if isinstance(cmd, list):
             cmd = " && ".join(cmd)
 
         p = Popen([shell_cmd], stdout=PIPE, stdin=PIPE, stderr=PIPE,

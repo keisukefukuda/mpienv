@@ -7,20 +7,21 @@ from common import manager
 from mpienv.installer import create_installer
 from mpienv.installer import list_avail
 
+parser = argparse.ArgumentParser(
+    prog='mpienv build', description='Install a new MPI environment.')
+parser.add_argument('-n', '--name', metavar='name', dest='name',
+                    default=None, type=str,
+                    help='Name of an MPI installation')
+parser.add_argument('-v', '--verbose', dest='verbose',
+                    default=False, action='store_true',
+                    help='Verbose')
+parser.add_argument('-j', type=int, default=1, dest='npar',
+                    help="Number of parallel make jobs")
+parser.add_argument('mpi', type=str, metavar="[MPI]",
+                    help='MPI name')
+
 
 def main():
-    parser = argparse.ArgumentParser(description="mpienv-build")
-    parser.add_argument('-n', '--name', metavar='name', dest='name',
-                        default=None, type=str,
-                        help='Name of an MPI installation')
-    parser.add_argument('-v', '--verbose', dest='verbose',
-                        default=False, action='store_true',
-                        help='Verbose')
-    parser.add_argument('-j', type=int, default=1, dest='npar',
-                        help="Number of parallel make jobs")
-    parser.add_argument('mpi', type=str, metavar="[MPI]",
-                        help='MPI name')
-
     try:
         if sys.argv[1:].index('--list') >= 0:
             list_avail()

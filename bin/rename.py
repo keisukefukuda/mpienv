@@ -4,14 +4,14 @@ import argparse
 
 from common import manager
 
+parser = argparse.ArgumentParser(
+    prog='mpienv rename', description='Rename an environment.')
+parser.add_argument('name_from', type=str)
+parser.add_argument('name_to', type=str)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="mpienv-add")
-    parser.add_argument('name_from', type=str)
-    parser.add_argument('name_to', type=str)
-
     args = parser.parse_args()
-
     manager.rename(args.name_from, args.name_to)
 
 

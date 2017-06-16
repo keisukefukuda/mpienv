@@ -8,6 +8,19 @@ import sys
 
 from common import manager
 
+
+parser = argparse.ArgumentParser(
+    prog='mpienv autodiscover',
+    description='Find MPI environments already installed in your host.')
+parser.add_argument('-a', '--add', dest='add',
+                    action="store_true", default=None)
+parser.add_argument('-v', '--verbose', dest='verbose',
+                    action="store_true", default=None)
+parser.add_argument('-q', '--quiet', dest='quiet',
+                    action="store_true", default=None)
+parser.add_argument('paths', nargs='*')
+
+
 default_search_paths = [
     "/usr",
     "/usr/local",
@@ -74,15 +87,6 @@ def investigate_path(path, to_add):
 def main():
     global _verbose
     global _quiet
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--add', dest='add',
-                        action="store_true", default=None)
-    parser.add_argument('-v', '--verbose', dest='verbose',
-                        action="store_true", default=None)
-    parser.add_argument('-q', '--quiet', dest='quiet',
-                        action="store_true", default=None)
-    parser.add_argument('paths', nargs='*')
 
     args = parser.parse_args()
 

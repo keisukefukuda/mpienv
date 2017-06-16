@@ -7,10 +7,13 @@ import sys
 
 from common import manager
 
+parser = argparse.ArgumentParser(
+    prog='mpienv info',
+    description='Show information of current MPI environment.')
+parser.add_argument('--json', action="store_true", default=None)
+parser.add_argument('name', nargs='?', default=None)
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--json', action="store_true", default=None)
-    parser.add_argument('name', nargs='?', default=None)
 
     args = parser.parse_args()
 

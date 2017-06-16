@@ -5,10 +5,12 @@ import sys
 
 from common import manager
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('name', nargs='?', default=None)
+parser = argparse.ArgumentParser(
+    prog='mpienv prefix',
+    description='Show installed directory of the specified environment.')
+parser.add_argument('name', nargs='?', default=None)
 
+if __name__ == "__main__":
     args = parser.parse_args()
 
     name = args.name or manager.get_current_name()
