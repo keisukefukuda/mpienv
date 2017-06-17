@@ -112,36 +112,6 @@ class TestAutoDiscover(unittest.TestCase):
                  for ln in lines]
         self.assertEqual(mpi_list, lines)
 
-    def test_list(self):
-        out, err, ret = sh_session([
-            "mpienv autodiscover -q --add ~/mpi",
-            "mpienv list --json"
-        ])
-        self.assertEqual(0, ret)
-
-        data = json.loads(out)
-        self.assertEqual(mpi_list, sorted(data.keys()))
-
-    def test_info(self):
-        for mpi in mpi_list:
-            out, err, ret = sh_session([
-                "mpienv autodiscover -q --add ~/mpi",
-                "mpienv info {} --json".format(mpi)
-            ])
-            self.assertEqual(0, ret)
-
-            data = json.loads(out)
-            self.assertEqual(mpi, data['name'])
-            self.assertEqual(mpi_vers[mpi], data['version'])
-
-            self.assertTrue('broken' in data)
-            self.assertTrue('symlink' in data)
-            self.assertTrue('mpiexec' in data)
-            self.assertTrue('mpicc' in data)
-            self.assertTrue('mpicxx' in data)
-            self.assertTrue('default_name' in data)
-            self.assertTrue('prefix' in data)
-
     def test_list_broken(self):
         out, err, ret = sh_session([
             "mpienv autodiscover -q --add ~/mpi",
