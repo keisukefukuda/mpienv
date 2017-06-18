@@ -93,12 +93,20 @@ class BaseInstaller(object):
             shutil.rmtree(self.dir_path)
 
     def download(self):
+        # TODO: check the checksum
         if not os.path.exists(self.local_file):
             with open(self.local_file, 'w') as f:
                 check_call(['curl', self.url], stdout=f)
 
     def configure(self):
+        # TODO: check configure options and re-run ./configure
+        #       only when necessary
+        # TODO: Support multiple verbosity level
+        #       Level 0: silent
+        #       Level 1: only prints "Installing..."
+        #       Level 2: 
         self.download()
+        print('Configuring in {}'.format(self.dir_path))
 
         print("ext_path={}".format(self.ext_path))
         # Extract the archive files
@@ -140,24 +148,20 @@ class BaseInstaller(object):
 
         # run configure scripts
         assert(os.path.exists(self.dir_path))
+        print(' '.join(['./configure'] + conf_args))
         check_call(['./configure'] + conf_args,
                    cwd=self.dir_path)
 
     def build(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'Makefile')
-        if not os.path.exists(config_log):
-            self.configure()
-
+        self.configure()
+        print('Building in {}'.format(self.dir_path))
         # run make
         print(' '.join(['make', '-j', str(npar)]))
         check_call(['make', '-j', str(npar)],
                    shell=True, cwd=self.dir_path)
 
     def install(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'Makefile')
-        if not os.path.exists(config_log):
-            self.configure()
-
+        self.configure()
         print(' '.join(['make', 'install', '-j', str(npar)]))
         check_call(['make', 'install', '-j', str(npar)],
                    cwd=self.dir_path)

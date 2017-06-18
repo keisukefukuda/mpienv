@@ -31,6 +31,8 @@ function mpienv() {
             {
                 eval $(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
                            python $root/bin/use.py $*)
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                           python $root/bin/use.py $*
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi

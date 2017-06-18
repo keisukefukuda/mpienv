@@ -13,7 +13,9 @@ if [ ! -d "${test_dir}/shunit2" ] ; then
     git clone https://github.com/kward/shunit2.git ${test_dir}/shunit2
 fi
 
-export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test
+export MPIENV_ROOT=${HOME}/.mpienv-test-root
+
+export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
 
 export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
@@ -23,6 +25,7 @@ export MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
 echo MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
 
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
+mkdir -p ${PIP_DOWNLOAD_CACHE}
 
 oneTimeSetUp() {
     rm -rf ${MPIENV_VERSIONS_DIR}
@@ -30,25 +33,25 @@ oneTimeSetUp() {
 }
 
 oneTimeTearDown() {
-    echo rm -rf ${MPIENV_VERSIONS_DIR}
+    rm -rf ${MPIENV_VERSIONS_DIR}
 }
-
-# Load mpienv
-. ${proj_dir}/init
 
 #-----------------------------------------------------------
 export MPIENV_CONFIGURE_OPTS="--disable-fortran"
 if [ ! -f "${MPIENV_BUILD_DIR}/mpich-3.2/src/pm/hydra/mpiexec.hydra" ]; then
     echo "Building mpich-3.2"
-    mpienv build mpich-3.2 >/dev/null 2>&1
+    #mpienv build mpich-3.2
 fi
 
 
 export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran --disable-oshmem"
 if [ ! -f "${MPIENV_BUILD_DIR}/openmpi-2.1.1/orte/tools/orterun/.libs/orterun" ]; then
     echo "Building openmpi-2.1.1"
-    mpienv build openmpi-2.1.1 >/dev/null 2>&1
+    #mpienv build openmpi-2.1.1 >/dev/null 2>&1
 fi
+
+# Load mpienv
+. ${proj_dir}/init
 
 #-----------------------------------------------------------
 xtest_empty_list() {
@@ -141,8 +144,11 @@ xtest_info() {
 }
 
 test_mpi4py() {
-    mpienv install mpich-3.2 >/dev/null 2>&1
-    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+    #echo "Installing mpich-3.2"
+    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+    mpienv install mpich-3.2
+    #echo "Installing open mpi 2.1.1"
+    # mpienv install openmpi-2.1.1 >/dev/null 2>&1
 
     mpienv use --mpi4py mpich-3.2
     assertTrue $?
@@ -163,13 +169,18 @@ for i in range(0, comm.Get_size()):
         sys.stdout.flush()
 
 EOF
-    #cat $SCRIPT
-    env | grep MPIENV_
-    python -c "import mpi4py; print(mpi4py.__file__)"
+    #env | grep MPIENV_
+    #python -c "import mpi4py; print(mpi4py.__file__)"
     #mpiexec -n 1 python $SCRIPT
     mpiexec -genvall -n 2 python $SCRIPT
     #assertEquals "01" "$OUT"
-    rm $SCRIPT
+    which mpiexec
+    echo ls $MPIENV_VERSIONS_DIR
+    ls $MPIENV_VERSIONS_DIR
+    echo ls $MPIENV_VERSIONS_DIR/mpi
+    ls $MPIENV_VERSIONS_DIR/mpi
+    echo mpievn list
+    mpienv list
 }
 
 #-----------------------------------------------------------
