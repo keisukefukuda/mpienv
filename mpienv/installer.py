@@ -93,18 +93,18 @@ class BaseInstaller(object):
             shutil.rmtree(self.dir_path)
 
     def download(self):
-        # TODO: check the checksum
+        # TODO(keisukefukuda): check the checksum
         if not os.path.exists(self.local_file):
             with open(self.local_file, 'w') as f:
                 check_call(['curl', self.url], stdout=f)
 
     def configure(self):
-        # TODO: check configure options and re-run ./configure
-        #       only when necessary
-        # TODO: Support multiple verbosity level
-        #       Level 0: silent
-        #       Level 1: only prints "Installing..."
-        #       Level 2: 
+        # TODO(keisukefukuda): check configure options and
+        #                      re-run ./configure only when necessary
+        # TODO(keisukefukuda): Support multiple verbosity level
+        #                      Level 0: silent
+        #                      Level 1: only prints "Installing..."
+        #                      Level 2: prints everything
         self.download()
         print('Configuring in {}'.format(self.dir_path))
 
