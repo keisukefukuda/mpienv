@@ -6,6 +6,11 @@ import sys
 
 from common import manager
 
+parser = argparse.ArgumentParser(
+    prog='mpienv list', description='List all available MPI environments.')
+parser.add_argument('--json', action="store_true",
+                    default=None)
+
 
 def _print_info(info, max_label_len):
     if info.get('broken'):
@@ -22,9 +27,6 @@ def _print_info(info, max_label_len):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--json', action="store_true",
-                        default=None)
     args = parser.parse_args()
 
     if len(manager.keys()) == 0:
