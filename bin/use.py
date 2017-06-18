@@ -4,14 +4,16 @@ import argparse
 
 from common import manager
 
+parser = argparse.ArgumentParser(
+    prog='mpienv use', description='Set the specific MPI environment.')
+parser.add_argument('-p', '--mpi4py', action="store_true",
+                    dest="mpi4py", default=False,
+                    help="Also switch mpi4py library")
+parser.add_argument('name', type=str,
+                    help="MPI name to use")
+
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--mpi4py', action="store_true",
-                        dest="mpi4py", default=False,
-                        help="Also switch mpi4py library")
-    parser.add_argument('name', type=str,
-                        help="MPI name to use")
 
     args = parser.parse_args()
     manager.use(args.name, mpi4py=args.mpi4py)
