@@ -20,6 +20,7 @@ parser.add_argument('-j', type=int, default=1, dest='npar',
 parser.add_argument('mpi', type=str, metavar="[MPI]",
                     help='MPI name')
 
+
 def main():
     args = parser.parse_args()
 
