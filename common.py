@@ -301,14 +301,15 @@ class Manager(object):
 
         return info
 
+    def prefix(self, name):
+        return os.path.join(self._mpi_dir, name)
+
     def get_info(self, name):
         """Obtain information of the MPI installed under prefix."""
-        prefix = os.path.join(self._mpi_dir, name)
-
         info = {}
 
-        mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-        if is_broken_symlink(prefix):
+        mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
+        if is_broken_symlink(self.prefix(name)):
             # This means the symlink under versions/ directory
             # is broken.
             # (The installed MPI has been removed after registration)
@@ -323,9 +324,9 @@ class Manager(object):
             # If `name` exists (would be the most cases)
             info['broken'] = False
 
-        info['symlink'] = os.path.islink(prefix)
+        info['symlink'] = os.path.islink(self.prefix(name))
 
-        info.update(self.get_info_from_prefix(prefix))
+        info.update(self.get_info_from_prefix(self.prefix(name)))
         return info
 
     def items(self):
@@ -471,14 +472,14 @@ class Manager(object):
             mpi4py.use()
 
     def exec(self, cmds):
-        envs = []
+        envs = os.environ.copy()
 
         try:
             name = self.get_current_name()
 
             mpi4py = MPI4Py(self, name)
             if mpi4py.is_installed():
-                envs += ['PYTHONPATH="{}"'.format(mpi4py.pylib_dir())]
+                envs['PYTHONPATH'] = mpi4py.pylib_dir()
 
             # TODO(keisukefukuda): if Open MPI, add --prefix option
             # TODO(keisukefukuda): if MPICH/MVAPICH,
@@ -488,14 +489,12 @@ class Manager(object):
         except UnknownMPI:
             pass
 
-        cmds = ['mpiexec'] + cmds
+        mpiexec = os.path.realpath(
+            os.path.join(self.prefix(name), 'bin', 'mpiexec'))
 
-        if len(envs) == 0:
-            cmds = cmds
-        else:
-            cmds = ['env'] + envs + cmds
+        cmds = [mpiexec] + cmds
 
-        p = Popen(cmds, env=os.environ)
+        p = Popen(cmds, env=envs)
         p.wait()
         exit(p.returncode)
 
