@@ -68,6 +68,9 @@ class PyModule(object):
 
         print("export PYTHONPATH={}".format(pypath))
 
+    def pylib_dir(self):
+        return self._pylib_dir
+
 
 class MPI4Py(PyModule):
     def __init__(self, mgr, name):
