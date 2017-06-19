@@ -471,7 +471,7 @@ class Manager(object):
                 mpi4py.install()
             mpi4py.use()
 
-    def exec(self, cmds):
+    def exec_(self, cmds):
         envs = os.environ.copy()
 
         try:

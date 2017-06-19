@@ -16,7 +16,7 @@ parser.add_argument('args', nargs=argparse.REMAINDER,
 def main():
     args = sys.argv[1:]
 
-    manager.exec(args)
+    manager.exec_(args)
 
 
 if __name__ == "__main__":
