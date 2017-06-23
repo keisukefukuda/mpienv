@@ -17,6 +17,7 @@ export MPIENV_ROOT=${HOME}/.mpienv-test-root
 
 export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
+rm -rf $MPIENV_VERSIONS_DIR/* |:
 
 export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
 echo MPIENV_BUILD_DIR=${HOME}/.mpienv-build
@@ -144,9 +145,10 @@ xtest_info() {
 }
 
 test_mpi4py() {
+    set -e
     #echo "Installing mpich-3.2"
     export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install mpich-3.2
+    mpienv install -j 4 mpich-3.2
     #echo "Installing open mpi 2.1.1"
     # mpienv install openmpi-2.1.1 >/dev/null 2>&1
 
@@ -160,6 +162,7 @@ test_mpi4py() {
     cat <<EOF >$SCRIPT
 from mpi4py import MPI
 import sys
+print(MPI.__file__)
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 comm.Barrier()
@@ -172,15 +175,17 @@ EOF
     #env | grep MPIENV_
     #python -c "import mpi4py; print(mpi4py.__file__)"
     #mpiexec -n 1 python $SCRIPT
-    mpiexec -genvall -n 2 python $SCRIPT
     #assertEquals "01" "$OUT"
+    echo mpienv list
+    mpienv list
     which mpiexec
+    ls -l $(which mpiexec)
     echo ls $MPIENV_VERSIONS_DIR
     ls $MPIENV_VERSIONS_DIR
     echo ls $MPIENV_VERSIONS_DIR/mpi
     ls $MPIENV_VERSIONS_DIR/mpi
-    echo mpievn list
-    mpienv list
+    mpiexec -genvall -n 2 python $SCRIPT
+    set +e
 }
 
 #-----------------------------------------------------------

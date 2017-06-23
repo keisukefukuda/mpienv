@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import json
 import os
 import os.path
 import re
@@ -146,11 +147,29 @@ class BaseInstaller(object):
 
         print(' '.join(['./configure'] + conf_args))
 
-        # run configure scripts
-        assert(os.path.exists(self.dir_path))
-        print(' '.join(['./configure'] + conf_args))
-        check_call(['./configure'] + conf_args,
-                   cwd=self.dir_path)
+        # Check cache
+        cache = os.path.join(self.dir_path, 'mpienv.conf')
+        if os.path.exists(cache):
+            with open(cache, 'r') as f:
+                try:
+                    loaded = json.load(f)
+                    cached = (loaded == conf_args)
+                    print("loaded = {}".format(loaded))
+                    print("conf_args = {}".format(conf_args))
+                except ValueError:
+                    cached = False
+        else:
+            cached = False
+        print("cached = {}".format(cached))
+
+        if cached is False:
+            # run configure scripts
+            assert(os.path.exists(self.dir_path))
+            print(' '.join(['./configure'] + conf_args))
+            check_call(['./configure'] + conf_args,
+                       cwd=self.dir_path)
+            with open(cache, 'w') as f:
+                json.dump(conf_args, f)
 
     def build(self, npar=1):
         self.configure()
