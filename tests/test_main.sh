@@ -13,11 +13,11 @@ if [ ! -d "${test_dir}/shunit2" ] ; then
     git clone https://github.com/kward/shunit2.git ${test_dir}/shunit2
 fi
 
-export MPIENV_ROOT=${HOME}/.mpienv-test-root
-
 export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
-rm -rf $MPIENV_VERSIONS_DIR/* |:
+
+rm -rf $MPIENV_VERSIONS_DIR |:
+rm -rf $MPIENV_CACHE_DIR |:
 
 export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
 echo MPIENV_BUILD_DIR=${HOME}/.mpienv-build
@@ -147,13 +147,19 @@ xtest_info() {
 test_mpi4py() {
     set -e
     #echo "Installing mpich-3.2"
-    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install -j 4 mpich-3.2
-    #echo "Installing open mpi 2.1.1"
-    # mpienv install openmpi-2.1.1 >/dev/null 2>&1
 
-    mpienv use --mpi4py mpich-3.2
-    assertTrue $?
+    local MPI="openmpi-2.1.1"
+    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+    
+    #mpienv install -j 4 mpich-3.2
+    local MPI="openmpi-2.1.1"
+    export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
+    
+    echo "Installing ${MPI}"
+    mpienv install ${MPI}
+
+    #mpienv use --mpi4py mpich-3.2
+    mpienv use --mpi4py ${MPI}
 
     #mpiexec -n 2 python -c "from mpi4py import MPI"
     #assertTrue $?
@@ -165,27 +171,30 @@ import sys
 print(MPI.__file__)
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
-comm.Barrier()
 for i in range(0, comm.Get_size()):
     if i == rank:
         sys.stdout.write(str(rank))
         sys.stdout.flush()
+    comm.barrier()
 
 EOF
     #env | grep MPIENV_
     #python -c "import mpi4py; print(mpi4py.__file__)"
     #mpiexec -n 1 python $SCRIPT
     #assertEquals "01" "$OUT"
-    echo mpienv list
+    set -x
+    echo $PATH
+    echo $PYTHONPATH
     mpienv list
     which mpiexec
     ls -l $(which mpiexec)
-    echo ls $MPIENV_VERSIONS_DIR
     ls $MPIENV_VERSIONS_DIR
-    echo ls $MPIENV_VERSIONS_DIR/mpi
     ls $MPIENV_VERSIONS_DIR/mpi
-    mpiexec -genvall -n 2 python $SCRIPT
-    set +e
+    ls $MPIENV_VERSIONS_DIR/shims/
+    set +x
+    export TMPDIR=/tmp
+    mpiexec --prefix $(mpienv prefix) -x PYTHONPATH  -n 2 python $SCRIPT
+    #mpiexec -genvall -n 2 python $SCRIPT
 }
 
 #-----------------------------------------------------------
