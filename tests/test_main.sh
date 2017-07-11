@@ -64,20 +64,15 @@ xtest_empty_list() {
 test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
-    mpienv install mpich-3.2
+    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+    mpienv install mpich-3.2 2>&1 >/dev/null
 
     mpienv list | grep -q 'mpich-3.2'
     assertEquals 0 $?
 
     # Test json output
-    echo mpienv list
-    mpienv list
-    echo mpienv list --json
-    mpienv list --json
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
     assertEquals 0 $?
-
-    return
 
     # Test rename
     # rename mpich-3.2 -> my-cool-mpi
