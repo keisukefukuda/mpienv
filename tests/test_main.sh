@@ -61,24 +61,28 @@ xtest_empty_list() {
     assertEquals 0 $LEN
 }
 
-xtest_1mpi() {
+test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
-    mpienv install mpich-3.2 >/dev/null 2>&1
+    mpienv install mpich-3.2
 
-    mpienv list | grep -qE 'mpich-3.2'
+    mpienv list | grep -q 'mpich-3.2'
     assertEquals 0 $?
-
-    mpienv list | grep -qE 'openmpi'
-    assertEquals 1 $?
 
     # Test json output
+    echo mpienv list
+    mpienv list
+    echo mpienv list --json
+    mpienv list --json
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
     assertEquals 0 $?
+
+    return
 
     # Test rename
     # rename mpich-3.2 -> my-cool-mpi
     mpienv rename mpich-3.2 my-cool-mpi
+    assertTrue $?
     mpienv list | grep -qE 'my-cool-mpi'
     assertTrue $?
 
@@ -144,25 +148,24 @@ xtest_info() {
     assertTrue $(mpienv info --json | has_key "prefix")
 }
 
-test_mpi4py() {
+xtest_mpi4py() {
     set -e
     #echo "Installing mpich-3.2"
-
-    local MPI="openmpi-2.1.1"
-    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+    #local MPI="mpich-3.2"
+    #export MPIENV_CONFIGURE_OPTS="--disable-fortran"
     
     #mpienv install -j 4 mpich-3.2
     local MPI="openmpi-2.1.1"
     export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
     
     echo "Installing ${MPI}"
-    mpienv install ${MPI}
+    mpienv install ${MPI}  >/dev/null 2>&1
 
     #mpienv use --mpi4py mpich-3.2
     mpienv use --mpi4py ${MPI}
 
-    #mpiexec -n 2 python -c "from mpi4py import MPI"
-    #assertTrue $?
+    mpiexec -n 2 python -c "from mpi4py import MPI"
+    assertTrue $?
 
     local SCRIPT=$(mktemp)
     cat <<EOF >$SCRIPT
@@ -193,8 +196,9 @@ EOF
     ls $MPIENV_VERSIONS_DIR/shims/
     set +x
     export TMPDIR=/tmp
-    mpiexec --prefix $(mpienv prefix) -x PYTHONPATH  -n 2 python $SCRIPT
+    mpiexec --prefix $(mpienv prefix) -x PYTHONPATH -x PATH -x LD_LIBRARY_PATH -n 2 python $SCRIPT
     #mpiexec -genvall -n 2 python $SCRIPT
+    rm -f ${SCRIPT}
 }
 
 #-----------------------------------------------------------
