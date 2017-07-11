@@ -39,12 +39,12 @@ oneTimeTearDown() {
 
 install_mpich() {
     export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install mpich-3.2 2>&1 >/dev/null
+    mpienv install mpich-3.2 # >/dev/null 2>&1 
 }
 
 install_ompi() {
     export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
-    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+    mpienv install openmpi-2.1.1 # >/dev/null 2>&1 
 }
 
 #-----------------------------------------------------------
