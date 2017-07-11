@@ -16,9 +16,6 @@ fi
 export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
 
-rm -rf $MPIENV_VERSIONS_DIR |:
-rm -rf $MPIENV_CACHE_DIR |:
-
 export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
 echo MPIENV_BUILD_DIR=${HOME}/.mpienv-build
 
@@ -28,6 +25,9 @@ echo MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
 mkdir -p ${PIP_DOWNLOAD_CACHE}
 
+rm -rf "$MPIENV_VERSIONS_DIR" |:
+rm -rf "$MPIENV_CACHE_DIR" |:
+
 oneTimeSetUp() {
     rm -rf ${MPIENV_VERSIONS_DIR}
     mkdir -p ${MPIENV_VERSIONS_DIR}
@@ -35,6 +35,16 @@ oneTimeSetUp() {
 
 oneTimeTearDown() {
     rm -rf ${MPIENV_VERSIONS_DIR}
+}
+
+install_mpich() {
+    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+    mpienv install mpich-3.2 2>&1 >/dev/null
+}
+
+install_ompi() {
+    export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
+    mpienv install openmpi-2.1.1 >/dev/null 2>&1
 }
 
 #-----------------------------------------------------------
@@ -55,7 +65,7 @@ fi
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
-xtest_empty_list() {
+test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
@@ -64,8 +74,7 @@ xtest_empty_list() {
 test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
-    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install mpich-3.2 2>&1 >/dev/null
+    install_mpich
 
     mpienv list | grep -q 'mpich-3.2'
     assertEquals 0 $?
@@ -90,7 +99,7 @@ test_1mpi() {
     assertTrue $?
 
     # Remove mpich-3.2
-    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+    install_ompi
     mpienv use openmpi-2.1.1
     mpienv rm mpich-3.2
     assertTrue $?
@@ -99,9 +108,9 @@ test_1mpi() {
     assertFalse $?
 }
 
-xtest_2mpis() {
-    mpienv install mpich-3.2 >/dev/null 2>&1
-    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+test_2mpis() {
+    install_mpich
+    install_ompi
 
     mpienv list | grep -qE 'mpich-3.2'
     assertTrue $?
@@ -120,8 +129,8 @@ has_key() {
     python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
 }
 
-xtest_info() {
-    mpienv install mpich-3.2 >/dev/null 2>&1
+test_info() {
+    install_mpich
     mpienv use mpich-3.2
 
     mpienv info mpich-3.2 --json >a.json
@@ -143,21 +152,13 @@ xtest_info() {
     assertTrue $(mpienv info --json | has_key "prefix")
 }
 
-xtest_mpi4py() {
-    set -e
-    #echo "Installing mpich-3.2"
-    #local MPI="mpich-3.2"
-    #export MPIENV_CONFIGURE_OPTS="--disable-fortran"
+test_mpi4py() {
+    export TMPDIR=/tmp
     
-    #mpienv install -j 4 mpich-3.2
-    local MPI="openmpi-2.1.1"
-    export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
-    
-    echo "Installing ${MPI}"
-    mpienv install ${MPI}  >/dev/null 2>&1
-
+    #install_mpich
     #mpienv use --mpi4py mpich-3.2
-    mpienv use --mpi4py ${MPI}
+    install_ompi
+    mpienv use --mpi4py openmpi-2.1.1
 
     mpiexec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
@@ -176,23 +177,8 @@ for i in range(0, comm.Get_size()):
     comm.barrier()
 
 EOF
-    #env | grep MPIENV_
-    #python -c "import mpi4py; print(mpi4py.__file__)"
-    #mpiexec -n 1 python $SCRIPT
-    #assertEquals "01" "$OUT"
-    set -x
-    echo $PATH
-    echo $PYTHONPATH
-    mpienv list
-    which mpiexec
-    ls -l $(which mpiexec)
-    ls $MPIENV_VERSIONS_DIR
-    ls $MPIENV_VERSIONS_DIR/mpi
-    ls $MPIENV_VERSIONS_DIR/shims/
-    set +x
-    export TMPDIR=/tmp
-    mpiexec --prefix $(mpienv prefix) -x PYTHONPATH -x PATH -x LD_LIBRARY_PATH -n 2 python $SCRIPT
-    #mpiexec -genvall -n 2 python $SCRIPT
+    mpiexec --prefix $(mpienv prefix) \
+            -x PYTHONPATH -x PATH -x LD_LIBRARY_PATH -n 2 python $SCRIPT
     rm -f ${SCRIPT}
 }
 
