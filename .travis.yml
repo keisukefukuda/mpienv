@@ -24,6 +24,9 @@ cache:
   - directories:
       - $HOME/mpi
       - $HOME/zsh
+      - $HOME/.mpienv-test
+      - $HOME/.mpienv-build
+      - $HOME/.mpienv-cache
 
 addons:
   apt:
@@ -34,8 +37,8 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
 
-before_script:
-  - sh ./.travis_install.sh
+#before_script:
+#  - sh ./.travis_install.sh
 
 install:
   - pip install -r requirements.txt
@@ -46,5 +49,6 @@ script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")
-  - coverage run $(which nosetests) -v
+  # - coverage run $(which nosetests) -v
+  - ./tests/test_main.sh
   - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting

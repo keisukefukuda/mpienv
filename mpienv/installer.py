@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import json
 import os
 import os.path
 import re
@@ -93,17 +94,32 @@ class BaseInstaller(object):
             shutil.rmtree(self.dir_path)
 
     def download(self):
+        # TODO(keisukefukuda): check the checksum
         if not os.path.exists(self.local_file):
             with open(self.local_file, 'w') as f:
                 check_call(['curl', self.url], stdout=f)
 
-    def configure(self, conf_args):
+    def configure(self):
+        # TODO(keisukefukuda): check configure options and
+        #                      re-run ./configure only when necessary
+        # TODO(keisukefukuda): Support multiple verbosity level
+        #                      Level 0: silent
+        #                      Level 1: only prints "Installing..."
+        #                      Level 2: prints everything
         self.download()
+        print('Configuring in {}'.format(self.dir_path))
 
+        print("ext_path={}".format(self.ext_path))
         # Extract the archive files
         if not os.path.exists(self.dir_path):
             check_call(['tar', '-xf', self.local_file],
                        cwd=self.ext_path)
+
+        opts = os.environ.get("MPIENV_CONFIGURE_OPTS")
+        if opts:
+            conf_args = opts.split()
+        else:
+            conf_args = []
 
         # fix the configure argument
         try:
@@ -127,29 +143,45 @@ class BaseInstaller(object):
                 conf_args = ['--help']
         except ValueError:
             # if --help is not found
-            conf_args[:-1] = ['--prefix', self.prefix]
+            conf_args += ['--prefix', self.prefix]
 
         print(' '.join(['./configure'] + conf_args))
 
-        # run configure scripts
-        assert(os.path.exists(self.dir_path))
-        check_call(['./configure'] + conf_args,
-                   cwd=self.dir_path)
+        # Check cache
+        cache = os.path.join(self.dir_path, 'mpienv.conf')
+        if os.path.exists(cache):
+            with open(cache, 'r') as f:
+                try:
+                    loaded = json.load(f)
+                    cached = (loaded == conf_args)
+                    print("loaded = {}".format(loaded))
+                    print("conf_args = {}".format(conf_args))
+                except ValueError:
+                    cached = False
+        else:
+            cached = False
+        print("cached = {}".format(cached))
+
+        if cached is False:
+            # run configure scripts
+            assert(os.path.exists(self.dir_path))
+            print(' '.join(['./configure'] + conf_args))
+            check_call(['./configure'] + conf_args,
+                       cwd=self.dir_path)
+            with open(cache, 'w') as f:
+                json.dump(conf_args, f)
 
     def build(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'config.log')
-        if not os.path.exists(config_log):
-            self.configure([])
-
-        # run configure scripts
+        self.configure()
+        print('Building in {}'.format(self.dir_path))
+        # run make
+        print(' '.join(['make', '-j', str(npar)]))
         check_call(['make', '-j', str(npar)],
                    shell=True, cwd=self.dir_path)
 
     def install(self, npar=1):
-        config_log = os.path.join(self.dir_path, 'config.log')
-        if not os.path.exists(config_log):
-            self.configure([])
-
+        self.configure()
+        print(' '.join(['make', 'install', '-j', str(npar)]))
         check_call(['make', 'install', '-j', str(npar)],
                    cwd=self.dir_path)
 
@@ -183,6 +215,9 @@ def create_installer(manager, mpi, name, verbose):
     if mpi not in _list.keys():
         sys.stderr.write("Error: Unknown MPI: '{}'\n".format(mpi))
         exit(-1)
+
+    if name is None:
+        name = mpi
 
     mpi_type = _list[mpi]['type']
 

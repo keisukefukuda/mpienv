@@ -27,7 +27,7 @@ def main():
     inst = create_installer(manager, args.mpi, args.name,
                             verbose=args.verbose)
 
-    inst.install(npar=args.npar)
+    inst.build(npar=args.npar)
 
 
 if __name__ == "__main__":
