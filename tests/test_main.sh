@@ -160,7 +160,7 @@ test_mpi4py() {
     install_ompi
     mpienv use --mpi4py openmpi-2.1.1
 
-    mpiexec -n 2 python -c "from mpi4py import MPI"
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
 
     local SCRIPT=$(mktemp)
@@ -177,8 +177,7 @@ for i in range(0, comm.Get_size()):
     comm.barrier()
 
 EOF
-    mpiexec --prefix $(mpienv prefix) \
-            -x PYTHONPATH -x PATH -x LD_LIBRARY_PATH -n 2 python $SCRIPT
+    mpienv exec -n 2 python $SCRIPT
     rm -f ${SCRIPT}
 }
 

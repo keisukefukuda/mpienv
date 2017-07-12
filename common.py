@@ -481,19 +481,40 @@ class Manager(object):
             if mpi4py.is_installed():
                 envs['PYTHONPATH'] = mpi4py.pylib_dir()
 
-            # TODO(keisukefukuda): if Open MPI, add --prefix option
+            info = self.get_info(name)
+
             # TODO(keisukefukuda): if MPICH/MVAPICH,
             #                      add -x PATH, -x LD_LIBRARY_PATH
             # TODO(keisukefukuda): if hostfile is given, convert it
 
         except UnknownMPI:
-            pass
+            raise RuntimeError("Internal Error: Unknown MPI")
+
+        if info['broken']:
+            sys.stderr.write("Error: the current MPI is broken\n")
+            exit(-1)
+
+        if info['type'] == 'Open MPI':
+            cmds[:0] = ['--prefix', os.readlink(self.prefix(name))]
+            cmds[:0] = ['-x', 'PYTHONPATH']
+            # Transfer some environ vars
+            vars = ['PATH', 'LD_LIBRARY_PATH']  # vars to be transferred
+            vars += [v for v in os.environ if v.startswith('OMPI_')]
+            for var in vars:
+                if var in envs:
+                    cmds[:0] = ['-x', var]
+
+        elif info['type'] in ['MPICH', 'MVAPICH']:
+            cmds[:0] = ['-genvlist', 'PATH,LD_LIBRARY_PATH,PYTHONPATH']
+
+        print(info['type'])
 
         mpiexec = os.path.realpath(
             os.path.join(self.prefix(name), 'bin', 'mpiexec'))
 
-        cmds = [mpiexec] + cmds
+        cmds[:0] = [mpiexec]
 
+        print(' '.join(cmds))
         p = Popen(cmds, env=envs)
         p.wait()
         exit(p.returncode)
