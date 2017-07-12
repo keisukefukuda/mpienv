@@ -111,8 +111,8 @@ Installed MPIs:
  * openmpi-2.1.1 -> /Users/keisukefukuda/mpi/openmpi-2.1.1
 ```
 
-The '*' mark indicates that the MPI "openmpi-2.1.1" is active, which
-means it's on the `$PATH` and `$LD_LIBRARYPATH` environment variables.
+The `*` mark indicates that the MPI `openmpi-2.1.1` is active, which
+means it's on the `PATH` and `LD_LIBRARYPATH` environment variables.
 You can check that `openmpi-2.1.1` is active.
 
 ```bash
@@ -156,7 +156,7 @@ HYDRA build details:
 "mpich-3.2" is now active. 
 
 ## Running MPI applications
-To run your MPI application, you need to specify a few options to the `mpiexsec` command.
+To run your MPI application, you need to specify a few options to the `mpiexec` command.
 
 ```bash
 $ # If you use Open MPI
@@ -188,7 +188,8 @@ $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
 
 If you use MPI with Python and want to swtich multiple MPI
 installations, what annoys you is that `mpi4py` is tied to a single
-MPI when it is compiled and installed. This means that you have to do
+MPI instance when it is compiled and installed. This means that you
+have to do
 
 ```bash
 $ pip uninstall mpi4py
@@ -224,7 +225,7 @@ $ mpiexec -n 2 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank(
 ```
 
 OK, now your `mpi4py` is properly set up. To run Python script on multiple nodes,
-you need to pass an additional environment variable: `PYTHONPATH`.
+you need to pass an additional environment variable `PYTHONPATH`.
 
 ```bash
 $ # Open MPI
@@ -233,6 +234,3 @@ $ mpiexec --prefix /home/kfukuda/mpi/openmpi-2.1.1 -x PYTHONPATH -n ${NP} --host
 $ # MPICH/MVAPICH
 $ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
 ```
-
-
-

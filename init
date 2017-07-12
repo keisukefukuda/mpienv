@@ -2,15 +2,23 @@
 
 export MPIENV_ROOT="$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)"
 
-if [ ! -f $MPIENV_ROOT/shims ]; then
-    G=$MPIENV_ROOT/version_global
+
+if [ -z "${MPIENV_VERSIONS_DIR}" ]; then
+    export MPIENV_VERSIONS_DIR=$MPIENV_ROOT/versions
+fi
+
+mkdir -p ${MPIENV_VERSIONS_DIR}
+mkdir -p ${MPIENV_VERSIONS_DIR}/shims
+
+if [ ! -f $MPIENV_VERSIONS_DIR/shims ]; then
+    G=$MPIENV_VERSIONS_DIR/version_global
     if [ -f $G ]; then
-        ln -s $(cat $G) $MPIENV_ROOT/shims
+        ln -s $(cat $G) $MPIENV_VERSIONS_DIR/shims
     fi
 fi
 
-export PATH=$MPIENV_ROOT/shims/bin:${PATH:-}
-export LD_LIBRARY_PATH=$MPIENV_ROOT/shims/lib:$MPIENV_ROOT/shims/lib64:${LD_LIBRARY_PATH:-}
+export PATH=$MPIENV_VERSIONS_DIR/shims/bin:${PATH:-}
+export LD_LIBRARY_PATH=$MPIENV_VERSIONS_DIR/shims/lib:$MPIENV_VERSIONS_DIR/shims/lib64:${LD_LIBRARY_PATH:-}
 
 function usage() {
     echo "Usage: mpienv [command] [options...]"
@@ -31,6 +39,8 @@ function mpienv() {
             {
                 eval $(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
                            python $root/bin/use.py $*)
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                           python $root/bin/use.py $*
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi

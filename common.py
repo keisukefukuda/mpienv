@@ -215,6 +215,7 @@ class Manager(object):
         self._root_dir = root_dir
         self._vers_dir = os.path.join(os.environ.get("MPIENV_VERSIONS_DIR") or
                                       os.path.join(root_dir, 'versions'))
+        self._shims_dir = os.path.join(self._vers_dir, 'shims')
         pybin = os.path.realpath(sys.executable)
         pybin_enc = re.sub(r'[^a-zA-Z0-9.]', '_', re.sub('^/', '', pybin))
 
@@ -421,14 +422,13 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        shims = os.path.join(self._root_dir, 'shims')
-        if os.path.exists(shims):
-            shutil.rmtree(shims)
+        if os.path.exists(self._shims_dir):
+            shutil.rmtree(self._shims_dir)
 
-        os.mkdir(shims)
+        os.mkdir(self._shims_dir)
 
         for d in ['bin', 'lib', 'include', 'libexec']:
-            dr = os.path.join(shims, d)
+            dr = os.path.join(self._shims_dir, d)
             if not os.path.exists(dr):
                 os.mkdir(dr)
 
@@ -471,8 +471,6 @@ class Manager(object):
             os.symlink(src, dst)
 
     def _use_mpich(self, prefix):
-        shims = os.path.join(self._root_dir, 'shims')
-
         bin_files = _glob_list([prefix, 'bin'],
                                ['hydra_*',
                                 'mpi*',
@@ -490,25 +488,22 @@ class Manager(object):
                                 'primitives'])
 
         for f in bin_files:
-            self._mirror_file(f, os.path.join(shims, 'bin'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'bin'))
 
         for f in lib_files:
-            self._mirror_file(f, os.path.join(shims, 'lib'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'lib'))
 
         for f in inc_files:
-            self._mirror_file(f, os.path.join(shims, 'include'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'include'))
 
     def _use_mvapich(self, prefix):
         self._use_mpich(prefix)
         libexec_files = _glob_list([prefix, 'libexec'],
                                    ['osu-micro-benchmarks'])
-        shims = os.path.join(self._root_dir, 'shims')
         for f in libexec_files:
-            self._mirror_file(f, os.path.join(shims, 'libexec'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'libexec'))
 
     def _use_openmpi(self, prefix):
-        shims = os.path.join(self._root_dir, 'shims')
-
         bin_files = _glob_list([prefix, 'bin'],
                                ['mpi*',
                                 'ompi-*',
@@ -529,13 +524,13 @@ class Manager(object):
                                ['mpi*.h', 'openmpi'])
 
         for f in bin_files:
-            self._mirror_file(f, os.path.join(shims, 'bin'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'bin'))
 
         for f in lib_files:
-            self._mirror_file(f, os.path.join(shims, 'lib'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'lib'))
 
         for f in inc_files:
-            self._mirror_file(f, os.path.join(shims, 'include'))
+            self._mirror_file(f, os.path.join(self._shims_dir, 'include'))
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
