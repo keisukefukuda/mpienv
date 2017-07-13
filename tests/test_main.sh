@@ -155,19 +155,11 @@ test_info() {
 test_mpi4py() {
     export TMPDIR=/tmp
     
-    #install_mpich
-    #mpienv use --mpi4py mpich-3.2
-    install_ompi
-    mpienv use --mpi4py openmpi-2.1.1
-    
-    mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue $?
-
     local SCRIPT=$(mktemp)
     cat <<EOF >$SCRIPT
 from mpi4py import MPI
 import sys
-print(MPI.__file__)
+#print(MPI.__file__)
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 for i in range(0, comm.Get_size()):
@@ -175,9 +167,30 @@ for i in range(0, comm.Get_size()):
         sys.stdout.write(str(rank))
         sys.stdout.flush()
     comm.barrier()
-
 EOF
+    # test mpich
+    install_mpich
+    echo "------------------"
+    mpienv use --mpi4py mpich-3.2
+    echo "------------------"
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    echo "------------------"
+    assertTrue $?
     mpienv exec -n 2 python $SCRIPT
+    assertTrue $?
+    OUT=$(mpienv use --mpi4py mpich-3.2; mpienv exec -n 2 python $SCRIPT)
+    assertEquals "01" "$OUT"
+
+    # test Open MPI
+    install_ompi
+    mpienv use --mpi4py openmpi-2.1.1
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    assertTrue $?
+    mpienv exec -n 2 python $SCRIPT
+    assertTrue $?
+    OUT=$(mpienv use --mpi4py openmpi-2.1.1; mpienv exec -n 2 python $SCRIPT)
+    assertEquals "01" "$OUT"
+    
     rm -f ${SCRIPT}
 }
 

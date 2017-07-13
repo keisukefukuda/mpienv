@@ -483,8 +483,6 @@ class Manager(object):
 
             info = self.get_info(name)
 
-            # TODO(keisukefukuda): if MPICH/MVAPICH,
-            #                      add -x PATH, -x LD_LIBRARY_PATH
             # TODO(keisukefukuda): if hostfile is given, convert it
 
         except UnknownMPI:
@@ -511,14 +509,14 @@ class Manager(object):
         elif info['type'] in ['MPICH', 'MVAPICH']:
             cmds[:0] = ['-genvlist', 'PATH,LD_LIBRARY_PATH,PYTHONPATH']
 
-        print(info['type'])
+        # sys.stderr.write("{}\n".format(info['type']))
 
         mpiexec = os.path.realpath(
             os.path.join(self.prefix(name), 'bin', 'mpiexec'))
 
         cmds[:0] = [mpiexec]
 
-        print(' '.join(cmds))
+        # sys.stderr.write(' '.join(cmds) + "\n")
         p = Popen(cmds, env=envs)
         p.wait()
         exit(p.returncode)
