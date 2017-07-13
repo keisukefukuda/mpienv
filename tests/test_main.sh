@@ -170,11 +170,8 @@ for i in range(0, comm.Get_size()):
 EOF
     # test Mpich
     install_mpich
-    echo "------------------"
     mpienv use --mpi4py mpich-3.2
-    echo "------------------"
     mpienv exec -n 2 python -c "from mpi4py import MPI"
-    echo "------------------"
     assertTrue $?
     mpienv exec -n 2 python $SCRIPT
     assertTrue $?
