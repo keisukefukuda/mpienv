@@ -39,8 +39,8 @@ function mpienv() {
             {
                 eval $(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
                            python $root/bin/use.py $*)
-                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                           python $root/bin/use.py $*
+                #env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                #           python $root/bin/use.py $*
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi
@@ -49,25 +49,25 @@ function mpienv() {
         "configure" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/configure.py $*
+                    python $root/bin/configure.py "$@"
             }
             ;;
         "build" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/build.py $*
+                    python $root/bin/build.py "$@"
             }
             ;;
         "install" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/install.py $*
+                    python $root/bin/install.py "$@"
             }
             ;;
         "clean" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/clean.py $*
+                    python $root/bin/clean.py "$@"
             }
             ;;
         "add" )
@@ -79,43 +79,49 @@ function mpienv() {
         "rm" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/rm.py $*
+                    python $root/bin/rm.py "$@"
             }
             ;;
         "rename" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/rename.py $*
+                    python $root/bin/rename.py "$@"
             }
             ;;
         "list" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/list.py $*
+                    python $root/bin/list.py "$@"
             }
             ;;
         "info" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/info.py $*
+                    python $root/bin/info.py "$@"
             }
             ;;
         "autodiscover" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/autodiscover.py $*
+                    python $root/bin/autodiscover.py "$@"
             }
             ;;
         "prefix" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/prefix.py $*
+                    python $root/bin/prefix.py "$@"
+            }
+            ;;
+        "exec" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    python $root/bin/exec.py "$@"
             }
             ;;
         "help" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python $root/bin/help.py $*
+                    python $root/bin/help.py "$@"
             }
             ;;
         * )

@@ -26,6 +26,10 @@ except ImportError:
     import builtins
 
 
+class UnknownMPI(RuntimeError):
+    pass
+
+
 def yes_no_input(msg):
     if hasattr(__builtin__, 'raw_input'):
         input = __builtin__.raw_input
@@ -258,30 +262,10 @@ class Manager(object):
             info['name'] = name
             self._installed[name] = info
 
-    def get_info(self, name):
-        """Obtain information of the MPI installed under prefix."""
-        prefix = os.path.join(self._mpi_dir, name)
+    def get_info_from_prefix(self, prefix):
+        info = {}
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
-
-        info = {}
-
-        if is_broken_symlink(prefix):
-            # This means the symlink under versions/ directory
-            # is broken.
-            # (The installed MPI has been removed after registration)
-            return {
-                'name': name,
-                'broken': True,
-            }
-        elif not os.path.exists(mpiexec):
-            # If `name` does not exist
-            return None
-        else:
-            # If `name` exists (would be the most cases)
-            info['broken'] = False
-
-        info['symlink'] = os.path.islink(prefix)
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
@@ -318,6 +302,34 @@ class Manager(object):
 
         return info
 
+    def prefix(self, name):
+        return os.path.join(self._mpi_dir, name)
+
+    def get_info(self, name):
+        """Obtain information of the MPI installed under prefix."""
+        info = {}
+
+        mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
+        if is_broken_symlink(self.prefix(name)):
+            # This means the symlink under versions/ directory
+            # is broken.
+            # (The installed MPI has been removed after registration)
+            return {
+                'name': name,
+                'broken': True,
+            }
+        elif not os.path.exists(mpiexec):
+            # If `name` does not exist
+            return None
+        else:
+            # If `name` exists (would be the most cases)
+            info['broken'] = False
+
+        info['symlink'] = os.path.islink(self.prefix(name))
+
+        info.update(self.get_info_from_prefix(self.prefix(name)))
+        return info
+
     def items(self):
         return self._installed.items()
 
@@ -352,7 +364,10 @@ class Manager(object):
         return None
 
     def get_current_name(self):
-        return next(name for name, info in self.items() if info['active'])
+        try:
+            return next(name for name, info in self.items() if info['active'])
+        except StopIteration:
+            raise UnknownMPI()
 
     def add(self, prefix, name=None):
         info = self.get_info(prefix)
@@ -455,6 +470,56 @@ class Manager(object):
             if not mpi4py.is_installed():
                 mpi4py.install()
             mpi4py.use()
+
+    def exec_(self, cmds):
+        envs = os.environ.copy()
+
+        try:
+            name = self.get_current_name()
+
+            mpi4py = MPI4Py(self, name)
+            if mpi4py.is_installed():
+                envs['PYTHONPATH'] = mpi4py.pylib_dir()
+
+            info = self.get_info(name)
+
+            # TODO(keisukefukuda): if hostfile is given, convert it
+
+        except UnknownMPI:
+            raise RuntimeError("Internal Error: Unknown MPI")
+
+        if info['broken']:
+            sys.stderr.write("Error: the current MPI is broken\n")
+            exit(-1)
+
+        if info['type'] == 'Open MPI':
+            pref = self.prefix(name)
+            if os.path.islink(pref):
+                pref = os.readlink(pref)
+
+            cmds[:0] = ['--prefix', pref]
+            cmds[:0] = ['-x', 'PYTHONPATH']
+            # Transfer some environ vars
+            vars = ['PATH', 'LD_LIBRARY_PATH']  # vars to be transferred
+            vars += [v for v in os.environ if v.startswith('OMPI_')]
+            for var in vars:
+                if var in envs:
+                    cmds[:0] = ['-x', var]
+
+        elif info['type'] in ['MPICH', 'MVAPICH']:
+            cmds[:0] = ['-genvlist', 'PATH,LD_LIBRARY_PATH,PYTHONPATH']
+
+        # sys.stderr.write("{}\n".format(info['type']))
+
+        mpiexec = os.path.realpath(
+            os.path.join(self.prefix(name), 'bin', 'mpiexec'))
+
+        cmds[:0] = [mpiexec]
+
+        # sys.stderr.write(' '.join(cmds) + "\n")
+        p = Popen(cmds, env=envs)
+        p.wait()
+        exit(p.returncode)
 
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))

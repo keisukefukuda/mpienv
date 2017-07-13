@@ -6,6 +6,7 @@ import pprint
 import sys
 
 from common import manager
+from common import UnknownMPI
 
 parser = argparse.ArgumentParser(
     prog='mpienv info',
@@ -17,13 +18,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    name = args.name or manager.get_current_name()
+    try:
+        name = manager.get_current_name()
+    except UnknownMPI:
+        sys.stderr.write("Error: the current MPI is not under control\n")
+        exit(-1)
 
-    if name in manager:
+    name = args.name or name
+
+    if name not in manager:
+        sys.stderr.write("Error: '{}' is unknown.\n".format(name))
+    else:
         if args.json:
             print(json.dumps(manager[name]))
         else:
             print(name)
             pprint.pprint(manager[name])
-    else:
-        sys.stderr.write("Error: {} is not installed.\n".format(name))
