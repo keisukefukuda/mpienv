@@ -495,7 +495,11 @@ class Manager(object):
             exit(-1)
 
         if info['type'] == 'Open MPI':
-            cmds[:0] = ['--prefix', os.readlink(self.prefix(name))]
+            pref = self.prefix(name)
+            if os.path.islink(pref):
+                pref = os.readlink(pref)
+
+            cmds[:0] = ['--prefix', pref]
             cmds[:0] = ['-x', 'PYTHONPATH']
             # Transfer some environ vars
             vars = ['PATH', 'LD_LIBRARY_PATH']  # vars to be transferred

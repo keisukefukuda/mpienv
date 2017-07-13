@@ -39,12 +39,12 @@ oneTimeTearDown() {
 
 install_mpich() {
     export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install mpich-3.2 # >/dev/null 2>&1 
+    mpienv install mpich-3.2 >/dev/null 2>&1
 }
 
 install_ompi() {
     export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
-    mpienv install openmpi-2.1.1 # >/dev/null 2>&1 
+    mpienv install openmpi-2.1.1 >/dev/null 2>&1
 }
 
 #-----------------------------------------------------------
@@ -159,7 +159,7 @@ test_mpi4py() {
     #mpienv use --mpi4py mpich-3.2
     install_ompi
     mpienv use --mpi4py openmpi-2.1.1
-
+    
     mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
 
