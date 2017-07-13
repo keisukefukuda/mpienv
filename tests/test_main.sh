@@ -168,7 +168,7 @@ for i in range(0, comm.Get_size()):
         sys.stdout.flush()
     comm.barrier()
 EOF
-    # test mpich
+    # test Mpich
     install_mpich
     echo "------------------"
     mpienv use --mpi4py mpich-3.2
