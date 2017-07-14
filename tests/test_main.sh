@@ -67,6 +67,7 @@ fi
 #-----------------------------------------------------------
 test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
+    mpienv list
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
 }
@@ -82,6 +83,7 @@ test_1mpi() {
     # Test json output
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
     assertEquals 0 $?
+
 
     # Test rename
     # rename mpich-3.2 -> my-cool-mpi

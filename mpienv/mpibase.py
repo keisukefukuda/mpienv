@@ -15,5 +15,5 @@ class MpiBase(object):
             ex2 = os.readlink(ex)
             if not os.path.isabs(ex2):
                 ex2 = os.path.join(os.path.dirname(ex), ex2)
-            
+
         return ex2

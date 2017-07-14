@@ -279,6 +279,8 @@ class Manager(object):
         conf_json = os.path.join(self._root_dir, "config.json")
         if os.path.exists(conf_json):
             with open(conf_json) as f:
+                pass #sys.stderr.write(f.read())
+            with open(conf_json) as f:
                 conf = json.load(f)
         else:
             sys.stderr.write("Warning: Cannot find config file\n")
@@ -294,7 +296,7 @@ class Manager(object):
 
         mpi_class = MPI(mpiexec)
         mpi = mpi_class(prefix, self._conf)
-        print(mpi.mpiexec)
+        # sys.stderr.write("{}\n".format(mpi.mpiexec))
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
@@ -545,7 +547,7 @@ class Manager(object):
 
         cmds[:0] = [mpiexec]
 
-        # sys.stderr.write(' '.join(cmds) + "\n")
+        sys.stderr.write(' '.join(cmds) + "\n")
         p = Popen(cmds, env=envs)
         p.wait()
         exit(p.returncode)
