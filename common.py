@@ -2,6 +2,7 @@
 
 import distutils.spawn
 import glob
+import json
 import os.path
 import re
 import shutil
@@ -10,7 +11,6 @@ from subprocess import check_output
 from subprocess import PIPE
 from subprocess import Popen
 import sys
-import yaml
 
 from mpienv.ompi import parse_ompi_info
 from mpienv.py import MPI4Py
@@ -275,10 +275,10 @@ class Manager(object):
             self._installed[name] = info
 
     def _load_config(self):
-        conf_yml = os.path.join(self._root_dir, "config.yml")
-        if os.path.exists(conf_yml):
-            with open(conf_yml) as f:
-                conf = yaml.load(f)
+        conf_json = os.path.join(self._root_dir, "config.json")
+        if os.path.exists(conf_json):
+            with open(conf_json) as f:
+                conf = json.load(f)
         else:
             sys.stderr.write("Warning: Cannot find config file\n")
             conf = {}
