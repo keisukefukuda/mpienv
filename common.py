@@ -248,8 +248,8 @@ class Manager(object):
         mkdir_p(self._cache_dir)
         mkdir_p(self._build_dir)
 
-        self._load_mpi_info()
         self._load_config()
+        self._load_mpi_info()
 
     def root_dir(self):
         return self._root_dir
@@ -292,7 +292,8 @@ class Manager(object):
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
 
-        mpi = MPI(mpiexec)(prefix, {})
+        mpi_class = MPI(mpiexec)
+        mpi = mpi_class(prefix, self._conf)
         print(mpi.mpiexec)
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
