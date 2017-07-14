@@ -173,8 +173,6 @@ EOF
     mpienv use --mpi4py mpich-3.2
     mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
-    mpienv exec -n 2 python $SCRIPT
-    assertTrue $?
     OUT=$(mpienv use --mpi4py mpich-3.2; mpienv exec -n 2 python $SCRIPT)
     assertEquals "01" "$OUT"
 
@@ -182,8 +180,6 @@ EOF
     install_ompi
     mpienv use --mpi4py openmpi-2.1.1
     mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue $?
-    mpienv exec -n 2 python $SCRIPT
     assertTrue $?
     OUT=$(mpienv use --mpi4py openmpi-2.1.1; mpienv exec -n 2 python $SCRIPT)
     assertEquals "01" "$OUT"
