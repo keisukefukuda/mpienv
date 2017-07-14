@@ -10,6 +10,7 @@ from subprocess import check_output
 from subprocess import PIPE
 from subprocess import Popen
 import sys
+import yaml
 
 from mpienv.ompi import parse_ompi_info
 from mpienv.py import MPI4Py
@@ -214,6 +215,16 @@ def mkdir_p(path):
         os.makedirs(path)
 
 
+DefaultConf = {
+    'mpich': {
+    },
+    'mvapich': {
+    },
+    'openmpi': {
+    },
+}
+
+
 class Manager(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
@@ -236,7 +247,8 @@ class Manager(object):
         mkdir_p(self._cache_dir)
         mkdir_p(self._build_dir)
 
-        self._load_info()
+        self._load_mpi_info()
+        self._load_config()
 
     def root_dir(self):
         return self._root_dir
@@ -253,7 +265,7 @@ class Manager(object):
     def pylib_dir(self):
         return self._pylib_dir
 
-    def _load_info(self):
+    def _load_mpi_info(self):
         # Get the current status of the MPI environment.
         self._installed = {}
         for prefix in glob.glob(os.path.join(self._mpi_dir, '*')):
@@ -261,6 +273,18 @@ class Manager(object):
             info = self.get_info(prefix)
             info['name'] = name
             self._installed[name] = info
+
+    def _load_config(self):
+        conf_yml = os.path.join(self._root_dir, "config.yml")
+        if os.path.exists(conf_yml):
+            with open(conf_yml) as f:
+                conf = yaml.load(f)
+        else:
+            sys.stderr.write("Warning: Cannot find config file\n")
+            conf = {}
+
+        self._conf = DefaultConf.copy()
+        self._conf.update(conf)
 
     def get_info_from_prefix(self, prefix):
         info = {}
