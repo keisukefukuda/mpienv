@@ -12,6 +12,7 @@ from subprocess import PIPE
 from subprocess import Popen
 import sys
 
+from mpienv.mpi import MPI
 from mpienv.ompi import parse_ompi_info
 from mpienv.py import MPI4Py
 
@@ -290,6 +291,9 @@ class Manager(object):
         info = {}
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_h = os.path.join(prefix, 'include', 'mpi.h')
+
+        mpi = MPI(mpiexec)(prefix, {})
+        print(mpi.mpiexec)
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()

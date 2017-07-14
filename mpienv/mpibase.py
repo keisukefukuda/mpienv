@@ -2,5 +2,6 @@
 
 
 class MpiBase(object):
-    def __init__(self):
-        pass
+    def __init__(self, prefix, conf):
+        self._prefix = prefix
+        self._conf = conf
