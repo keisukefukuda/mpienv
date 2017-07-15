@@ -279,7 +279,7 @@ class Manager(object):
         conf_json = os.path.join(self._root_dir, "config.json")
         if os.path.exists(conf_json):
             with open(conf_json) as f:
-                pass #sys.stderr.write(f.read())
+                pass  # sys.stderr.write(f.read())
             with open(conf_json) as f:
                 conf = json.load(f)
         else:
@@ -296,7 +296,7 @@ class Manager(object):
 
         mpi_class = MPI(mpiexec)
         mpi = mpi_class(prefix, self._conf)
-        # sys.stderr.write("{}\n".format(mpi.mpiexec))
+        sys.stderr.write("{}\n".format(mpi.mpiexec))
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()

@@ -65,6 +65,15 @@ fi
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
+test_qc() {
+    autopep8 --exclude pylib --diff -r . --global-config .pep8 | tee check_autopep8
+    test ! -s check_autopep8
+    assertEquals 0 $?
+
+    flake8 $(find . -name "*.py" | grep -v pylib)
+    assertEquals 0 $?
+}
+
 test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
     mpienv list
