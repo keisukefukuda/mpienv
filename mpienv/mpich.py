@@ -6,7 +6,7 @@ class Mpich(mpibase.MpiBase):
     def __init__(self, prefix, conf):
         super(Mpich, self).__init__(prefix, conf)
 
-    def bin_file(self):
+    def bin_files(self):
         return util.glob_list([self.prefix, 'bin'],
                               ['hydra_*',
                                'mpi*',
@@ -24,3 +24,6 @@ class Mpich(mpibase.MpiBase):
                                'mpi*.mod',
                                'opa*.h',
                                'primitives'])
+
+    def libexec_files(self):
+        return []

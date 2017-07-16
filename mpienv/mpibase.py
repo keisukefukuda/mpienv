@@ -40,16 +40,16 @@ class MpiBase(object):
             os.symlink(src, dst)
 
     def bin_files(self):
-        return []
+        assert False, "Must be overriden"
 
     def inc_files(self):
-        return []
+        assert False, "Must be overriden"
 
     def lib_files(self):
-        return []
+        assert False, "Must be overriden"
 
     def libexec_files(self):
-        return []
+        assert False, "Must be overriden"
 
     def use(self, name, mpi4py=False):
         # Defined in child classes (Mpich, Mvapich, OpenMPI ,etc)
@@ -58,6 +58,7 @@ class MpiBase(object):
         inc_files = self.inc_files()
         libexec_files = self.libexec_files()
 
+        # sys.stderr.write("use: self={}\n".format(self))
         shim = self._conf['shims_dir']
         if os.path.exists(shim):
             shutil.rmtree(shim)

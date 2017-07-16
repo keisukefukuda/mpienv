@@ -293,7 +293,8 @@ class Manager(object):
 
         mpi_class = MPI(mpiexec)
         mpi = mpi_class(prefix, self._conf)
-        sys.stderr.write("{}\n".format(mpi.mpiexec))
+        # sys.stderr.write("{}\n".format(mpi.mpiexec))
+        mpi
 
         p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
         out, err = p.communicate()
@@ -472,8 +473,6 @@ class Manager(object):
 
         info = self.get_info(name)
         mpi = self.get_mpi(name)
-
-        sys.stderr.write("{}\n".format(mpi))
 
         if isinstance(mpi, BrokenMPI):
             sys.stderr.write("mpienv-use: Error: "
