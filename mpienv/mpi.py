@@ -53,11 +53,23 @@ def _encode(s):
         return s
 
 
+def _is_broken_symlink(path):
+    return os.path.islink(path) and not os.path.exists(path)
+
+
+class BrokenMPI(object):
+    def __init__(self):
+        pass
+
+
 def MPI(mpiexec):
     """Return the class of the MPI"""
     # TODO(keisukefukuda): Handle macports MPIs
     if not os.path.exists(mpiexec):
         raise RuntimeError("Internal Error: mpiexec not found")
+
+    if _is_broken_symlink(mpiexec):
+        return BrokenMPI
 
     p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
     out, err = p.communicate()
