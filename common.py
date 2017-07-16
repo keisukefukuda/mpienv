@@ -494,7 +494,7 @@ class Manager(object):
         try:
             name = self.get_current_name()
 
-            mpi4py = MPI4Py(self, name)
+            mpi4py = MPI4Py(self._conf, name)
             if mpi4py.is_installed():
                 envs['PYTHONPATH'] = mpi4py.pylib_dir()
 
