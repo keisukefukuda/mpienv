@@ -38,7 +38,6 @@ class OpenMPI(mpibase.MpiBase):
             cmds[:0] = ['-x', v]
 
         pref = self.prefix
-        # TODO(keisukefukuda) Implement --prefix option for OpenMPI
         cmds[:0] = ['-prefix', pref]
 
         cmds[:0] = [self.mpiexec]
