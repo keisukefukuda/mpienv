@@ -61,6 +61,10 @@ class BrokenMPI(object):
     def __init__(self):
         pass
 
+    @property
+    def broken(self):
+        return True
+
 
 def MPI(mpiexec):
     """Return the class of the MPI"""

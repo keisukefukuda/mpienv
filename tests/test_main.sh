@@ -97,26 +97,26 @@ test_1mpi() {
     # Test rename
     # rename mpich-3.2 -> my-cool-mpi
     mpienv rename mpich-3.2 my-cool-mpi
-    assertTrue $?
+    assertTrue "$?"
     mpienv list | grep -qE 'my-cool-mpi'
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -qE 'mpich-3.2'
-    assertFalse $?
+    assertFalse "$?"
 
     # Rename back to mpich-3.2
     mpienv rename my-cool-mpi mpich-3.2
     mpienv list | grep -qE 'mpich-3.2'
-    assertTrue $?
+    assertTrue "$?"
 
     # Remove mpich-3.2
     install_ompi
     mpienv use openmpi-2.1.1
     mpienv rm mpich-3.2
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -q mpich-3.2
-    assertFalse $?
+    assertFalse "$?"
 }
 
 test_2mpis() {
@@ -124,10 +124,10 @@ test_2mpis() {
     install_ompi
 
     mpienv list | grep -qE 'mpich-3.2'
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -qE 'openmpi-2.1.1'
-    assertTrue $?
+    assertTrue "$?"
 }
 
 get_key() {
@@ -148,7 +148,7 @@ test_info() {
     mpienv info --json >b.json
 
     diff -q a.json b.json >/dev/null
-    assertTrue $?
+    assertTrue "$?"
 
     rm -f a.json b.json
 

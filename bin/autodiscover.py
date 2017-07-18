@@ -69,7 +69,7 @@ def investigate_path(path, to_add):
         else:
             prints("--------------------------------------")
             prints("Found {}".format(mpiexec))
-            prints(pprint.pformat(manager.get_info(path)))
+            prints(pprint.pformat(manager.get_mpi_from_prefix(path)))
             # Install the new MPI
             if to_add:
                 try:

@@ -14,7 +14,6 @@ parser.add_argument('name', type=str,
 
 
 def main():
-
     args = parser.parse_args()
     manager.use(args.name, mpi4py=args.mpi4py)
 

@@ -1,4 +1,7 @@
 # coding: utf-8
+import re
+from subprocess import check_output
+
 from mpienv import mpibase
 from mpienv import util
 
@@ -6,6 +9,22 @@ from mpienv import util
 class Mpich(mpibase.MpiBase):
     def __init__(self, prefix, conf):
         super(Mpich, self).__init__(prefix, conf)
+
+        out = util.decode(check_output([self.mpiexec, '--version']))
+
+        self._type = "MPICH"
+
+        # Parse 'Configure options' section
+        # Config options are like this:
+        # '--disable-option-checking' '--prefix=NONE' '--enable-cuda'
+        m = re.search(r'Configure options:\s+(.*)$', out, re.MULTILINE)
+        conf_str = m.group(1)
+        self._conf_params = [s.replace("'", '') for s
+                             in re.findall(r'\'[^\']+\'', conf_str)]
+
+        m = re.search(r'Version:\s+(\S+)', out, re.MULTILINE)
+        self._version = m.group(1)
+        self._default_name = "mpich-{}".format(self._version)
 
     def bin_files(self):
         return util.glob_list([self.prefix, 'bin'],

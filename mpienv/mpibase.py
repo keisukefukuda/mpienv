@@ -1,31 +1,100 @@
 # coding: utf-8
 
+import distutils.spawn
 import os.path
 import shutil
 from subprocess import Popen
 import sys
 
 from mpienv.py import MPI4Py
+import mpienv.util
+
+
+def _which(cmd):
+    exe = distutils.spawn.find_executable(cmd)
+    if exe is None:
+        return None
+
+    exe = mpienv.util.decode(os.path.realpath(exe))
+    return exe
 
 
 class MpiBase(object):
     def __init__(self, prefix, conf):
         self._prefix = prefix
         self._conf = conf
+        self._name = None
+
+    def to_dict(self):
+        return {
+            'default_name': self.default_name,
+            'version': self.version,
+            'type': self.type_,
+            'active': self.is_active,
+            'prefix': self.prefix,
+            'conf_params': self.conf_params,
+        }
 
     @property
     def prefix(self):
-        return self._prefix
+        pref = self._prefix
+        if os.path.islink(pref):
+            pref = os.readlink(pref)
+        return pref
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def conf_params(self):
+        return self._conf_params
+
+    @property
+    def version(self):
+        return self._version
+
+    @property
+    def default_name(self):
+        return self._default_name
 
     @property
     def mpiexec(self):
-        ex = os.path.join(self._prefix, 'bin', 'mpiexec')
+        ex = os.path.join(self.prefix, 'bin', 'mpiexec')
         if os.path.islink(ex):
             ex2 = os.readlink(ex)
             if not os.path.isabs(ex2):
                 ex2 = os.path.join(os.path.dirname(ex), ex2)
+            ex = ex2
+        return ex
 
-        return ex2
+    @property
+    def is_symlink(self):
+        if self._name is None:
+            raise RuntimeError("Internal Error:"
+                               "is_symlink is not allowed for "
+                               "non-installed MPI")
+        return os.path.join(self._conf['mpi_dir'], self.name)
+
+    @property
+    def is_active(self):
+        ex1 = self.mpiexec
+        ex2 = _which('mpiexec')
+
+        if os.path.islink(ex1):
+            ex1 = os.readlink(ex1)
+        if os.path.islink(ex2):
+            ex2 = os.readlink(ex2)
+
+        return ex1 == ex2
+
+    @property
+    def is_broken(self):
+        return False
 
     def _mirror_file(self, f, dst_dir):
         dst = os.path.join(dst_dir, os.path.basename(f))
@@ -40,6 +109,10 @@ class MpiBase(object):
             # ordinary files
             src = f
             os.symlink(src, dst)
+
+    @property
+    def type_(self):
+        return self._type
 
     def bin_files(self):
         assert False, "Must be overriden"
