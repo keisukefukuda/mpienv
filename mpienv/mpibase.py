@@ -2,6 +2,8 @@
 
 import os.path
 import shutil
+from subprocess import Popen
+import sys
 
 from mpienv.py import MPI4Py
 
@@ -50,6 +52,17 @@ class MpiBase(object):
 
     def libexec_files(self):
         assert False, "Must be overriden"
+
+    def exec_(self):
+        assert False, "Must be overriden"
+
+    def run_cmd(self, cmd, extra_envs):
+        envs = os.environ.copy()
+        envs.update(extra_envs)
+        sys.stderr.write("MpiBase::run_cmd(): {}\n".format(' '.join(cmd)))
+        p = Popen(cmd, env=envs)
+        p.wait()
+        exit(p.returncode)
 
     def use(self, name, mpi4py=False):
         # Defined in child classes (Mpich, Mvapich, OpenMPI ,etc)

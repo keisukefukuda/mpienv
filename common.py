@@ -15,7 +15,6 @@ import sys
 from mpienv.mpi import BrokenMPI
 from mpienv.mpi import MPI
 from mpienv.ompi import parse_ompi_info
-from mpienv.py import MPI4Py
 
 try:
     from subprocess import DEVNULL  # py3k
@@ -489,54 +488,45 @@ class Manager(object):
         mpi.use(name, mpi4py=mpi4py)
 
     def exec_(self, cmds):
-        envs = os.environ.copy()
-
-        try:
-            name = self.get_current_name()
-
-            mpi4py = MPI4Py(self._conf, name)
-            if mpi4py.is_installed():
-                envs['PYTHONPATH'] = mpi4py.pylib_dir()
-
-            info = self.get_info(name)
-
-            # TODO(keisukefukuda): if hostfile is given, convert it
-
-        except UnknownMPI:
-            raise RuntimeError("Internal Error: Unknown MPI")
-
-        if info['broken']:
-            sys.stderr.write("Error: the current MPI is broken\n")
+        name = self.get_current_name()
+        if name not in self:
+            sys.stderr.write("mpienv-use: Error: "
+                             "unknown MPI installation: "
+                             "'{}'\n".format(name))
             exit(-1)
 
-        if info['type'] == 'Open MPI':
-            pref = self.prefix(name)
-            if os.path.islink(pref):
-                pref = os.readlink(pref)
+        mpi = self.get_mpi(name)
+        mpi.exec_(cmds)
 
-            cmds[:0] = ['--prefix', pref]
-            cmds[:0] = ['-x', 'PYTHONPATH']
-            # Transfer some environ vars
-            vars = ['PATH', 'LD_LIBRARY_PATH']  # vars to be transferred
-            vars += [v for v in os.environ if v.startswith('OMPI_')]
-            for var in vars:
-                if var in envs:
-                    cmds[:0] = ['-x', var]
+        # TODO(keisukefukuda): if hostfile is given, convert it
+        # if info['type'] == 'Open MPI':
+        #     pref = self.prefix(name)
+        #     if os.path.islink(pref):
+        #         pref = os.readlink(pref)
 
-        elif info['type'] in ['MPICH', 'MVAPICH']:
-            cmds[:0] = ['-genvlist', 'PATH,LD_LIBRARY_PATH,PYTHONPATH']
+        #     cmds[:0] = ['--prefix', pref]
+        #     cmds[:0] = ['-x', 'PYTHONPATH']
+        #     # Transfer some environ vars
+        #     vars = ['PATH', 'LD_LIBRARY_PATH']  # vars to be transferred
+        #     vars += [v for v in os.environ if v.startswith('OMPI_')]
+        #     for var in vars:
+        #         if var in envs:
+        #             cmds[:0] = ['-x', var]
 
-        # sys.stderr.write("{}\n".format(info['type']))
+        # elif info['type'] in ['MPICH', 'MVAPICH']:
+        #     cmds[:0] = ['-genvlist', 'PATH,LD_LIBRARY_PATH,PYTHONPATH']
 
-        mpiexec = os.path.realpath(
-            os.path.join(self.prefix(name), 'bin', 'mpiexec'))
+        # # sys.stderr.write("{}\n".format(info['type']))
 
-        cmds[:0] = [mpiexec]
+        # mpiexec = os.path.realpath(
+        #     os.path.join(self.prefix(name), 'bin', 'mpiexec'))
 
-        sys.stderr.write(' '.join(cmds) + "\n")
-        p = Popen(cmds, env=envs)
-        p.wait()
-        exit(p.returncode)
+        # cmds[:0] = [mpiexec]
+
+        # sys.stderr.write(' '.join(cmds) + "\n")
+        # p = Popen(cmds, env=envs)
+        # p.wait()
+        # exit(p.returncode)
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or

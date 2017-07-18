@@ -1,3 +1,4 @@
+# coding: utf-8
 from mpienv import mpibase
 from mpienv import util
 
@@ -27,3 +28,9 @@ class Mpich(mpibase.MpiBase):
 
     def libexec_files(self):
         return []
+
+    def exec_(self, cmds):
+        # TODO(keisukefukuda): if cmds include '-genvall'
+        cmds[:0] = ['-genvlist', 'PYTHONPATH,PATH,LD_LIBRARY_PATH']
+        cmds[:0] = [self.mpiexec]
+        self.run_cmd(cmds, {})
