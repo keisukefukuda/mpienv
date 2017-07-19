@@ -29,7 +29,8 @@ class OpenMPI(mpibase.MpiBase):
         self._type = 'Open MPI'
         self._version = ver
         self._mpi_version = mpi_ver
-        self._conf_params = []  # TODO(keisukefukuda)
+        # Open MPI does not provide a way to get configure params
+        self._conf_params = []
         self._default_name = "openmpi-{}".format(ver)
         self._c = ompi.get('bindings:c')
         self._cxx = ompi.get('bindings:cxx')

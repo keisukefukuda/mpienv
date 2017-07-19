@@ -39,6 +39,6 @@ def encode(s):
 
 def dump_json(obj):
     try:
-        return json.dump(obj)
+        return json.dumps(obj)
     except TypeError:
         return obj.to_dict()

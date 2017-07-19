@@ -16,7 +16,7 @@ if __name__ == "__main__":
     name = args.name or manager.get_current_name()
 
     if name in manager:
-        sys.stdout.write(manager[name]['prefix'])
+        sys.stdout.write(manager[name].prefix)
         if sys.stdout.isatty():
             sys.stdout.write("\n")
 

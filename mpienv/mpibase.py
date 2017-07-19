@@ -4,7 +4,7 @@ import distutils.spawn
 import os.path
 import shutil
 from subprocess import Popen
-import sys
+import sys  # NOQA
 
 from mpienv.py import MPI4Py
 import mpienv.util
@@ -95,6 +95,9 @@ class MpiBase(object):
         ex1 = self.mpiexec
         ex2 = _which('mpiexec')
 
+        if ex2 is None or not os.path.exists(ex2):
+            return False
+
         if os.path.islink(ex1):
             ex1 = os.readlink(ex1)
         if os.path.islink(ex2):
@@ -142,7 +145,7 @@ class MpiBase(object):
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()
         envs.update(extra_envs)
-        sys.stderr.write("MpiBase::run_cmd(): {}\n".format(' '.join(cmd)))
+        # sys.stderr.write("MpiBase::run_cmd(): {}\n".format(' '.join(cmd)))
         p = Popen(cmd, env=envs)
         p.wait()
         exit(p.returncode)
