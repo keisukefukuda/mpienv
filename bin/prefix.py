@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from common import manager
+from mpienv import manager
 
 parser = argparse.ArgumentParser(
     prog='mpienv prefix',

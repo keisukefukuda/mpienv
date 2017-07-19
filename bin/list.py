@@ -4,8 +4,8 @@ import argparse
 import json
 import sys
 
-from common import manager
-import mpienv.util
+from mpienv import manager
+from mpienv import util
 
 parser = argparse.ArgumentParser(
     prog='mpienv list', description='List all available MPI environments.')
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     lst.sort(key=lambda x: x.name)
     if args.json:
         lst = {name: info for name, info in manager.items()}
-        json.dump(lst, sys.stdout, default=mpienv.util.dump_json)
+        json.dump(lst, sys.stdout, default=util.dump_json)
     else:
         print("\nInstalled MPIs:\n")
         for info in lst:

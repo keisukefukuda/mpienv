@@ -6,7 +6,7 @@ import os.path
 import pprint
 import sys
 
-from common import manager
+from mpienv import manager
 
 
 parser = argparse.ArgumentParser(

@@ -2,8 +2,8 @@
 
 import argparse
 
-from common import manager
 from mpienv.installer import create_installer
+from mpienv import manager
 
 
 parser = argparse.ArgumentParser(

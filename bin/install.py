@@ -3,9 +3,9 @@
 import argparse
 import sys
 
-from common import manager
 from mpienv.installer import create_installer
 from mpienv.installer import list_avail
+from mpienv import manager
 
 parser = argparse.ArgumentParser(
     prog='mpienv build', description='Install a new MPI environment.')

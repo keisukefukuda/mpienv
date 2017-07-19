@@ -2,7 +2,7 @@
 
 import argparse
 
-from common import manager
+from mpienv import manager
 
 parser = argparse.ArgumentParser(
     prog='mpienv rename', description='Rename an environment.')

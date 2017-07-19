@@ -5,8 +5,8 @@ import json
 import pprint
 import sys
 
-from common import manager
-from common import UnknownMPI
+from mpienv import manager
+from mpienv import UnknownMPI
 from mpienv import util
 
 parser = argparse.ArgumentParser(
