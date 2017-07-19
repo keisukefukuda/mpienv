@@ -57,10 +57,6 @@ def which(cmd):
     return exe
 
 
-def is_broken_symlink(path):
-    return os.path.islink(path) and not os.path.exists(path)
-
-
 def filter_path(proj_root, paths):
     vers = glob.glob(os.path.join(proj_root, 'versions', '*'))
 
@@ -175,6 +171,12 @@ class Manager(object):
         return os.path.join(self._mpi_dir, name)
 
     def get_mpi_from_name(self, name):
+        if name not in self:
+            sys.stderr.write("mpienv-use: Error: "
+                             "unknown MPI installation: "
+                             "'{}'\n".format(name))
+            exit(-1)
+
         mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
         mpi_class = MPI(mpiexec)
         return mpi_class(self.prefix(name), self._conf, name)
@@ -282,12 +284,6 @@ class Manager(object):
         shutil.move(path_from, path_to)
 
     def use(self, name, mpi4py=False):
-        if name not in self:
-            sys.stderr.write("mpienv-use: Error: "
-                             "unknown MPI installation: "
-                             "'{}'\n".format(name))
-            exit(-1)
-
         mpi = self.get_mpi_from_name(name)
 
         if isinstance(mpi, BrokenMPI):
@@ -306,12 +302,6 @@ class Manager(object):
 
     def exec_(self, cmds):
         name = self.get_current_name()
-        if name not in self:
-            sys.stderr.write("mpienv-use: Error: "
-                             "unknown MPI installation: "
-                             "'{}'\n".format(name))
-            exit(-1)
-
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds)
 
