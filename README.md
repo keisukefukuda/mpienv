@@ -76,7 +76,7 @@ After you find MPI installations on your system, you can register them
 using `mpienv add` command.
 
 ```bash
-$ mpienv add /opt/local/bin
+$ mpienv add /opt/local
 ```
 
 Let's check if the MPI is added properly:
