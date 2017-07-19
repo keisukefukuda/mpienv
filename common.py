@@ -177,7 +177,7 @@ class Manager(object):
     def get_mpi_from_name(self, name):
         mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
         mpi_class = MPI(mpiexec)
-        return mpi_class(self.prefix(name), self._conf)
+        return mpi_class(self.prefix(name), self._conf, name)
 
     def items(self):
         return self._installed.items()
@@ -187,7 +187,8 @@ class Manager(object):
 
     def __getitem__(self, key):
         try:
-            return next(mpi for mpi in self._installed if mpi.name == key)
+            return next(mpi for name, mpi in self._installed.items()
+                        if name == key)
         except StopIteration:
             raise KeyError()
 
@@ -265,13 +266,8 @@ class Manager(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        path = os.path.join(self._mpi_dir, name)
-
         if (not prompt) or yes_no_input("Remove '{}' ?".format(name)):
-            if mpi.is_symlink:
-                os.remove(path)
-            else:
-                shutil.rmtree(path)
+            mpi.remove()
 
     def rename(self, name_from, name_to):
         if name_from not in self:
@@ -300,7 +296,7 @@ class Manager(object):
                              "".format(name))
             exit(-1)
 
-        if mpi.broken:
+        if mpi.is_broken:
             sys.stderr.write("mpienv-use: Error: "
                              "'{}' seems to be broken. Maybe it is removed.\n"
                              "".format(name))

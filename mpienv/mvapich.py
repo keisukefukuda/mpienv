@@ -8,11 +8,11 @@ from mpienv import util
 
 
 class Mvapich(mpich.Mpich):
-    def __init__(self, prefix, conf):
-        super(Mvapich, self).__init__(prefix, conf)
+    def __init__(self, *args):
+        super(Mvapich, self).__init__(*args)
 
         self._type = 'MVAPICH'
-        mpi_h = os.path.join(prefix, 'include', 'mpi.h')
+        mpi_h = os.path.join(self.prefix, 'include', 'mpi.h')
         if not os.path.exists(mpi_h):
             raise RuntimeError("Error: Cannot find {}".format(mpi_h))
 

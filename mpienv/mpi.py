@@ -62,7 +62,7 @@ class BrokenMPI(object):
         pass
 
     @property
-    def broken(self):
+    def is_broken(self):
         return True
 
 

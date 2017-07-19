@@ -15,8 +15,8 @@ def _call_ompi_info(bin):
 
 
 class OpenMPI(mpibase.MpiBase):
-    def __init__(self, prefix, conf):
-        super(OpenMPI, self).__init__(prefix, conf)
+    def __init__(self, *args):
+        super(OpenMPI, self).__init__(*args)
 
         self._type = 'Open MPI'
 
@@ -25,9 +25,6 @@ class OpenMPI(mpibase.MpiBase):
 
         ver = ompi.get('ompi:version:full')
         mpi_ver = ompi.get('mpi-api:version:full')
-
-        if os.path.islink(prefix):
-            prefix = os.path.realpath(prefix)
 
         self._type = 'Open MPI'
         self._version = ver

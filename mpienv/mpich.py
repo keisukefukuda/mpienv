@@ -7,8 +7,8 @@ from mpienv import util
 
 
 class Mpich(mpibase.MpiBase):
-    def __init__(self, prefix, conf):
-        super(Mpich, self).__init__(prefix, conf)
+    def __init__(self, *args):
+        super(Mpich, self).__init__(*args)
 
         out = util.decode(check_output([self.mpiexec, '--version']))
 

@@ -7,6 +7,7 @@ import sys
 
 from common import manager
 from common import UnknownMPI
+from mpienv import util
 
 parser = argparse.ArgumentParser(
     prog='mpienv info',
@@ -30,7 +31,7 @@ if __name__ == "__main__":
         sys.stderr.write("Error: '{}' is unknown.\n".format(name))
     else:
         if args.json:
-            print(json.dumps(manager[name]))
+            print(json.dumps(manager[name], default=util.dump_json))
         else:
             print(name)
             pprint.pprint(manager[name])

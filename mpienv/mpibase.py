@@ -20,19 +20,24 @@ def _which(cmd):
 
 
 class MpiBase(object):
-    def __init__(self, prefix, conf):
+    def __init__(self, prefix, conf, name=None):
         self._prefix = prefix
         self._conf = conf
-        self._name = None
+        self._name = name
 
     def to_dict(self):
         return {
-            'default_name': self.default_name,
-            'version': self.version,
-            'type': self.type_,
             'active': self.is_active,
-            'prefix': self.prefix,
+            'broken': self.is_broken,
             'conf_params': self.conf_params,
+            'default_name': self.default_name,
+            'mpicc': self.mpicc,
+            'mpicxx': self.mpicxx,
+            'mpiexec': self.mpiexec,
+            'prefix': self.prefix,
+            'symlink': self.is_symlink,
+            'type': self.type_,
+            'version': self.version,
         }
 
     @property
@@ -65,12 +70,17 @@ class MpiBase(object):
     @property
     def mpiexec(self):
         ex = os.path.join(self.prefix, 'bin', 'mpiexec')
-        if os.path.islink(ex):
-            ex2 = os.readlink(ex)
-            if not os.path.isabs(ex2):
-                ex2 = os.path.join(os.path.dirname(ex), ex2)
-            ex = ex2
-        return ex
+        return os.path.realpath(ex)
+
+    @property
+    def mpicxx(self):
+        ex = os.path.join(self.prefix, 'bin', 'mpicxx')
+        return os.path.realpath(ex)
+
+    @property
+    def mpicc(self):
+        ex = os.path.join(self.prefix, 'bin', 'mpicc')
+        return os.path.realpath(ex)
 
     @property
     def is_symlink(self):
@@ -173,3 +183,16 @@ class MpiBase(object):
             if not mpi4py.is_installed():
                 mpi4py.install()
             mpi4py.use()
+
+    def is_installed_by_mpienv(self):
+        if self._name is None:
+            return False
+        mpi_prefix = os.path.abspath(os.path.join(self.prefix, os.pardir))
+        return mpi_prefix == self._conf['mpi_dir']
+
+    def remove(self):
+        assert self._name is not None
+        if self.is_installed_by_mpienv():
+            shutil.rmtree(self.prefix)
+        else:
+            os.remove(os.path.join(self._conf['mpi_dir'], self.name))
