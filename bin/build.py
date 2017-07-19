@@ -3,7 +3,7 @@
 import argparse
 
 from mpienv.installer import create_installer
-from mpienv import manager
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
@@ -24,7 +24,7 @@ parser.add_argument('mpi', type=str, metavar="[MPI]",
 def main():
     args = parser.parse_args()
 
-    inst = create_installer(manager, args.mpi, args.name,
+    inst = create_installer(mpienv, args.mpi, args.name,
                             verbose=args.verbose)
 
     inst.build(npar=args.npar)

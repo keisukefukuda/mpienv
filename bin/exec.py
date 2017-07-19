@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from mpienv import manager
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
@@ -16,7 +16,7 @@ parser.add_argument('args', nargs=argparse.REMAINDER,
 def main():
     args = sys.argv[1:]
 
-    manager.exec_(args)
+    mpienv.exec_(args)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import argparse
 import json
 import sys
 
-from mpienv import manager
+from mpienv import mpienv
 from mpienv import util
 
 parser = argparse.ArgumentParser(
@@ -30,15 +30,15 @@ def _print_info(mpi, max_label_len):
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    if len(manager.keys()) == 0:
+    if len(mpienv.keys()) == 0:
         exit(0)
 
-    max_label_len = max(len(name) for name in manager.keys())
+    max_label_len = max(len(name) for name in mpienv.keys())
 
-    lst = [info for name, info in manager.items()]
+    lst = [info for name, info in mpienv.items()]
     lst.sort(key=lambda x: x.name)
     if args.json:
-        lst = {name: info for name, info in manager.items()}
+        lst = {name: info for name, info in mpienv.items()}
         json.dump(lst, sys.stdout, default=util.dump_json)
     else:
         print("\nInstalled MPIs:\n")

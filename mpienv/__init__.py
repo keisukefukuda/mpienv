@@ -40,12 +40,6 @@ def yes_no_input(msg):
         return False
 
 
-class BrokenSymlinkError(Exception):
-    def __init__(self, message, path):
-        super(BrokenSymlinkError).__init__(self, message)
-        self.path = path
-
-
 def mkdir_p(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -61,7 +55,7 @@ DefaultConf = {
 }
 
 
-class Manager(object):
+class Mpienv(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
         self._vers_dir = os.path.join(os.environ.get("MPIENV_VERSIONS_DIR") or
@@ -280,4 +274,4 @@ class Manager(object):
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
              os.path.join(os.path.expanduser('~'), '.mpienv'))
-manager = Manager(_root_dir)
+mpienv = Mpienv(_root_dir)

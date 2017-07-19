@@ -10,6 +10,7 @@ import sys
 from mpienv import mpich
 from mpienv import mvapich
 from mpienv import openmpi
+from mpienv import util
 
 
 try:
@@ -39,20 +40,6 @@ def _find_mpi_h(mpiexec):
     return mpi_h
 
 
-def _decode(s):
-    if type(s) == bytes:
-        return s.decode(sys.getdefaultencoding())
-    else:
-        return s
-
-
-def _encode(s):
-    if type(s) == str:
-        return s.encode(sys.getdefaultencoding())
-    else:
-        return s
-
-
 def _is_broken_symlink(path):
     return os.path.islink(path) and not os.path.exists(path)
 
@@ -77,7 +64,7 @@ def MPI(mpiexec):
 
     p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
     out, err = p.communicate()
-    ver_str = _decode(out + err)
+    ver_str = util.decode(out + err)
 
     if re.search(r'OpenRTE', ver_str, re.MULTILINE):
         # Open MPI

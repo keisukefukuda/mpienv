@@ -5,7 +5,7 @@ import sys
 
 from mpienv.installer import create_installer
 from mpienv.installer import list_avail
-from mpienv import manager
+from mpienv import mpienv
 
 parser = argparse.ArgumentParser(
     prog='mpienv build', description='Install a new MPI environment.')
@@ -31,7 +31,7 @@ def main():
 
     args = parser.parse_args()
 
-    inst = create_installer(manager, args.mpi, args.name,
+    inst = create_installer(mpienv, args.mpi, args.name,
                             verbose=args.verbose)
 
     inst.install(npar=args.npar)

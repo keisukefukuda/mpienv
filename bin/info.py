@@ -5,7 +5,7 @@ import json
 import pprint
 import sys
 
-from mpienv import manager
+from mpienv import mpienv
 from mpienv import UnknownMPI
 from mpienv import util
 
@@ -20,18 +20,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        name = manager.get_current_name()
+        name = mpienv.get_current_name()
     except UnknownMPI:
         sys.stderr.write("Error: the current MPI is not under control\n")
         exit(-1)
 
     name = args.name or name
 
-    if name not in manager:
+    if name not in mpienv:
         sys.stderr.write("Error: '{}' is unknown.\n".format(name))
     else:
         if args.json:
-            print(json.dumps(manager[name], default=util.dump_json))
+            print(json.dumps(mpienv[name], default=util.dump_json))
         else:
             print(name)
-            pprint.pprint(manager[name])
+            pprint.pprint(mpienv[name])

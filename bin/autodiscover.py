@@ -6,7 +6,7 @@ import os.path
 import pprint
 import sys
 
-from mpienv import manager
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
@@ -61,7 +61,7 @@ def investigate_path(path, to_add):
         printv("checking {}".format(mpiexec))
 
         # Exclude mpienv's own directory
-        name = manager.is_installed(path)
+        name = mpienv.is_installed(path)
         if name:
             prints("{}\n\t Already known as "
                    "'{}'".format(path, name))
@@ -69,11 +69,11 @@ def investigate_path(path, to_add):
         else:
             prints("--------------------------------------")
             prints("Found {}".format(mpiexec))
-            prints(pprint.pformat(manager.get_mpi_from_prefix(path)))
+            prints(pprint.pformat(mpienv.get_mpi_from_prefix(path)))
             # Install the new MPI
             if to_add:
                 try:
-                    name = manager.add(path)
+                    name = mpienv.add(path)
                     prints("Added {} as {}".format(path, name))
                 except RuntimeError as e:
                     prints("Error occured while "

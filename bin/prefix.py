@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from mpienv import manager
+from mpienv import mpienv
 
 parser = argparse.ArgumentParser(
     prog='mpienv prefix',
@@ -13,10 +13,10 @@ parser.add_argument('name', nargs='?', default=None)
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    name = args.name or manager.get_current_name()
+    name = args.name or mpienv.get_current_name()
 
-    if name in manager:
-        sys.stdout.write(manager[name].prefix)
+    if name in mpienv:
+        sys.stdout.write(mpienv[name].prefix)
         if sys.stdout.isatty():
             sys.stdout.write("\n")
 
