@@ -41,8 +41,8 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
 
-#before_script:
-#  - sh ./.travis_install.sh
+before_script:
+  - sh ./.travis_install.sh
 
 install:
   - pip install -r requirements.txt
@@ -54,5 +54,5 @@ script:
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")
   # - coverage run $(which nosetests) -v
-  - ./tests/test_main.sh
+  - ${TEST_SHELL_CMD} ./tests/test_main.sh
   - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting
