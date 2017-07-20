@@ -2,7 +2,7 @@
 
 import argparse
 
-from common import manager
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
@@ -18,7 +18,7 @@ def main():
     args = parser.parse_args()
 
     # Create a link
-    manager.add(args.path, args.name)
+    mpienv.add(args.path, args.name)
 
 
 if __name__ == "__main__":

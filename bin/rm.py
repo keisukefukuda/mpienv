@@ -2,7 +2,7 @@
 
 import argparse
 
-from common import manager
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
@@ -16,7 +16,7 @@ def main():
 
     # Remove a link
     for trg in args.targets:
-        manager.rm(trg, prompt=args.i)
+        mpienv.rm(trg, prompt=args.i)
 
 
 if __name__ == "__main__":

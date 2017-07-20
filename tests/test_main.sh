@@ -1,5 +1,10 @@
 set -u
 
+if [ -n "${ZSH_VERSION:-}" ]; then
+    setopt shwordsplit
+    SHUNIT_PARENT=$0
+fi
+
 declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
 declare -r proj_dir=$(cd ${test_dir}/..; pwd)
 
@@ -65,8 +70,18 @@ fi
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
+test_qc() {
+    autopep8 --exclude pylib --diff -r . --global-config .pep8 | tee check_autopep8
+    test ! -s check_autopep8
+    assertEquals 0 $?
+
+    flake8 $(find . -name "*.py" | grep -v pylib)
+    assertEquals 0 $?
+}
+
 test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
+    mpienv list
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
 }
@@ -83,29 +98,30 @@ test_1mpi() {
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
     assertEquals 0 $?
 
+
     # Test rename
     # rename mpich-3.2 -> my-cool-mpi
     mpienv rename mpich-3.2 my-cool-mpi
-    assertTrue $?
+    assertTrue "$?"
     mpienv list | grep -qE 'my-cool-mpi'
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -qE 'mpich-3.2'
-    assertFalse $?
+    assertFalse "$?"
 
     # Rename back to mpich-3.2
     mpienv rename my-cool-mpi mpich-3.2
     mpienv list | grep -qE 'mpich-3.2'
-    assertTrue $?
+    assertTrue "$?"
 
     # Remove mpich-3.2
     install_ompi
     mpienv use openmpi-2.1.1
     mpienv rm mpich-3.2
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -q mpich-3.2
-    assertFalse $?
+    assertFalse "$?"
 }
 
 test_2mpis() {
@@ -113,10 +129,10 @@ test_2mpis() {
     install_ompi
 
     mpienv list | grep -qE 'mpich-3.2'
-    assertTrue $?
+    assertTrue "$?"
 
     mpienv list | grep -qE 'openmpi-2.1.1'
-    assertTrue $?
+    assertTrue "$?"
 }
 
 get_key() {
@@ -131,13 +147,14 @@ has_key() {
 
 test_info() {
     install_mpich
+
     mpienv use mpich-3.2
 
     mpienv info mpich-3.2 --json >a.json
     mpienv info --json >b.json
 
     diff -q a.json b.json >/dev/null
-    assertTrue $?
+    assertTrue "$?"
 
     rm -f a.json b.json
 
@@ -150,6 +167,9 @@ test_info() {
     assertTrue $(mpienv info --json | has_key "mpicxx")
     assertTrue $(mpienv info --json | has_key "default_name")
     assertTrue $(mpienv info --json | has_key "prefix")
+
+    test -d "$(mpienv prefix)"
+    assertTrue "$?"
 }
 
 test_mpi4py() {
@@ -170,6 +190,7 @@ for i in range(0, comm.Get_size()):
 EOF
     # test Mpich
     install_mpich
+    
     mpienv use --mpi4py mpich-3.2
     mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?

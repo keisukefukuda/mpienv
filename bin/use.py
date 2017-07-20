@@ -2,7 +2,7 @@
 
 import argparse
 
-from common import manager
+from mpienv import mpienv
 
 parser = argparse.ArgumentParser(
     prog='mpienv use', description='Set the specific MPI environment.')
@@ -14,9 +14,8 @@ parser.add_argument('name', type=str,
 
 
 def main():
-
     args = parser.parse_args()
-    manager.use(args.name, mpi4py=args.mpi4py)
+    mpienv.use(args.name, mpi4py=args.mpi4py)
 
 
 if __name__ == "__main__":

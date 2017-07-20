@@ -20,13 +20,11 @@ def mkdir_p(path):
 
 
 class PyModule(object):
-    def __init__(self, libname, manager, name):
-        self._manager = manager
-
+    def __init__(self, libname, conf, name):
         self._libname = libname
-        self._root_dir = manager.root_dir()
-        self._mpi_dir = manager.mpi_dir()
-        self._pylib_dir = os.path.join(manager.pylib_dir(), name)
+        self._root_dir = conf['root_dir']
+        self._mpi_dir = conf['mpi_dir']
+        self._pylib_dir = os.path.join(conf['pylib_dir'], name)
         self._name = name
 
         if not os.path.exists(self._pylib_dir):
@@ -75,5 +73,5 @@ class PyModule(object):
 
 
 class MPI4Py(PyModule):
-    def __init__(self, mgr, name):
-        super(MPI4Py, self).__init__('mpi4py', mgr, name)
+    def __init__(self, conf, name):
+        super(MPI4Py, self).__init__('mpi4py', conf, name)

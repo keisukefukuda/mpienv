@@ -1,0 +1,8 @@
+{
+    "mvapich": {
+        "envs": {
+            "MV2_USE_CUDA"    : 1,
+            "MV2_SMP_USE_CMA" : 0
+        }
+    }
+}

@@ -62,15 +62,15 @@ _list = {
 
 
 class BaseInstaller(object):
-    def __init__(self, manager, mpi, name, verbose):
+    def __init__(self, mpienv, mpi, name, verbose):
         self.mpi = mpi
-        self.manager = manager
+        self.mpienv = mpienv
         self.name = name
 
         self.url = _list[mpi]['url']
 
         # Downloaded file name
-        self.local_file = os.path.join(self.manager.cache_dir(),
+        self.local_file = os.path.join(self.mpienv.cache_dir(),
                                        os.path.basename(self.url))
 
         # build directory name
@@ -78,12 +78,12 @@ class BaseInstaller(object):
                            '',
                            os.path.basename(self.url))
 
-        self.ext_path = os.path.join(self.manager.build_dir(),
+        self.ext_path = os.path.join(self.mpienv.build_dir(),
                                      name)
         self.dir_path = os.path.join(self.ext_path,
                                      dir_bname)
 
-        self.prefix = os.path.join(manager.mpi_dir(), name)
+        self.prefix = os.path.join(mpienv.mpi_dir(), name)
 
         if not os.path.exists(self.ext_path):
             os.makedirs(self.ext_path)
@@ -100,12 +100,6 @@ class BaseInstaller(object):
                 check_call(['curl', self.url], stdout=f)
 
     def configure(self):
-        # TODO(keisukefukuda): check configure options and
-        #                      re-run ./configure only when necessary
-        # TODO(keisukefukuda): Support multiple verbosity level
-        #                      Level 0: silent
-        #                      Level 1: only prints "Installing..."
-        #                      Level 2: prints everything
         self.download()
         print('Configuring in {}'.format(self.dir_path))
 
@@ -206,8 +200,8 @@ def list_avail():
         print(' ' + k)
 
 
-def create_installer(manager, mpi, name, verbose):
-    if name in manager:
+def create_installer(mpienv, mpi, name, verbose):
+    if name in mpienv:
         sys.stderr.write("Error: MPI name "
                          "'{}' already exists.\n".format(name))
         exit(-1)
@@ -222,10 +216,10 @@ def create_installer(manager, mpi, name, verbose):
     mpi_type = _list[mpi]['type']
 
     if mpi_type == 'openmpi':
-        return OmpiInstaller(manager, mpi, name, verbose)
+        return OmpiInstaller(mpienv, mpi, name, verbose)
     elif mpi_type == 'mvapich':
-        return MvapichInstaller(manager, mpi, name, verbose)
+        return MvapichInstaller(mpienv, mpi, name, verbose)
     elif mpi_type == 'mpich':
-        return MpichInstaller(manager, mpi, name, verbose)
+        return MpichInstaller(mpienv, mpi, name, verbose)
 
     raise RuntimeError("")
