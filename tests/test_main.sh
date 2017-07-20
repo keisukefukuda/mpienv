@@ -1,5 +1,10 @@
 set -u
 
+if [ -n "$ZSH_VERSION" ]; then
+    setopt shwordsplit
+    SHUNIT_PARENT=$0
+fi
+
 declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
 declare -r proj_dir=$(cd ${test_dir}/..; pwd)
 
