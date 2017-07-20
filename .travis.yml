@@ -54,5 +54,5 @@ script:
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")
   # - coverage run $(which nosetests) -v
-  - ${TEST_SHELL_CMD} ./tests/test_main.sh
+  - travis_wait ${TEST_SHELL_CMD} ./tests/test_main.sh
   - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting
