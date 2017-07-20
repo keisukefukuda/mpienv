@@ -120,19 +120,14 @@ test_1mpi() {
 }
 
 test_2mpis() {
-    local LANG_OLD="$LANG"
     install_mpich
     install_ompi
 
-    for L in C en_US.UTF-8 ja_JP.UTF-8; do
-        export LANG="$L"
-        mpienv list | grep -qE 'mpich-3.2'
-        assertTrue "$?"
+    mpienv list | grep -qE 'mpich-3.2'
+    assertTrue "$?"
 
-        mpienv list | grep -qE 'openmpi-2.1.1'
-        assertTrue "$?"
-    done
-    export LANG="$LANG_OLD"
+    mpienv list | grep -qE 'openmpi-2.1.1'
+    assertTrue "$?"
 }
 
 get_key() {
@@ -146,40 +141,33 @@ has_key() {
 }
 
 test_info() {
-    local LANG_OLD="$LANG"
     install_mpich
 
-    for L in C en_US.UTF-8 ja_JP.UTF-8; do
-        export LANG="$L"
-        mpienv use mpich-3.2
+    mpienv use mpich-3.2
 
-        mpienv info mpich-3.2 --json >a.json
-        mpienv info --json >b.json
+    mpienv info mpich-3.2 --json >a.json
+    mpienv info --json >b.json
 
-        diff -q a.json b.json >/dev/null
-        assertTrue "$?"
+    diff -q a.json b.json >/dev/null
+    assertTrue "$?"
 
-        rm -f a.json b.json
+    rm -f a.json b.json
 
-        export LANG="$L"
-        assertEquals "False" $(mpienv info --json | get_key "broken")
-        assertEquals "MPICH" $(mpienv info --json | get_key "type")
-        assertEquals "3.2"   $(mpienv info --json | get_key "version")
-        assertTrue $(mpienv info --json | has_key "symlink")
-        assertTrue $(mpienv info --json | has_key "mpiexec")
-        assertTrue $(mpienv info --json | has_key "mpicc")
-        assertTrue $(mpienv info --json | has_key "mpicxx")
-        assertTrue $(mpienv info --json | has_key "default_name")
-        assertTrue $(mpienv info --json | has_key "prefix")
+    assertEquals "False" $(mpienv info --json | get_key "broken")
+    assertEquals "MPICH" $(mpienv info --json | get_key "type")
+    assertEquals "3.2"   $(mpienv info --json | get_key "version")
+    assertTrue $(mpienv info --json | has_key "symlink")
+    assertTrue $(mpienv info --json | has_key "mpiexec")
+    assertTrue $(mpienv info --json | has_key "mpicc")
+    assertTrue $(mpienv info --json | has_key "mpicxx")
+    assertTrue $(mpienv info --json | has_key "default_name")
+    assertTrue $(mpienv info --json | has_key "prefix")
 
-        test -d "$(mpienv prefix)"
-        assertTrue "$?"
-    done
-    export LANG="$LANG_OLD"
+    test -d "$(mpienv prefix)"
+    assertTrue "$?"
 }
 
 test_mpi4py() {
-    local LANG_OLD="$LANG"
     export TMPDIR=/tmp
     
     local SCRIPT=$(mktemp)
@@ -198,28 +186,21 @@ EOF
     # test Mpich
     install_mpich
     
-    for L in C en_US.UTF-8 ja_JP.UTF-8; do
-        export LANG="$L"
-        mpienv use --mpi4py mpich-3.2
-        mpienv exec -n 2 python -c "from mpi4py import MPI"
-        assertTrue $?
-        OUT=$(mpienv use --mpi4py mpich-3.2; mpienv exec -n 2 python $SCRIPT)
-        assertEquals "01" "$OUT"
-    done
+    mpienv use --mpi4py mpich-3.2
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    assertTrue $?
+    OUT=$(mpienv use --mpi4py mpich-3.2; mpienv exec -n 2 python $SCRIPT)
+    assertEquals "01" "$OUT"
 
     # test Open MPI
     install_ompi
-    for L in C en_US.UTF-8 ja_JP.UTF-8; do
-        export LANG="$L"
-        mpienv use --mpi4py openmpi-2.1.1
-        mpienv exec -n 2 python -c "from mpi4py import MPI"
-        assertTrue $?
-        OUT=$(mpienv use --mpi4py openmpi-2.1.1; mpienv exec -n 2 python $SCRIPT)
-        assertEquals "01" "$OUT"
-    done
+    mpienv use --mpi4py openmpi-2.1.1
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    assertTrue $?
+    OUT=$(mpienv use --mpi4py openmpi-2.1.1; mpienv exec -n 2 python $SCRIPT)
+    assertEquals "01" "$OUT"
     
     rm -f ${SCRIPT}
-    export LANG=$LANG_OLD
 }
 
 #-----------------------------------------------------------

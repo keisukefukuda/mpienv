@@ -3,8 +3,12 @@ language: python
 sudo: false
 
 env:
-  - TEST_SHELL_CMD=zsh
-  - TEST_SHELL_CMD=bash
+  - TEST_SHELL_CMD=zsh  LANG=C
+  - TEST_SHELL_CMD=bash LANG=en_US.utf-8
+  - TEST_SHELL_CMD=zsh  LANG=ja_JP.utf-8
+  - TEST_SHELL_CMD=bash LANG=C
+  - TEST_SHELL_CMD=zsh  LANG=en_US.utf-8
+  - TEST_SHELL_CMD=bash LANG=ja_JP.utf-8
 
 python:
   # - "2.6"

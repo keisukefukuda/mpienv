@@ -269,8 +269,6 @@ class Mpienv(object):
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds)
 
-        # TODO(keisukefukuda): if hostfile is given, convert it
-
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
              os.path.join(os.path.expanduser('~'), '.mpienv'))

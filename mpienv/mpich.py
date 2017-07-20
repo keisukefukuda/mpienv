@@ -49,8 +49,6 @@ class Mpich(mpibase.MpiBase):
         return []
 
     def exec_(self, cmds):
-        # TODO(keisukefukuda): if cmds include '-genvall',
-        #                      no need to specify '-genvlist'
         cmds[:0] = ['-genvlist', 'PYTHONPATH,PATH,LD_LIBRARY_PATH']
         cmds[:0] = [self.mpiexec]
         self.run_cmd(cmds, {})
