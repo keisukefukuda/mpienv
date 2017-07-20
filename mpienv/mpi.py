@@ -55,7 +55,6 @@ class BrokenMPI(object):
 
 def MPI(mpiexec):
     """Return the class of the MPI"""
-    # TODO(keisukefukuda): Handle macports MPIs
     if not os.path.exists(mpiexec):
         raise RuntimeError("Internal Error: mpiexec not found")
 

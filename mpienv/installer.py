@@ -100,12 +100,6 @@ class BaseInstaller(object):
                 check_call(['curl', self.url], stdout=f)
 
     def configure(self):
-        # TODO(keisukefukuda): check configure options and
-        #                      re-run ./configure only when necessary
-        # TODO(keisukefukuda): Support multiple verbosity level
-        #                      Level 0: silent
-        #                      Level 1: only prints "Installing..."
-        #                      Level 2: prints everything
         self.download()
         print('Configuring in {}'.format(self.dir_path))
 
