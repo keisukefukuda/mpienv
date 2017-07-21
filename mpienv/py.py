@@ -86,6 +86,18 @@ class PyModule(object):
         if os.path.exists(self._pylib_dir):
             shutil.rmtree(self._pylib_dir)
 
+    def rename(self, name_to):
+        """Rename the directory, where the module is installed, to `name_to`
+
+        This function is used together with `Mpienv.rename()`.
+        """
+        path_from = self._pylib_dir
+        path_to = os.path.join(self._conf['pylib_dir'], name_to)
+
+        shutil.move(path_from, path_to)
+        self._name = name_to
+        self._pylib_dir = path_to
+
 
 class MPI4Py(PyModule):
     def __init__(self, conf, name):
