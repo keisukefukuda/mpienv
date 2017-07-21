@@ -54,7 +54,7 @@ class PyModule(object):
         with open(os.devnull, 'w') as devnull:
             check_call(['pip', 'install', '-t', self._pylib_dir,
                         '--no-cache-dir', self._libname],
-                       # stdout=devnull,
+                       stdout=sys.stderr,
                        env=env)
             devnull  # NOQA
 
