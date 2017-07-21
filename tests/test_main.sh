@@ -7,6 +7,8 @@ fi
 
 declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
 declare -r proj_dir=$(cd ${test_dir}/..; pwd)
+declare -r MPICH=mpich-3.2
+declare -r OMPI=openmpi-2.1.1
 
 old_wd=$PWD
 
@@ -44,26 +46,26 @@ oneTimeTearDown() {
 
 install_mpich() {
     export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install mpich-3.2 >/dev/null 2>&1
+    mpienv install ${MPICH} >/dev/null 2>&1
 }
 
 install_ompi() {
     export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
-    mpienv install openmpi-2.1.1 >/dev/null 2>&1
+    mpienv install ${OMPI} >/dev/null 2>&1
 }
 
 #-----------------------------------------------------------
 export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-if [ ! -f "${MPIENV_BUILD_DIR}/mpich-3.2/src/pm/hydra/mpiexec.hydra" ]; then
-    echo "Building mpich-3.2"
-    #mpienv build mpich-3.2
+if [ ! -f "${MPIENV_BUILD_DIR}/${MPICH}/src/pm/hydra/mpiexec.hydra" ]; then
+    echo "Building ${MPICH}"
+    #mpienv build ${MPICH}
 fi
 
 
 export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran --disable-oshmem"
-if [ ! -f "${MPIENV_BUILD_DIR}/openmpi-2.1.1/orte/tools/orterun/.libs/orterun" ]; then
-    echo "Building openmpi-2.1.1"
-    #mpienv build openmpi-2.1.1 >/dev/null 2>&1
+if [ ! -f "${MPIENV_BUILD_DIR}/${OMPI}/orte/tools/orterun/.libs/orterun" ]; then
+    echo "Building ${OMPI}"
+    #mpienv build ${OMPI} >/dev/null 2>&1
 fi
 
 # Load mpienv
@@ -91,7 +93,7 @@ test_1mpi() {
     # and several operations on it.
     install_mpich
 
-    mpienv list | grep -q 'mpich-3.2'
+    mpienv list | grep -q ${MPICH}
     assertEquals 0 $?
 
     # Test json output
@@ -100,27 +102,27 @@ test_1mpi() {
 
 
     # Test rename
-    # rename mpich-3.2 -> my-cool-mpi
-    mpienv rename mpich-3.2 my-cool-mpi
+    # rename ${MPICH} -> my-cool-mpi
+    mpienv rename ${MPICH} my-cool-mpi
     assertTrue "$?"
     mpienv list | grep -qE 'my-cool-mpi'
     assertTrue "$?"
 
-    mpienv list | grep -qE 'mpich-3.2'
+    mpienv list | grep -qE ${MPICH}
     assertFalse "$?"
 
-    # Rename back to mpich-3.2
-    mpienv rename my-cool-mpi mpich-3.2
-    mpienv list | grep -qE 'mpich-3.2'
+    # Rename back to ${MPICH}
+    mpienv rename my-cool-mpi ${MPICH}
+    mpienv list | grep -qE ${MPICH}
     assertTrue "$?"
 
-    # Remove mpich-3.2
+    # Remove ${MPICH}
     install_ompi
-    mpienv use openmpi-2.1.1
-    mpienv rm mpich-3.2
+    mpienv use ${OMPI}
+    mpienv rm ${MPICH}
     assertTrue "$?"
 
-    mpienv list | grep -q mpich-3.2
+    mpienv list | grep -q ${MPICH}
     assertFalse "$?"
 }
 
@@ -128,10 +130,10 @@ test_2mpis() {
     install_mpich
     install_ompi
 
-    mpienv list | grep -qE 'mpich-3.2'
+    mpienv list | grep -qE ${MPICH}
     assertTrue "$?"
 
-    mpienv list | grep -qE 'openmpi-2.1.1'
+    mpienv list | grep -qE "${OMPI}"
     assertTrue "$?"
 }
 
@@ -148,9 +150,9 @@ has_key() {
 test_info() {
     install_mpich
 
-    mpienv use mpich-3.2
+    mpienv use ${MPICH}
 
-    mpienv info mpich-3.2 --json >a.json
+    mpienv info ${MPICH} --json >a.json
     mpienv info --json >b.json
 
     diff -q a.json b.json >/dev/null
@@ -191,21 +193,37 @@ EOF
     # test Mpich
     install_mpich
     
-    mpienv use --mpi4py mpich-3.2
+    mpienv use --mpi4py ${MPICH}
     mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
-    OUT=$(mpienv use --mpi4py mpich-3.2; mpienv exec -n 2 python $SCRIPT)
+    OUT=$(mpienv use --mpi4py ${MPICH}; mpienv exec -n 2 python $SCRIPT)
     assertEquals "01" "$OUT"
 
     # test Open MPI
     install_ompi
-    mpienv use --mpi4py openmpi-2.1.1
+    mpienv use --mpi4py ${OMPI}
     mpienv exec -n 2 python -c "from mpi4py import MPI"
     assertTrue $?
-    OUT=$(mpienv use --mpi4py openmpi-2.1.1; mpienv exec -n 2 python $SCRIPT)
+    OUT=$(mpienv use --mpi4py ${OMPI}; mpienv exec -n 2 python $SCRIPT)
     assertEquals "01" "$OUT"
     
     rm -f ${SCRIPT}
+}
+
+test_mpi4py_clear_pypath() {
+    install_mpich
+
+    unset PYTHONPATH
+    assertNull "${PYTHONPATH:-}"
+
+    #mpienv use ${MPICH}
+    #assertNull "${PYTHONPATH:-}"
+
+    #mpienv use --mpi4py ${MPICH}
+    #assertNotNull "${PYTHONPAHT:-}"
+
+    #mpienv use ${MPICH}
+    #$assertNull "${PYTHONPATH:-}"
 }
 
 #-----------------------------------------------------------

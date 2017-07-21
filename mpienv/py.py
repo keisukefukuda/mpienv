@@ -27,6 +27,7 @@ class PyModule(object):
         self._mpi_dir = conf['mpi_dir']
         self._pylib_dir = os.path.join(conf['pylib_dir'], name)
         self._name = name
+        self._conf = conf
 
         if not os.path.exists(self._pylib_dir):
             mkdir_p(self._pylib_dir)
@@ -71,8 +72,15 @@ class PyModule(object):
 
         print("export PYTHONPATH={}".format(pypath))
 
-    def pylib_dir(self):
-        return self._pylib_dir
+    def clear(self):
+        pypath = os.environ.get('PYTHONAPTH', "")
+        newpath = ':'.join([p for p in pypath.split(':')
+                            if not p.startswith(self._conf['pylib_dir'])])
+
+        if newpath == "":
+            print("unset PYTHONPATH")
+        else:
+            print("export PYTHONPATH={}".format(newpath))
 
     def rm(self):
         if os.path.exists(self._pylib_dir):
