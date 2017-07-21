@@ -51,11 +51,12 @@ class PyModule(object):
         if False:
             sys.stderr.write("Installing {} for {} ...\n".format(self._libname,
                                                                  self._name))
-        with open(os.devnull, 'w') as devnull:  # NOQA
+        with open(os.devnull, 'w') as devnull:
             check_call(['pip', 'install', '-t', self._pylib_dir,
                         '--no-cache-dir', self._libname],
                        # stdout=devnull,
                        env=env)
+            devnull  # NOQA
 
     def use(self):
         pypath = os.environ.get('PYTHONPATH', None)
