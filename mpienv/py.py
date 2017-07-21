@@ -5,6 +5,7 @@ import errno
 import glob
 import os
 import os.path
+import shutil
 from subprocess import check_call
 import sys
 
@@ -53,7 +54,9 @@ class PyModule(object):
         with open(os.devnull, 'w') as devnull:
             check_call(['pip', 'install', '-t', self._pylib_dir,
                         '--no-cache-dir', self._libname],
-                       stdout=devnull, env=env)
+                       stdout=sys.stderr,
+                       env=env)
+            devnull  # NOQA
 
     def use(self):
         pypath = os.environ.get('PYTHONPATH', None)
@@ -70,6 +73,10 @@ class PyModule(object):
 
     def pylib_dir(self):
         return self._pylib_dir
+
+    def rm(self):
+        if os.path.exists(self._pylib_dir):
+            shutil.rmtree(self._pylib_dir)
 
 
 class MPI4Py(PyModule):

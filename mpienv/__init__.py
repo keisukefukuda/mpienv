@@ -9,6 +9,7 @@ import sys
 
 from mpienv.mpi import BrokenMPI
 from mpienv.mpi import MPI
+from mpienv.py import MPI4Py
 
 try:
     import __builtin__
@@ -234,6 +235,10 @@ class Mpienv(object):
 
         if (not prompt) or yes_no_input("Remove '{}' ?".format(name)):
             mpi.remove()
+
+        mpi4py = MPI4Py(self._conf, name)
+        if mpi4py.is_installed():
+            mpi4py.rm()
 
     def rename(self, name_from, name_to):
         if name_from not in self:
