@@ -72,7 +72,7 @@ fi
 . ${proj_dir}/init
 
 #-----------------------------------------------------------
-xtest_qc() {
+test_qc() {
     autopep8 --exclude pylib --diff -r . --global-config .pep8 | tee check_autopep8
     test ! -s check_autopep8
     assertEquals 0 $?
@@ -81,14 +81,14 @@ xtest_qc() {
     assertEquals 0 $?
 }
 
-xtest_empty_list() {
+test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
     mpienv list
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
 }
 
-xtest_1mpi() {
+test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
     install_mpich
@@ -126,7 +126,7 @@ xtest_1mpi() {
     assertFalse "$?"
 }
 
-xtest_2mpis() {
+test_2mpis() {
     install_mpich
     install_ompi
 
@@ -147,7 +147,7 @@ has_key() {
     python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
 }
 
-xtest_info() {
+test_info() {
     install_mpich
 
     mpienv use ${MPICH}
@@ -174,7 +174,7 @@ xtest_info() {
     assertTrue "$?"
 }
 
-xtest_mpi4py() {
+test_mpi4py() {
     export TMPDIR=/tmp
     
     local SCRIPT=$(mktemp)
