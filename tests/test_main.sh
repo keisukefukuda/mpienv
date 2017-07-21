@@ -240,13 +240,13 @@ test_reg_issue10(){
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].
     local OK=$(python -c "print('0' if ${E}.0 - ${S} < 1.0 else '1')")
-    assertTrue "$OK"
+    assertTrue "Check OK is 0" "$OK"
 }
 
-# suite() {
-#     suite_addTest "test_reg_issue10"
-#     #suite_addTest "test_mpi4py_clear_pypath"
-# }
+suite() {
+    suite_addTest "test_reg_issue10"
+    #suite_addTest "test_mpi4py_clear_pypath"
+}
 
 
 #-----------------------------------------------------------
