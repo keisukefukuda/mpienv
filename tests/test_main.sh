@@ -233,20 +233,17 @@ test_reg_issue10(){
     mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
     mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
 
-    local S=$(date "+%s")
-    mpienv use --mpi4py mpix # this command should NOT intall mpi4py again.
-    local E=$(date "+%s")
+    OUT=$(mpienv use --mpi4py mpix 2>&1) # this command should NOT intall mpi4py again.
 
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].
-    local OK=$(python -c "print('0' if ${E}.0 - ${S}.0 < 2.0 else '1')")
-    assertTrue "Check OK(=$OK) is 0 (E=${E}, S=${S})" "$OK"
+    assertEquals "\$OUT must be empty" "$OUT" ""
 }
 
-suite() {
-    suite_addTest "test_reg_issue10"
-    #suite_addTest "test_mpi4py_clear_pypath"
-}
+#suite() {
+#    suite_addTest "test_reg_issue10"
+#    #suite_addTest "test_mpi4py_clear_pypath"
+#}
 
 
 #-----------------------------------------------------------
