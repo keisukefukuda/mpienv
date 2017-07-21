@@ -252,6 +252,10 @@ class Mpienv(object):
 
         shutil.move(path_from, path_to)
 
+        mpi4py = MPI4Py(self._conf, name_from)
+        if mpi4py.is_installed():
+            mpi4py.rename(name_to)
+
     def use(self, name, mpi4py=False):
         mpi = self.get_mpi_from_name(name)
 

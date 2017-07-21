@@ -216,15 +216,35 @@ test_mpi4py_clear_pypath() {
     unset PYTHONPATH
     assertNull "${PYTHONPATH:-}"
 
-    #mpienv use ${MPICH}
-    #assertNull "${PYTHONPATH:-}"
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
 
-    #mpienv use --mpi4py ${MPICH}
-    #assertNotNull "${PYTHONPAHT:-}"
+    mpienv use --mpi4py ${MPICH}
+    assertNotNull "${PYTHONPATH:-}"
 
-    #mpienv use ${MPICH}
-    #$assertNull "${PYTHONPATH:-}"
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
 }
+
+test_reg_issue10(){
+    # Regression test for #10
+    # https://github.com/keisukefukuda/mpienv/issues/10
+    install_mpich
+    mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
+    mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
+
+    OUT=$(mpienv use --mpi4py mpix 2>&1) # this command should NOT intall mpi4py again.
+
+    # If the `use` command does not run `pip install mpi4py`,
+    # which is a correct behavior, E-S should be < 1 [s].
+    assertEquals "\$OUT must be empty" "$OUT" ""
+}
+
+#suite() {
+#    suite_addTest "test_reg_issue10"
+#    #suite_addTest "test_mpi4py_clear_pypath"
+#}
+
 
 #-----------------------------------------------------------
 # call shunit2
