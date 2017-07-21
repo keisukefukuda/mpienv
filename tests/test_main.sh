@@ -243,10 +243,10 @@ test_reg_issue10(){
     assertTrue "$OK"
 }
 
-suite() {
-    suite_addTest "test_reg_issue10"
-    #suite_addTest "test_mpi4py_clear_pypath"
-}
+# suite() {
+#     suite_addTest "test_reg_issue10"
+#     #suite_addTest "test_mpi4py_clear_pypath"
+# }
 
 
 #-----------------------------------------------------------
