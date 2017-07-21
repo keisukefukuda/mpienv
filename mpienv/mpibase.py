@@ -181,11 +181,15 @@ class MpiBase(object):
         for f in libexec_files:
             self._mirror_file(f, os.path.join(shim, 'libexec'))
 
+        py = MPI4Py(self._conf, name)
         if mpi4py:
-            mpi4py = MPI4Py(self._conf, name)
-            if not mpi4py.is_installed():
-                mpi4py.install()
-            mpi4py.use()
+            if not py.is_installed():
+                py.install()
+            py.use()
+        else:
+            # If --mpi4py is not specified, must modify PYTHONPATH
+            # to remove mismatched path to mpi4py module
+            py.clear()
 
     def is_installed_by_mpienv(self):
         if self._name is None:
