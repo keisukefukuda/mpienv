@@ -2,6 +2,8 @@ language: python
 
 sudo: false
 
+dist: trusty
+
 env:
   - TEST_SHELL_CMD=zsh  LANG=C
   # - TEST_SHELL_CMD=bash LANG=en_US.utf-8
