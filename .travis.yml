@@ -53,5 +53,5 @@ script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")
-  - if [ -n '$TRAVIS' ] ; then echo "Not on Travis"; "${TEST_SHELL_CMD}" ./tests/test_main.sh; else echo "On Travis"; travis_wait 35 "${TEST_SHELL_CMD}" ./tests/test_main.sh; fi
+  - if [ -z "${TRAVIS:-}" ] ; then echo "Not on Travis"; "${TEST_SHELL_CMD}" ./tests/test_main.sh; else echo "On Travis"; travis_wait 35 "${TEST_SHELL_CMD}" ./tests/test_main.sh; fi
   # - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting
