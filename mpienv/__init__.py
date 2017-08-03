@@ -112,8 +112,9 @@ class Mpienv(object):
             try:
                 mpi = self.get_mpi_from_prefix(prefix)
             except RuntimeError:
-                sys.stderr.write("mpienv: [Warning] Directory '{}' is registered "
-                                 "as {} but no mpiexec is found.\n".format(
+                sys.stderr.write("mpienv: [Warning] Directory '{}' "
+                                 "is registered as {} but no mpiexec "
+                                 "is found.\n".format(
                                      os.path.realpath(prefix),
                                      name))
                 continue
