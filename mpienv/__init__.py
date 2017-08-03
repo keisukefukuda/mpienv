@@ -109,7 +109,21 @@ class Mpienv(object):
         self._installed = {}
         for prefix in glob.glob(os.path.join(self._mpi_dir, '*')):
             name = os.path.split(prefix)[-1]
-            mpi = self.get_mpi_from_prefix(prefix)
+            try:
+                mpi = self.get_mpi_from_prefix(prefix)
+            except RuntimeError:
+                # If the directory exists but MPI is not found,
+                # then it's a broken MPI.
+                mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
+                if os.path.exists(prefix) and not os.path.exists(mpiexec):
+                    mpi = BrokenMPI(prefix)
+                else:
+                    sys.stderr.write("mpienv: [Warning] Directory '{}' "
+                                     "is registered as {} but no mpiexec "
+                                     "is found.\n".format(
+                                         os.path.realpath(prefix),
+                                         name))
+                    continue  # skip
             mpi.name = name
             self._installed[name] = mpi
 
@@ -140,7 +154,7 @@ class Mpienv(object):
 
     def get_mpi_from_name(self, name):
         if name not in self:
-            sys.stderr.write("mpienv-use: Error: "
+            sys.stderr.write("mpienv: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
             exit(-1)
@@ -226,9 +240,6 @@ class Mpienv(object):
         return name
 
     def rm(self, name, prompt=False):
-        if name not in self:
-            raise RuntimeError("No such MPI: '{}'".format(name))
-
         mpi = self.get_mpi_from_name(name)
 
         if not mpi.is_broken and mpi.is_active:
