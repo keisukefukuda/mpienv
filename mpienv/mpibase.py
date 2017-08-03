@@ -20,8 +20,14 @@ def _which(cmd):
 
 
 class MpiBase(object):
-    def __init__(self, prefix, conf, name=None):
+    def __init__(self, prefix, mpiexec, mpicc,
+                 inc_dir, lib_dir,
+                 conf, name=None):
         self._prefix = prefix
+        self._mpiexec = mpiexec
+        self._mpicc = mpicc
+        self._inc_dir = inc_dir
+        self._lib_dir = lib_dir
         self._conf = conf
         self._name = name
 
@@ -69,18 +75,15 @@ class MpiBase(object):
 
     @property
     def mpiexec(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpiexec')
-        return os.path.realpath(ex)
+        return self._mpiexec
 
     @property
     def mpicxx(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpicxx')
-        return os.path.realpath(ex)
+        return self.mpicc.replace('mpicc', 'mpicxx')
 
     @property
     def mpicc(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpicc')
-        return os.path.realpath(ex)
+        return self._mpicc
 
     @property
     def is_symlink(self):

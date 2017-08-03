@@ -127,6 +127,9 @@ class Mpienv(object):
         self._conf = DefaultConf.copy()
         self._conf.update(conf)
 
+    def config(self):
+        return self._conf
+
     def get_mpi_from_prefix(self, prefix):
         mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
         mpi_class = MPI(mpiexec)
