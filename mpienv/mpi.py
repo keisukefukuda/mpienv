@@ -2,6 +2,7 @@
 
 import os.path
 import re
+import shutil
 from subprocess import call
 from subprocess import PIPE
 from subprocess import Popen
@@ -45,18 +46,35 @@ def _is_broken_symlink(path):
 
 
 class BrokenMPI(object):
-    def __init__(self):
-        pass
+    def __init__(self, prefix, conf, name=None):
+        self._prefix = prefix
+        self._conf = conf
+        self._name = name
 
     @property
     def is_broken(self):
         return True
 
+    def remove(self):
+        if os.path.islink(self._prefix):
+            os.remove(self._prefix)
+        else:
+            shutil.rmtree(self._prefix)
+
 
 def MPI(mpiexec):
     """Return the class of the MPI"""
     if not os.path.exists(mpiexec):
-        raise RuntimeError("Internal Error: mpiexec not found")
+        prefix = os.path.abspath(
+            os.path.join(os.path.dirname(mpiexec), os.pardir))
+        if os.path.isdir(prefix):
+            # prefix directory does exist but prefix/bin/mpiexec
+            # does not. --> It seems that the MPI has been
+            # uninstalled after registered to mpienv?
+            return BrokenMPI
+        else:
+            sys.stderr.write("mpienv [Error]: no such directory: {}"
+                             .format(prefix))
 
     if _is_broken_symlink(mpiexec):
         return BrokenMPI
