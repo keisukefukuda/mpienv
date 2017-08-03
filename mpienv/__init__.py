@@ -109,7 +109,14 @@ class Mpienv(object):
         self._installed = {}
         for prefix in glob.glob(os.path.join(self._mpi_dir, '*')):
             name = os.path.split(prefix)[-1]
-            mpi = self.get_mpi_from_prefix(prefix)
+            try:
+                mpi = self.get_mpi_from_prefix(prefix)
+            except RuntimeError:
+                sys.stderr.write("mpienv: [Warning] Directory '{}' is registered "
+                                 "as {} but no mpiexec is found.\n".format(
+                                     os.path.realpath(prefix),
+                                     name))
+                continue
             mpi.name = name
             self._installed[name] = mpi
 
