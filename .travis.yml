@@ -42,6 +42,8 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
       - zsh
+      - libmpich-dev
+      - mpich
 
 before_script:
   - echo # sh ./.travis_install.sh
