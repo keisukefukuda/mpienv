@@ -71,6 +71,28 @@ install_ompi() {
 # Load mpienv
 . ${proj_dir}/init
 
+is_ubuntu1404() {
+    grep -q "Ubuntu 14.04" /etc/lsb-release
+    return $?
+}
+
+print_mpi_info() {
+    unset tmpfile
+    local tmpfile=$(mktemp "/tmp/${0##*/}.tmp.XXXXXX")
+    local MPI_CLS=$1
+    local MPIEXEC=$2
+    local INFO=$3
+    cat <<EOF >${tmpfile}
+from mpienv.mpi import MPI
+from mpienv import mpienv
+cls = MPI('${MPIEXEC}')
+mpi = cls('${MPIEXEC}', mpienv.config())
+print(mpi.${INFO})
+EOF
+    env PYTHONPATH=. python ${tmpfile}
+    rm -f ${tmpfile}
+}
+
 #-----------------------------------------------------------
 test_qc() {
     autopep8 --exclude pylib --diff -r . --global-config .pep8 | tee check_autopep8
@@ -86,6 +108,18 @@ test_empty_list() {
     mpienv list
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
+}
+
+test_mpich() {
+    if [ is_ubuntu1404 ]; then
+        EXEC=$(print_mpi_info "Mpich" "/usr/bin/mpiexec.mpich" "mpiexec")
+        assertEquals "/usr/bin/mpiexec.mpich" "${EXEC}"
+        
+        VER=$(print_mpi_info "Mpich" "/usr/bin/mpiexec.mpich" "version")
+        assertEquals "3.0.4" "${VER}"
+    else
+        echo
+    fi
 }
 
 # test_1mpi() {

@@ -33,6 +33,7 @@ def _parse_mpich_version(mpiexec):
 
 
 def _parse_mpich_mpicc_show(mpicc):
+    """Obtain inc_dir and lib_dir by parsing `mpicc -show` of MPICH"""
     out = util.decode(check_output([mpicc, '-show']))
     # returns inc_dir, lib_dir
     m = re.search(r'-I(\S+)', out)
