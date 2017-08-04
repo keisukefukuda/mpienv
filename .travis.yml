@@ -44,6 +44,9 @@ addons:
       - zsh
       - libmpich-dev
       - mpich
+      - libopenmpi-dev
+      - openmpi-bin
+      - openmpi-common
 
 before_script:
   - echo # sh ./.travis_install.sh

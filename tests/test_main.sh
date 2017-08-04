@@ -79,9 +79,8 @@ is_ubuntu1404() {
 print_mpi_info() {
     unset tmpfile
     local tmpfile=$(mktemp "/tmp/${0##*/}.tmp.XXXXXX")
-    local MPI_CLS=$1
-    local MPIEXEC=$2
-    local INFO=$3
+    local MPIEXEC=$1
+    local INFO=$2
     cat <<EOF >${tmpfile}
 from mpienv.mpi import MPI
 from mpienv import mpienv
@@ -112,11 +111,35 @@ test_empty_list() {
 
 test_mpich() {
     if [ is_ubuntu1404 ]; then
-        EXEC=$(print_mpi_info "Mpich" "/usr/bin/mpiexec.mpich" "mpiexec")
+        local EXEC=$(print_mpi_info "/usr/bin/mpiexec.mpich" "mpiexec")
         assertEquals "/usr/bin/mpiexec.mpich" "${EXEC}"
+
+        local CC=$(print_mpi_info "/usr/bin/mpiexec.mpich" "mpicc")
+        assertEquals "/usr/bin/mpicc.mpich" "${CC}"
         
-        VER=$(print_mpi_info "Mpich" "/usr/bin/mpiexec.mpich" "version")
+        local PREF=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "prefix")
+        assertEquals "/usr" "${PREF}"
+
+        local VER=$(print_mpi_info "/usr/bin/mpiexec.mpich" "version")
         assertEquals "3.0.4" "${VER}"
+    else
+        echo
+    fi
+}
+
+test_openmpi() {
+    if [ is_ubuntu1404 ]; then
+        local EXEC=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "mpiexec")
+        assertEquals "/usr/bin/mpiexec.openmpi" "${EXEC}"
+
+        local CC=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "mpicc")
+        assertEquals "/usr/bin/mpicc.openmpi" "${CC}"
+
+        local PREF=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "prefix")
+        assertEquals "/usr" "${PREF}"
+
+        local VER=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "version")
+        assertEquals "1.6.5" "${VER}"
     else
         echo
     fi
