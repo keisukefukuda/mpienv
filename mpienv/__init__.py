@@ -112,7 +112,7 @@ class Mpienv(object):
             name = os.path.split(mpiexec_link)[-1]
             try:
                 mpiexec = os.readlink(mpiexec_link)
-            except (FileNotFoundError, OSError):
+            except EnvironmentError:
                 raise RuntimeError("Internal Error: {} is not a file or link"
                                    .format(mpiexec_link))
             try:
