@@ -1,6 +1,7 @@
 # coding: utf-8
 import re
 from subprocess import check_output
+import sys  # NOQA
 
 from mpienv import mpibase
 from mpienv import util

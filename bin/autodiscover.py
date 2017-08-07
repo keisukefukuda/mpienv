@@ -5,6 +5,7 @@ import glob
 import os
 import os.path
 import pprint
+import re
 import sys
 
 from mpienv import mpienv
@@ -56,8 +57,67 @@ def filter_valid_paths(paths, warn=True):
     return ret
 
 
-def investigate_path(path, to_add):
-    for mpiexec in glob.glob(os.path.join(path, 'bin', '*mpiexec*')):
+def list_mpiexec(dirpath):
+    """List all mpiexec command in `dirpath`
+
+    Some binaries may be symlinks pointing the same binary.
+    ex.) In /usr
+      mpiexec -> orterun
+      mpiexsec.openmpi -> orterun
+      mpiexec.hydra
+      mpiexec.mpich -> mpiexec.hydra
+
+    The most appropriate one is selected and duplicates are eliminted.
+    In the exmaple, 'mpiexec' is selected.
+    The rule:
+      * if the filename is 'mpiexec', then it's selected.
+      * If a file "the_file.replace('mpiexec', 'mpicc')" exists,
+        then the_file is selected.
+      * If a filename matches r'mpiexec.*mpi*', it is chosen.
+      * Otherwise, one is randomly chosen
+    """
+
+    lst = glob.glob(os.path.join(dirpath, 'bin', '*mpiexec*'))
+    link_rel = {}
+
+    # mx: mpiexec
+    for mx in lst:
+        link_dst = os.path.realpath(mx)
+        if link_dst in link_rel:
+            link_rel[link_dst].append(mx)
+        else:
+            link_rel[link_dst] = [mx]
+
+    res = []  # Result
+    for orig in link_rel.keys():
+        # for each original mpiexec binary, select the most appropriate symlink
+        # (include the file itself) by the selection rule described above
+        cands = link_rel[orig]
+        cand_1 = [x for x in cands
+                  if os.path.basename(x) == "mpiexec"]
+        cand_2 = [x for x in cands
+                  if os.path.exists(x.replace('mpiexec', 'mpicc'))]
+        cand_3 = [x for x in cands
+                  if re.match(r'^mpiexec\.\S*mpi\S*$',
+                              os.path.basename(x), re.I)]
+
+        for cand in [cand_1, cand_2, cand_3]:
+            if len(cand) > 0:
+                res.append(cand[0])
+                break
+        else:
+            res.append(cands[0])
+
+    return res
+
+
+def investigate_path(path, flg_to_add, done={}):
+    for mpiexec in list_mpiexec(path):
+        if mpiexec in done:
+            continue
+        else:
+            done.add(mpiexec)
+
         if os.path.isfile(mpiexec):
             printv("checking {}".format(mpiexec))
 
@@ -72,9 +132,9 @@ def investigate_path(path, to_add):
                 prints("Found {}".format(mpiexec))
                 prints(pprint.pformat(mpienv.get_mpi_from_mpiexec(mpiexec)))
                 # Install the new MPI
-                if to_add:
+                if flg_to_add:
                     try:
-                        name = mpienv.add(path)
+                        name = mpienv.add(mpiexec)
                         prints("Added {} as {}".format(path, name))
                     except RuntimeError as e:
                         prints("Error occured while "
@@ -83,6 +143,8 @@ def investigate_path(path, to_add):
                         prints()
         else:
             printv("No such file '{}'".format(mpiexec))
+
+    return done
 
 
 def main():
@@ -110,14 +172,12 @@ def main():
     search_paths = filter_valid_paths(search_paths,
                                       warn=(not using_default))
 
-    checked = set()
+    done = set()
 
     for path in search_paths:
         for (dirpath, dirs, files) in os.walk(path):
-            if dirpath in checked:
-                continue
-            investigate_path(dirpath, to_add)
-            checked.add(dirpath)
+            # print("done = {}".format(done))
+            done = investigate_path(dirpath, to_add, done)
 
 
 if __name__ == "__main__":

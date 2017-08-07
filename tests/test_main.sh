@@ -140,9 +140,8 @@ test_openmpi() {
 test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
+    mpienv list
     mpienv autodiscover --add /usr
-
-    return
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertEquals 0 $?
@@ -168,8 +167,7 @@ test_1mpi() {
     assertTrue "$?"
 
     # Remove mpich
-    install_ompi
-    mpienv use ${OMPI}-${OMPI_VER}
+    mpienv use openmpi-${OMPI_VER}
     mpienv rm mpich-${MPICH_VER}
     assertTrue "$?"
 
