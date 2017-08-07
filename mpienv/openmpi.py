@@ -2,6 +2,7 @@
 import os.path
 import re
 from subprocess import check_output
+import sys  # NOQA
 
 from mpienv import mpibase
 from mpienv.ompi import parse_ompi_info
@@ -19,7 +20,9 @@ class OpenMPI(mpibase.MpiBase):
     def __init__(self, mpiexec, conf, name=None):
         # `mpiexec` might be 'mpiexec' or 'mpiexec.ompi'
         mpiexec = mpiexec
-        mpicc = re.sub('mpiexec', 'mpicc', mpiexec)
+        mpicc = re.sub(mpiexec, 'mpiexec', 'mpicc')
+        sys.stderr.write("mpiexec={}\n".format(mpiexec))
+        assert re.sub('/mpiexec', '/mpicc', mpiexec) is not None
         prefix = os.path.abspath(
             os.path.join(os.path.dirname(mpiexec), os.path.pardir))
         ompi_info = os.path.join(prefix, 'bin', 'ompi_info')

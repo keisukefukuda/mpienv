@@ -7,8 +7,6 @@ fi
 
 declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
 declare -r proj_dir=$(cd ${test_dir}/..; pwd)
-declare -r MPICH=mpich-3.2
-declare -r OMPI=openmpi-2.1.1
 
 old_wd=$PWD
 
@@ -54,20 +52,6 @@ install_ompi() {
     mpienv install ${OMPI} >/dev/null 2>&1
 }
 
-#-----------------------------------------------------------
-# export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-# if [ ! -f "${MPIENV_BUILD_DIR}/${MPICH}/src/pm/hydra/mpiexec.hydra" ]; then
-#     echo "Building ${MPICH}"
-#     #mpienv build ${MPICH}
-# fi
-
-
-# export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran --disable-oshmem"
-# if [ ! -f "${MPIENV_BUILD_DIR}/${OMPI}/orte/tools/orterun/.libs/orterun" ]; then
-#     echo "Building ${OMPI}"
-#     #mpienv build ${OMPI} >/dev/null 2>&1
-# fi
-
 # Load mpienv
 . ${proj_dir}/init
 
@@ -75,6 +59,14 @@ is_ubuntu1404() {
     grep -q "Ubuntu 14.04" /etc/lsb-release
     return $?
 }
+
+if is_ubuntu1404 ; then
+    export MPICH_VER=3.0.4
+fi
+
+if is_ubuntu1404; then
+    export OMPI_VER=1.6.5
+fi
 
 print_mpi_info() {
     unset tmpfile
@@ -121,7 +113,7 @@ test_mpich() {
         assertEquals "/usr" "${PREF}"
 
         local VER=$(print_mpi_info "/usr/bin/mpiexec.mpich" "version")
-        assertEquals "3.0.4" "${VER}"
+        assertEquals "${MPICH_VER}" "${VER}"
     else
         echo
     fi
@@ -139,49 +131,51 @@ test_openmpi() {
         assertEquals "/usr" "${PREF}"
 
         local VER=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "version")
-        assertEquals "1.6.5" "${VER}"
+        assertEquals "${OMPI_VER}" "${VER}"
     else
         echo
     fi
 }
 
-# test_1mpi() {
-#     # Test installing a single MPI,
-#     # and several operations on it.
-#     install_mpich
+test_1mpi() {
+    # Test installing a single MPI,
+    # and several operations on it.
+    mpienv autodiscover --add /usr
 
-#     mpienv list | grep -q ${MPICH}
-#     assertEquals 0 $?
+    return
 
-#     # Test json output
-#     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
-#     assertEquals 0 $?
+    mpienv list | grep -q mpich-${MPICH_VER}
+    assertEquals 0 $?
+
+    # Test json output
+    mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
+    assertEquals 0 $?
 
 
-#     # Test rename
-#     # rename ${MPICH} -> my-cool-mpi
-#     mpienv rename ${MPICH} my-cool-mpi
-#     assertTrue "$?"
-#     mpienv list | grep -qE 'my-cool-mpi'
-#     assertTrue "$?"
+    # Test rename
+    # rename mpich -> my-cool-mpi
+    mpienv rename mpich-${MPICH_VER} my-cool-mpi
+    assertTrue "$?"
+    mpienv list | grep -qE 'my-cool-mpi'
+    assertTrue "$?"
 
-#     mpienv list | grep -qE ${MPICH}
-#     assertFalse "$?"
+    mpienv list | grep -qE mpich-${MPICH_VER}
+    assertFalse "$?"
 
-#     # Rename back to ${MPICH}
-#     mpienv rename my-cool-mpi ${MPICH}
-#     mpienv list | grep -qE ${MPICH}
-#     assertTrue "$?"
+    # Rename back to mpich
+    mpienv rename my-cool-mpi mpich
+    mpienv list | grep -qE mpich-${MPICH_VER}
+    assertTrue "$?"
 
-#     # Remove ${MPICH}
-#     install_ompi
-#     mpienv use ${OMPI}
-#     mpienv rm ${MPICH}
-#     assertTrue "$?"
+    # Remove mpich
+    install_ompi
+    mpienv use ${OMPI}-${OMPI_VER}
+    mpienv rm mpich-${MPICH_VER}
+    assertTrue "$?"
 
-#     mpienv list | grep -q ${MPICH}
-#     assertFalse "$?"
-# }
+    mpienv list | grep -q mpich-${MPICH_VER}
+    assertFalse "$?"
+}
 
 # test_2mpis() {
 #     install_mpich
