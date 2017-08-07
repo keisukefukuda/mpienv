@@ -76,7 +76,7 @@ print_mpi_info() {
     cat <<EOF >${tmpfile}
 from mpienv.mpi import MPI
 from mpienv import mpienv
-cls = MPI('${MPIEXEC}')
+cls = MPI(mpienv, '${MPIEXEC}')
 mpi = cls('${MPIEXEC}', mpienv.config())
 print(mpi.${INFO})
 EOF

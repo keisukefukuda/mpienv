@@ -19,10 +19,8 @@ def _call_ompi_info(bin):
 class OpenMPI(mpibase.MpiBase):
     def __init__(self, mpiexec, conf, name=None):
         # `mpiexec` might be 'mpiexec' or 'mpiexec.ompi'
-        mpiexec = mpiexec
-        mpicc = re.sub(mpiexec, 'mpiexec', 'mpicc')
-        sys.stderr.write("mpiexec={}\n".format(mpiexec))
-        assert re.sub('/mpiexec', '/mpicc', mpiexec) is not None
+        mpicc = re.sub('mpiexec', 'mpicc', mpiexec)
+        assert os.path.exists(mpicc)
         prefix = os.path.abspath(
             os.path.join(os.path.dirname(mpiexec), os.path.pardir))
         ompi_info = os.path.join(prefix, 'bin', 'ompi_info')

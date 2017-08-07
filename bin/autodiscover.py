@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import argparse
+import glob
 import os
 import os.path
 import pprint
@@ -56,32 +57,32 @@ def filter_valid_paths(paths, warn=True):
 
 
 def investigate_path(path, to_add):
-    mpiexec = os.path.join(path, 'bin', 'mpiexec')
-    if os.path.isfile(mpiexec):
-        printv("checking {}".format(mpiexec))
+    for mpiexec in glob.glob(os.path.join(path, 'bin', '*mpiexec*')):
+        if os.path.isfile(mpiexec):
+            printv("checking {}".format(mpiexec))
 
-        # Exclude mpienv's own directory
-        name = mpienv.is_installed(path)
-        if name:
-            prints("{}\n\t Already known as "
-                   "'{}'".format(path, name))
-            prints()
+            # Exclude mpienv's own directory
+            name = mpienv.is_installed(path)
+            if name:
+                prints("{}\n\t Already known as "
+                       "'{}'".format(path, name))
+                prints()
+            else:
+                prints("--------------------------------------")
+                prints("Found {}".format(mpiexec))
+                prints(pprint.pformat(mpienv.get_mpi_from_mpiexec(mpiexec)))
+                # Install the new MPI
+                if to_add:
+                    try:
+                        name = mpienv.add(path)
+                        prints("Added {} as {}".format(path, name))
+                    except RuntimeError as e:
+                        prints("Error occured while "
+                               "adding {}".format(path))
+                        prints(e)
+                        prints()
         else:
-            prints("--------------------------------------")
-            prints("Found {}".format(mpiexec))
-            prints(pprint.pformat(mpienv.get_mpi_from_prefix(path)))
-            # Install the new MPI
-            if to_add:
-                try:
-                    name = mpienv.add(path)
-                    prints("Added {} as {}".format(path, name))
-                except RuntimeError as e:
-                    prints("Error occured while "
-                           "adding {}".format(path))
-                    prints(e)
-                    prints()
-    else:
-        printv("No such file '{}'".format(mpiexec))
+            printv("No such file '{}'".format(mpiexec))
 
 
 def main():
