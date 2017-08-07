@@ -61,7 +61,7 @@ def MPI(mpienv, mpiexec):
             # uninstalled after registered to mpienv?
             return BrokenMPI
         else:
-            sys.stderr.write("mpienv [Error]: no such directory: {}"
+            sys.stderr.write("mpienv [Error]: no such directory: {}\n"
                              .format(prefix))
             return BrokenMPI
 

@@ -150,7 +150,6 @@ test_1mpi() {
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
     assertEquals 0 $?
 
-
     # Test rename
     # rename mpich -> my-cool-mpi
     mpienv rename mpich-${MPICH_VER} my-cool-mpi
@@ -162,16 +161,16 @@ test_1mpi() {
     assertFalse "$?"
 
     # Rename back to mpich
-    mpienv rename my-cool-mpi mpich
-    mpienv list | grep -qE mpich-${MPICH_VER}
+    mpienv rename my-cool-mpi mpich-${MPICH_VER}
+    mpienv list | grep -q "mpich-${MPICH_VER}"
     assertTrue "$?"
 
     # Remove mpich
-    mpienv use openmpi-${OMPI_VER}
-    mpienv rm mpich-${MPICH_VER}
+    mpienv use openmpi-${OMPI_VER}  # Activate Open MPI to remove mpich
     assertTrue "$?"
-
-    mpienv list | grep -q mpich-${MPICH_VER}
+    mpienv rm mpich-${MPICH_VER}    # Remove mpich
+    assertTrue "$?"
+    mpienv list | grep -q mpich-${MPICH_VER} # Check if it's removed
     assertFalse "$?"
 }
 

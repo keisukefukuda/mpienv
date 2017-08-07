@@ -163,9 +163,9 @@ class Mpienv(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
+        mpiexec = os.readlink(os.path.join(self._mpi_dir, name))
         mpi_class = MPI(self, mpiexec)
-        return mpi_class(self.prefix(name), self._conf, name)
+        return mpi_class(mpiexec, self._conf, name)
 
     def items(self):
         return self._installed.items()
@@ -279,6 +279,7 @@ class Mpienv(object):
         mpi = self.get_mpi_from_name(name)
 
         if isinstance(mpi, BrokenMPI):
+            print(mpi)
             sys.stderr.write("mpienv-use: Error: "
                              "'{}' seems to be broken. Maybe it is removed.\n"
                              "".format(name))
