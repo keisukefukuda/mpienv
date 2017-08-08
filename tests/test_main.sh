@@ -56,7 +56,7 @@ install_ompi() {
 . ${proj_dir}/init
 
 is_ubuntu1404() {
-    grep -q "Ubuntu 14.04" /etc/lsb-release
+    grep -q "Ubuntu 14.04" /etc/lsb-release 2>/dev/null ||:
     return $?
 }
 
