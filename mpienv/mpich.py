@@ -17,10 +17,11 @@ def _parse_mpich_version(mpiexec):
     for ln in lines:
         if len(ln.strip()) == 0:
             continue
-        m = re.match(r'^([^:]*):\s*(\S.*)$', ln)
+        m = re.match(r'^([^:]*):\s*(\S.*)?$', ln)
         if m is None:
-            print(ln)
-        d[m.group(1)] = m.group(2)
+            print("Internal warning: m is None!!! ln='{}'".format(ln))
+        else:
+            d[m.group(1)] = m.group(2)
 
     conf = re.findall(r'\'[^\']+\'', d['Configure options'])
     conf = [re.sub(r'\'$', '', re.sub(r'^\'', '', c)) for c in conf]

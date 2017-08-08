@@ -62,10 +62,12 @@ is_ubuntu1404() {
 
 if is_ubuntu1404 ; then
     export MPICH_VER=3.0.4
-fi
-
-if is_ubuntu1404; then
     export OMPI_VER=1.6.5
+    export SYS_PREFIX=/usr
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    export MPICH_VER=3.2
+    export OMPI_VER=2.1.1
+    export SYS_PREFIX=/usr/local
 fi
 
 print_mpi_info() {

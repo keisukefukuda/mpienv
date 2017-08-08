@@ -25,7 +25,10 @@ def _find_mpich_mpi_h(ver_str):
     line = next(ln for ln in ver_str.split("\n")
                 if re.search(r'Configure options', ln))
     dir_cands = re.findall(r'--includedir=([^\' \n]+)', line)
-    # print(dir_cands)
+    inc_paths = re.findall(r'--includedir=([^\' \n]+)', line)
+    prefixes = re.findall(r'--prefix=([^\' \n]+)', line)
+
+    dir_cands = inc_paths + [os.path.join(d, 'include') for d in prefixes]
     inc_dir = next(p for p in dir_cands
                    if os.path.exists(os.path.join(p, 'mpi.h')))
     return os.path.join(inc_dir, 'mpi.h')
