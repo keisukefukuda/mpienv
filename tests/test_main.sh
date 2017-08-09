@@ -33,12 +33,12 @@ mkdir -p ${PIP_DOWNLOAD_CACHE}
 rm -rf "$MPIENV_VERSIONS_DIR" |:
 rm -rf "$MPIENV_CACHE_DIR" |:
 
-oneTimeSetUp() {
+setUp() {
     rm -rf ${MPIENV_VERSIONS_DIR}
     mkdir -p ${MPIENV_VERSIONS_DIR}
 }
 
-oneTimeTearDown() {
+tearDown() {
     rm -rf ${MPIENV_VERSIONS_DIR}
 }
 
@@ -156,17 +156,15 @@ test_openmpi_info() {
 }
 
 test_1mpi() {
-    # Test installing a single MPI,
-    # and several operations on it.
-    mpienv list
+    # mpienv list
     mpienv autodiscover --add ${SYS_PREFIX}
 
     mpienv list | grep -q mpich-${MPICH_VER}
-    assertEquals 0 $?
+    assertTrue "$?"
 
     # Test json output
     mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
-    assertEquals 0 $?
+    assertTrue "$?"
 
     # Test rename
     # rename mpich -> my-cool-mpi
@@ -192,53 +190,50 @@ test_1mpi() {
     assertFalse "$?"
 }
 
-# test_2mpis() {
-#     install_mpich
-#     install_ompi
+get_key() {
+    key=$1
+    python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
+}
 
-#     mpienv list | grep -qE ${MPICH}
-#     assertTrue "$?"
+has_key() {
+    key=$1
+    python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
+}
 
-#     mpienv list | grep -qE "${OMPI}"
-#     assertTrue "$?"
-# }
+test_cmd_info() {
+    mpienv autodiscover --add ${SYS_PREFIX}
+    assertTrue $?
 
-# get_key() {
-#     key=$1
-#     python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
-# }
+    mpienv list
 
-# has_key() {
-#     key=$1
-#     python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
-# }
+    echo mpienv use mpich-${MPICH_VER}
+    mpienv use mpich-${MPICH_VER}
+    mpienv list
+    return
+    mpienv info mpich-${MPICH_VER} --json >a.json
+    mpienv info --json >b.json
 
-# test_info() {
-#     install_mpich
 
-#     mpienv use ${MPICH}
+    diff -q a.json b.json >/dev/null
+    assertTrue "$?"
 
-#     mpienv info ${MPICH} --json >a.json
-#     mpienv info --json >b.json
+    rm -f a.json b.json
 
-#     diff -q a.json b.json >/dev/null
-#     assertTrue "$?"
+    return
 
-#     rm -f a.json b.json
+    assertEquals "False" $(mpienv info --json | get_key "broken")
+    assertEquals "MPICH" $(mpienv info --json | get_key "type")
+    assertEquals "3.2"   $(mpienv info --json | get_key "version")
+    assertTrue $(mpienv info --json | has_key "symlink")
+    assertTrue $(mpienv info --json | has_key "mpiexec")
+    assertTrue $(mpienv info --json | has_key "mpicc")
+    assertTrue $(mpienv info --json | has_key "mpicxx")
+    assertTrue $(mpienv info --json | has_key "default_name")
+    assertTrue $(mpienv info --json | has_key "prefix")
 
-#     assertEquals "False" $(mpienv info --json | get_key "broken")
-#     assertEquals "MPICH" $(mpienv info --json | get_key "type")
-#     assertEquals "3.2"   $(mpienv info --json | get_key "version")
-#     assertTrue $(mpienv info --json | has_key "symlink")
-#     assertTrue $(mpienv info --json | has_key "mpiexec")
-#     assertTrue $(mpienv info --json | has_key "mpicc")
-#     assertTrue $(mpienv info --json | has_key "mpicxx")
-#     assertTrue $(mpienv info --json | has_key "default_name")
-#     assertTrue $(mpienv info --json | has_key "prefix")
-
-#     test -d "$(mpienv prefix)"
-#     assertTrue "$?"
-# }
+    test -d "$(mpienv prefix)"
+    assertTrue "$?"
+}
 
 # test_mpi4py() {
 #     export TMPDIR=/tmp
@@ -306,10 +301,10 @@ test_1mpi() {
 #     assertEquals "\$OUT must be empty" "$OUT" ""
 # }
 
-#suite() {
-#    suite_addTest "test_reg_issue10"
-#    #suite_addTest "test_mpi4py_clear_pypath"
-#}
+suite() {
+    suite_addTest "test_cmd_info"
+    #suite_addTest "test_mpi4py_clear_pypath"
+}
 
 
 #-----------------------------------------------------------

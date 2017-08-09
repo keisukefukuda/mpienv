@@ -233,7 +233,7 @@ class Mpienv(object):
                                  "Recommended name for {} is {}, "
                                  "but the name is "
                                  "already used. "
-                                 "Try -n option.".format(target, name))
+                                 "Try -n option.\n".format(target, name))
                 exit(-1)
 
         # dst -> src
