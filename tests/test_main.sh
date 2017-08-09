@@ -56,18 +56,42 @@ install_ompi() {
 . ${proj_dir}/init
 
 is_ubuntu1404() {
-    grep -q "Ubuntu 14.04" /etc/lsb-release 2>/dev/null ||:
-    return $?
+    ret=0
+    grep -q "Ubuntu 14.04" /etc/lsb-release 2>/dev/null || ret=$?
+    return $ret
+}
+
+is_macos() {
+    ret=0
+    cat "$OSTYPE" | grep -qE "^darwin" || ret=$?
+    return $ret
 }
 
 if is_ubuntu1404 ; then
     export MPICH_VER=3.0.4
+    export MPICH_EXEC="/usr/bin/mpiexec.mpich"
+    export MPICH_CC="/usr/bin/mpicc.mpich"
+    export MPICH_PREF="/usr"
+
     export OMPI_VER=1.6.5
+    export OMPI_EXEC="/usr/bin/mpiexec.mpich"
+    export OMPI_CC="/usr/bin/mpicc.mpich"
+    export OMPI_PREF="/usr"
+
     export SYS_PREFIX=/usr
+
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     export MPICH_VER=3.2
+    export MPICH_PREF="/usr/local/Cellar/mpich/3.2_3"
+    export MPICH_EXEC="${MPICH_PREF}/bin/mpiexec"
+    export MPICH_CC="${MPICH_PREF}/bin/mpicc"
+
     export OMPI_VER=2.1.1
-    export SYS_PREFIX=/usr/local
+    export OMPI_PREF="/usr/local/Cellar/open-mpi/2.1.1"
+    export OMPI_EXEC="${OMPI_PREF}/bin/mpiexec"
+    export OMPI_CC="${OMPI_PREF}/bin/mpicc"
+
+    export SYS_PREFIX=/usr/local/Cellar
 fi
 
 print_mpi_info() {
@@ -103,47 +127,39 @@ test_empty_list() {
     assertEquals 0 $LEN
 }
 
-test_mpich() {
-    if [ is_ubuntu1404 ]; then
-        local EXEC=$(print_mpi_info "/usr/bin/mpiexec.mpich" "mpiexec")
-        assertEquals "/usr/bin/mpiexec.mpich" "${EXEC}"
+test_mpich_info() {
+    local EXEC=$(print_mpi_info ${MPICH_EXEC} "mpiexec")
+    assertEquals ${MPICH_EXEC} ${EXEC}
 
-        local CC=$(print_mpi_info "/usr/bin/mpiexec.mpich" "mpicc")
-        assertEquals "/usr/bin/mpicc.mpich" "${CC}"
-        
-        local PREF=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "prefix")
-        assertEquals "/usr" "${PREF}"
+    local CC=$(print_mpi_info ${MPICH_EXEC}  "mpicc")
+    assertEquals ${MPICH_CC} ${CC}
 
-        local VER=$(print_mpi_info "/usr/bin/mpiexec.mpich" "version")
-        assertEquals "${MPICH_VER}" "${VER}"
-    else
-        echo
-    fi
+    local PREF=$(print_mpi_info ${MPICH_EXEC} "prefix")
+    assertEquals ${MPICH_PREF} "${PREF}"
+
+    local VER=$(print_mpi_info ${MPICH_EXEC} "version")
+    assertEquals ${MPICH_VER} ${VER}
 }
 
-test_openmpi() {
-    if [ is_ubuntu1404 ]; then
-        local EXEC=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "mpiexec")
-        assertEquals "/usr/bin/mpiexec.openmpi" "${EXEC}"
+test_openmpi_info() {
+    local EXEC=$(print_mpi_info ${OMPI_EXEC} "mpiexec")
+    assertEquals ${OMPI_EXEC} ${EXEC}
 
-        local CC=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "mpicc")
-        assertEquals "/usr/bin/mpicc.openmpi" "${CC}"
+    local CC=$(print_mpi_info ${OMPI_EXEC} "mpicc")
+    assertEquals ${OMPI_CC} ${CC}
 
-        local PREF=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "prefix")
-        assertEquals "/usr" "${PREF}"
+    local PREF=$(print_mpi_info ${OMPI_EXEC} "prefix")
+    assertEquals ${OMPI_PREF} ${PREF}
 
-        local VER=$(print_mpi_info "/usr/bin/mpiexec.openmpi" "version")
-        assertEquals "${OMPI_VER}" "${VER}"
-    else
-        echo
-    fi
+    local VER=$(print_mpi_info ${OMPI_EXEC} "version")
+    assertEquals ${OMPI_VER} ${VER}
 }
 
 test_1mpi() {
     # Test installing a single MPI,
     # and several operations on it.
     mpienv list
-    mpienv autodiscover --add /usr
+    mpienv autodiscover --add ${SYS_PREFIX}
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertEquals 0 $?
@@ -226,7 +242,7 @@ test_1mpi() {
 
 # test_mpi4py() {
 #     export TMPDIR=/tmp
-    
+
 #     local SCRIPT=$(mktemp)
 #     cat <<EOF >$SCRIPT
 # from mpi4py import MPI
@@ -242,7 +258,7 @@ test_1mpi() {
 # EOF
 #     # test Mpich
 #     install_mpich
-    
+
 #     mpienv use --mpi4py ${MPICH}
 #     mpienv exec -n 2 python -c "from mpi4py import MPI"
 #     assertTrue $?
@@ -256,7 +272,7 @@ test_1mpi() {
 #     assertTrue $?
 #     OUT=$(mpienv use --mpi4py ${OMPI}; mpienv exec -n 2 python $SCRIPT)
 #     assertEquals "01" "$OUT"
-    
+
 #     rm -f ${SCRIPT}
 # }
 
@@ -301,4 +317,3 @@ test_1mpi() {
 cd ${old_wd}
 
 . ${test_dir}/shunit2/source/2.1/src/shunit2
-

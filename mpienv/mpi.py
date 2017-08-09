@@ -40,7 +40,7 @@ def _is_broken_symlink(path):
 
 class BrokenMPI(object):
     def __init__(self, mpiexec, conf, name=None):
-        assert os.path.islink(mpiexec)
+        # assert os.path.islink(mpiexec)
         self._mpiexec = mpiexec
         self._conf = conf
         self._name = name
@@ -56,17 +56,12 @@ class BrokenMPI(object):
 def MPI(mpienv, mpiexec):
     """Return the class of the MPI"""
     if not os.path.exists(mpiexec):
-        prefix = os.path.abspath(
-            os.path.join(os.path.dirname(mpiexec), os.pardir))
-        if os.path.isdir(prefix):
-            # prefix directory does exist but prefix/bin/mpiexec
-            # does not. --> It seems that the MPI has been
-            # uninstalled after registered to mpienv?
-            return BrokenMPI
-        else:
-            sys.stderr.write("mpienv [Error]: no such directory: {}\n"
-                             .format(prefix))
-            return BrokenMPI
+        # prefix directory does exist but prefix/bin/mpiexec
+        # does not. --> It seems that the MPI has been
+        # uninstalled after registered to mpienv?
+        sys.stderr.write("'{}' seems to be broken because "
+                         "there's no such file or directory\n".format(mpiexec))
+        return BrokenMPI
 
     if _is_broken_symlink(mpiexec):
         return BrokenMPI
