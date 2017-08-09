@@ -74,8 +74,8 @@ if is_ubuntu1404 ; then
     export MPICH_PREF="/usr"
 
     export OMPI_VER=1.6.5
-    export OMPI_EXEC="/usr/bin/mpiexec.mpich"
-    export OMPI_CC="/usr/bin/mpicc.mpich"
+    export OMPI_EXEC="/usr/bin/mpiexec.openmpi"
+    export OMPI_CC="/usr/bin/mpicc.openmpi"
     export OMPI_PREF="/usr"
 
     export SYS_PREFIX=/usr
