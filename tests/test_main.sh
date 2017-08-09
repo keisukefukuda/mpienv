@@ -63,11 +63,12 @@ is_ubuntu1404() {
 
 is_macos() {
     ret=0
-    cat "$OSTYPE" | grep -qE "^darwin" || ret=$?
+    echo "$OSTYPE" | grep -qiE "^darwin" || ret=$?
     return $ret
 }
 
 if is_ubuntu1404 ; then
+    echo "Running on Ubuntu 14.04"
     export MPICH_VER=3.0.4
     export MPICH_EXEC="/usr/bin/mpiexec.mpich"
     export MPICH_CC="/usr/bin/mpicc.mpich"
@@ -80,7 +81,8 @@ if is_ubuntu1404 ; then
 
     export SYS_PREFIX=/usr
 
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+elif is_macos; then
+    echo "Running on MacOS"
     export MPICH_VER=3.2
     export MPICH_PREF="/usr/local/Cellar/mpich/3.2_3"
     export MPICH_EXEC="${MPICH_PREF}/bin/mpiexec"
@@ -92,6 +94,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     export OMPI_CC="${OMPI_PREF}/bin/mpicc"
 
     export SYS_PREFIX=/usr/local/Cellar
+else
+    echo "Unknown test platform: ${OSTYPE}" >&2
+    cat  /etc/lsb-release
+    exit -1
 fi
 
 print_mpi_info() {

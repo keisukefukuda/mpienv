@@ -101,10 +101,8 @@ class MpiBase(object):
         if ex2 is None or not os.path.exists(ex2):
             return False
 
-        if os.path.islink(ex1):
-            ex1 = os.readlink(ex1)
-        if os.path.islink(ex2):
-            ex2 = os.readlink(ex2)
+        ex1 = os.path.realpath(ex1)
+        ex2 = os.path.realpath(ex2)
 
         return ex1 == ex2
 
