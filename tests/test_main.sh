@@ -208,7 +208,7 @@ has_key() {
 }
 
 test_cmd_info() {
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover --add ${SYS_PREFIX}
     assertSuccess mpienv use mpich-${MPICH_VER}
     
     mpienv info mpich-${MPICH_VER} --json >a.json
