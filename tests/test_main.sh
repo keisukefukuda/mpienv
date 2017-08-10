@@ -208,10 +208,9 @@ has_key() {
 }
 
 test_cmd_info() {
-    mpienv autodiscover -q --add ${SYS_PREFIX}
-    assertTrue $?
-
-    mpienv use mpich-${MPICH_VER}
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv use mpich-${MPICH_VER}
+    
     mpienv info mpich-${MPICH_VER} --json >a.json
     mpienv info --json >b.json
 
@@ -220,8 +219,8 @@ test_cmd_info() {
     rm -f a.json b.json
 
     # Currently mpich is active
-    assertEquals "False" $(mpienv info --json | json_get "broken")
-    assertEquals "MPICH" $(mpienv info --json | json_get "type")
+    assertEquals "False" "$(mpienv info --json | json_get "broken")"
+    assertEquals "MPICH" "$(mpienv info --json | json_get "type")"
     assertEquals ${MPICH_VER} $(mpienv info --json | json_get "version")
     assertTrue $(mpienv info --json | has_key "symlink")
     assertTrue $(mpienv info --json | has_key "mpiexec")
