@@ -1,5 +1,8 @@
 set -u
 
+date
+hostname
+
 if [ -n "${ZSH_VERSION:-}" ]; then
     setopt shwordsplit
     SHUNIT_PARENT=$0
@@ -42,14 +45,10 @@ tearDown() {
     rm -rf ${MPIENV_VERSIONS_DIR}
 }
 
-install_mpich() {
-    export MPIENV_CONFIGURE_OPTS="--disable-fortran"
-    mpienv install ${MPICH} >/dev/null 2>&1
-}
-
-install_ompi() {
-    export MPIENV_CONFIGURE_OPTS="--disable-mpi-fortran"
-    mpienv install ${OMPI} >/dev/null 2>&1
+assertSuccess() {
+    ret=0
+    $* || ret=$?
+    assertTrue "'$*' Success" "$?" 
 }
 
 # Load mpienv
@@ -163,7 +162,7 @@ test_openmpi_info() {
 
 test_1mpi() {
     # mpienv list
-    mpienv autodiscover --add ${SYS_PREFIX}
+    mpienv autodiscover -q --add ${SYS_PREFIX}
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertTrue "$?"
@@ -188,48 +187,42 @@ test_1mpi() {
     assertTrue "$?"
 
     # Remove mpich
-    mpienv use openmpi-${OMPI_VER}  # Activate Open MPI to remove mpich
-    assertTrue "$?"
-    mpienv rm mpich-${MPICH_VER}    # Remove mpich
-    assertTrue "$?"
+    assertSuccess mpienv use openmpi-${OMPI_VER}  # Activate Open MPI to remove mpich
+    assertSuccess mpienv rm mpich-${MPICH_VER}    # Remove mpich
     mpienv list | grep -q mpich-${MPICH_VER} # Check if it's removed
-    assertFalse "$?"
+    assertFalse "$?"  # THus the grep should fail
 }
 
-get_key() {
+json_get() {
+    # Assuming a JSON dict is given from the stdin,
+    # return the value of dict[key]
     key=$1
     python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
 }
 
 has_key() {
+    # Assuming a JSON dict is given from the stdin,
+    # checks if dict has the key
     key=$1
     python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
 }
 
 test_cmd_info() {
-    mpienv autodiscover --add ${SYS_PREFIX}
+    mpienv autodiscover -q --add ${SYS_PREFIX}
     assertTrue $?
 
-    mpienv list
-
-    echo mpienv use mpich-${MPICH_VER}
     mpienv use mpich-${MPICH_VER}
-    mpienv list
-    return
     mpienv info mpich-${MPICH_VER} --json >a.json
     mpienv info --json >b.json
 
-
-    diff -q a.json b.json >/dev/null
-    assertTrue "$?"
+    assertSuccess diff -q a.json b.json
 
     rm -f a.json b.json
 
-    return
-
-    assertEquals "False" $(mpienv info --json | get_key "broken")
-    assertEquals "MPICH" $(mpienv info --json | get_key "type")
-    assertEquals "3.2"   $(mpienv info --json | get_key "version")
+    # Currently mpich is active
+    assertEquals "False" $(mpienv info --json | json_get "broken")
+    assertEquals "MPICH" $(mpienv info --json | json_get "type")
+    assertEquals ${MPICH_VER} $(mpienv info --json | json_get "version")
     assertTrue $(mpienv info --json | has_key "symlink")
     assertTrue $(mpienv info --json | has_key "mpiexec")
     assertTrue $(mpienv info --json | has_key "mpicc")
@@ -237,8 +230,7 @@ test_cmd_info() {
     assertTrue $(mpienv info --json | has_key "default_name")
     assertTrue $(mpienv info --json | has_key "prefix")
 
-    test -d "$(mpienv prefix)"
-    assertTrue "$?"
+    assertSuccess test -d $(mpienv prefix)
 }
 
 # test_mpi4py() {
@@ -307,10 +299,10 @@ test_cmd_info() {
 #     assertEquals "\$OUT must be empty" "$OUT" ""
 # }
 
-suite() {
-    suite_addTest "test_cmd_info"
-    #suite_addTest "test_mpi4py_clear_pypath"
-}
+# suite() {
+#     suite_addTest "test_cmd_info"
+#     #suite_addTest "test_mpi4py_clear_pypath"
+# }
 
 
 #-----------------------------------------------------------
