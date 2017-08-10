@@ -207,7 +207,7 @@ json_get() {
     python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
 }
 
-has_key() {
+json_check_key() {
     # Assuming a JSON dict is given from the stdin,
     # checks if dict has the key
     key=$1
@@ -229,12 +229,12 @@ test_cmd_info() {
     assertEquals "False" "$(mpienv info --json | json_get "broken")"
     assertEquals "MPICH" "$(mpienv info --json | json_get "type")"
     assertEquals ${MPICH_VER} $(mpienv info --json | json_get "version")
-    assertTrue $(mpienv info --json | has_key "symlink")
-    assertTrue $(mpienv info --json | has_key "mpiexec")
-    assertTrue $(mpienv info --json | has_key "mpicc")
-    assertTrue $(mpienv info --json | has_key "mpicxx")
-    assertTrue $(mpienv info --json | has_key "default_name")
-    assertTrue $(mpienv info --json | has_key "prefix")
+    assertTrue $(mpienv info --json | json_check_key "symlink")
+    assertTrue $(mpienv info --json | json_check_key "mpiexec")
+    assertTrue $(mpienv info --json | json_check_key "mpicc")
+    assertTrue $(mpienv info --json | json_check_key "mpicxx")
+    assertTrue $(mpienv info --json | json_check_key "default_name")
+    assertTrue $(mpienv info --json | json_check_key "prefix")
 
     assertSuccess test -d $(mpienv prefix)
 }
