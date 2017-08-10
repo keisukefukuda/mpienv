@@ -54,8 +54,7 @@ class OpenMPI(mpibase.MpiBase):
 
     def bin_files(self):
         return util.glob_list([self.prefix, 'bin'],
-                              ['mpi*',
-                               'ompi-*',
+                              ['ompi-*',
                                'ompi_*',
                                'orte*',
                                'opal_'])

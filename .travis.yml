@@ -43,7 +43,6 @@ addons:
       - libibverbs-dev
       - zsh
       - libmpich-dev
-      - mpich2
       - mpich
       - libopenmpi-dev
       - openmpi-bin

@@ -110,18 +110,24 @@ class MpiBase(object):
     def is_broken(self):
         return False
 
-    def _mirror_file(self, f, dst_dir):
-        dst = os.path.join(dst_dir, os.path.basename(f))
+    def _mirror_file(self, f, dst_dir, dst_bname=None):
+        if dst_bname is None:
+            dst = os.path.join(dst_dir, os.path.basename(f))
+        else:
+            dst = os.path.join(dst_dir, dst_bname)
 
         if os.path.islink(f):
             src = os.path.realpath(f)
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
         elif os.path.isdir(f):
             src = f
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
         else:
             # ordinary files
             src = f
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
 
     @property
@@ -171,7 +177,11 @@ class MpiBase(object):
                 os.mkdir(dr)
 
         for f in bin_files:
-            self._mirror_file(f, os.path.join(shim, 'bin'))
+            bin = os.path.join(shim, 'bin')
+            self._mirror_file(f, bin)
+        self._mirror_file(self.mpiexec, bin, 'mpiexec')
+        self._mirror_file(self.mpicc, bin, 'mpicc')
+        self._mirror_file(self.mpicxx, bin, 'mpicxx')
 
         for f in lib_files:
             self._mirror_file(f, os.path.join(shim, 'lib'))

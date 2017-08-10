@@ -78,10 +78,12 @@ class Mpich(mpibase.MpiBase):
         self._default_name = "mpich-{}".format(self._version)
 
     def bin_files(self):
-        return util.glob_list([self.prefix, 'bin'],
-                              ['hydra_*',
-                               'mpi*',
-                               'parkill'])
+        # MPICH-specific files, which would not conflict with
+        # other MPI implementations.
+        mpich_files = util.glob_list([self.prefix, 'bin'],
+                                     ['hydra_*',
+                                      'parkill'])
+        return mpich_files
 
     def lib_files(self):
         return util.glob_list([self.prefix, 'lib'],
