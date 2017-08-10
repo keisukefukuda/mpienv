@@ -94,8 +94,15 @@ elif is_macos; then
 
     export SYS_PREFIX=/usr/local/Cellar
 else
-    echo "Unknown test platform: ${OSTYPE}" >&2
-    cat  /etc/lsb-release
+    echo "Unknown test platform: OSTYPE=${OSTYPE}" >&2
+    echo "----------------------------"
+    if [ -f /etc/lsb-release ]; then
+        echo "/etc/lsb-release:"
+        cat  /etc/lsb-release
+    else
+        echo "/etc/lsb-release does not exist."
+    fi
+    echo "----------------------------"
     exit -1
 fi
 
