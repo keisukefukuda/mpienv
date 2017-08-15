@@ -317,10 +317,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-suite() {
-    # suite_addTest "test_mpi4py"
-    suite_addTest "test_mpi4py_clear_pypath"
-}
+# suite() {
+#     # suite_addTest "test_mpi4py"
+#     suite_addTest "test_mpi4py_clear_pypath"
+# }
 
 
 #-----------------------------------------------------------
