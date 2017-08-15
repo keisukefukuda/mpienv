@@ -49,15 +49,18 @@ class PyModule(object):
         else:
             env['LD_LIBRARY_PATH'] = "{}".format(LD)
 
-        if False:
-            sys.stderr.write("Installing {} for {} ...\n".format(self._libname,
-                                                                 self._name))
         with open(os.devnull, 'w') as devnull:
-            check_call(['pip', 'install', '-t', self._pylib_dir,
+            sys.stderr.write(
+                "Installing {} using pip...".format(self._libname))
+            sys.stderr.flush()
+            check_call(['pip', 'install', '-q', '-t', self._pylib_dir,
                         '--no-cache-dir', self._libname],
                        stdout=sys.stderr,
+                       # stdout=devnull,
                        env=env)
             devnull  # NOQA
+            sys.stderr.write(" done.\n")
+            sys.stderr.flush()
 
     def use(self):
         pypath = os.environ.get('PYTHONPATH', None)

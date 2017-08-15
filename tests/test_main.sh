@@ -48,7 +48,7 @@ tearDown() {
 assertSuccess() {
     ret=0
     $* || ret=$?
-    assertTrue "'$*' Success" "$?" 
+    assertTrue "'$*' Success" "$?"
 }
 
 # Load mpienv
@@ -70,12 +70,12 @@ if is_ubuntu1404 ; then
     echo "Running on Ubuntu 14.04"
     export MPICH_VER=3.0.4
     export MPICH_EXEC="/usr/bin/mpiexec.mpich"
-    export MPICH_CC="/usr/bin/mpicc.mpich"
+    export MPICH_CC_BIN="/usr/bin/mpicc.mpich" # avoid MPICH_CC
     export MPICH_PREF="/usr"
 
     export OMPI_VER=1.6.5
     export OMPI_EXEC="/usr/bin/mpiexec.openmpi"
-    export OMPI_CC="/usr/bin/mpicc.openmpi"
+    export OMPI_CC_BIN="/usr/bin/mpicc.openmpi"
     export OMPI_PREF="/usr"
 
     export SYS_PREFIX=/usr
@@ -85,12 +85,12 @@ elif is_macos; then
     export MPICH_VER=3.2
     export MPICH_PREF="/usr/local/Cellar/mpich/3.2_3"
     export MPICH_EXEC="${MPICH_PREF}/bin/mpiexec"
-    export MPICH_CC="${MPICH_PREF}/bin/mpicc"
+    export MPICH_CC_BIN="${MPICH_PREF}/bin/mpicc"
 
     export OMPI_VER=2.1.1
     export OMPI_PREF="/usr/local/Cellar/open-mpi/2.1.1"
     export OMPI_EXEC="${OMPI_PREF}/bin/mpiexec"
-    export OMPI_CC="${OMPI_PREF}/bin/mpicc"
+    export OMPI_CC_BIN="${OMPI_PREF}/bin/mpicc"
 
     export SYS_PREFIX=/usr/local/Cellar
 else
@@ -105,6 +105,9 @@ else
     echo "----------------------------"
     exit -1
 fi
+
+export MPICH=mpich-${MPICH_VER}
+export OMPI=openmpi-${OMPI_VER}
 
 print_mpi_info() {
     unset tmpfile
@@ -144,7 +147,7 @@ test_mpich_info() {
     assertEquals ${MPICH_EXEC} ${EXEC}
 
     local CC=$(print_mpi_info ${MPICH_EXEC}  "mpicc")
-    assertEquals ${MPICH_CC} ${CC}
+    assertEquals ${MPICH_CC_BIN} ${CC}
 
     local PREF=$(print_mpi_info ${MPICH_EXEC} "prefix")
     assertEquals ${MPICH_PREF} "${PREF}"
@@ -158,7 +161,7 @@ test_openmpi_info() {
     assertEquals ${OMPI_EXEC} ${EXEC}
 
     local CC=$(print_mpi_info ${OMPI_EXEC} "mpicc")
-    assertEquals ${OMPI_CC} ${CC}
+    assertEquals ${OMPI_CC_BIN} ${CC}
 
     local PREF=$(print_mpi_info ${OMPI_EXEC} "prefix")
     assertEquals ${OMPI_PREF} ${PREF}
@@ -217,7 +220,7 @@ json_check_key() {
 test_cmd_info() {
     assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
     mpienv use mpich-${MPICH_VER}
-    
+
     mpienv info mpich-${MPICH_VER} --json >a.json
     mpienv info --json >b.json
 
@@ -239,41 +242,51 @@ test_cmd_info() {
     assertSuccess test -d $(mpienv prefix)
 }
 
-# test_mpi4py() {
-#     export TMPDIR=/tmp
+test_mpi4py() {
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    export TMPDIR=/tmp
 
-#     local SCRIPT=$(mktemp)
-#     cat <<EOF >$SCRIPT
-# from mpi4py import MPI
-# import sys
-# #print(MPI.__file__)
-# comm = MPI.COMM_WORLD
-# rank = comm.Get_rank()
-# for i in range(0, comm.Get_size()):
-#     if i == rank:
-#         sys.stdout.write(str(rank))
-#         sys.stdout.flush()
-#     comm.barrier()
-# EOF
-#     # test Mpich
-#     install_mpich
+    local OUT=$(mktemp)
+    local SCRIPT=$(mktemp)
+    cat <<EOF >$SCRIPT
+from mpi4py import MPI
+import sys
+#print(MPI.__file__)
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+for i in range(0, comm.Get_size()):
+    if i == rank:
+        sys.stdout.write(str(rank))
+        sys.stdout.flush()
+    comm.barrier()
+EOF
+    # mpienv use ${MPICH}
+    # mpienv use --mpi4py ${MPICH}
+    # mpienv exec -n 2 python -c "from mpi4py import MPI"
+    # assertTrue $?
+    # mpienv exec -n 2 python $SCRIPT >$OUT
+    # assertEquals "01" "$(cat $OUT)"
 
-#     mpienv use --mpi4py ${MPICH}
-#     mpienv exec -n 2 python -c "from mpi4py import MPI"
-#     assertTrue $?
-#     OUT=$(mpienv use --mpi4py ${MPICH}; mpienv exec -n 2 python $SCRIPT)
-#     assertEquals "01" "$OUT"
+    # test Open MPI
+    echo "1::::::::::::::::::"
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+    mpienv use --mpi4py ${OMPI}
+    echo "2::::::::::::::::::"
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    echo "3::::::::::::::::::"
+    assertTrue $?
 
-#     # test Open MPI
-#     install_ompi
-#     mpienv use --mpi4py ${OMPI}
-#     mpienv exec -n 2 python -c "from mpi4py import MPI"
-#     assertTrue $?
-#     OUT=$(mpienv use --mpi4py ${OMPI}; mpienv exec -n 2 python $SCRIPT)
-#     assertEquals "01" "$OUT"
+    return
 
-#     rm -f ${SCRIPT}
-# }
+    echo "4::::::::::::::::::"
+    echo $LD_LIBRARY_PATH
+    mpienv exec -n 2 python $SCRIPT >$OUT
+    echo "5::::::::::::::::::"
+    assertEquals "01" "$(cat $OUT)"
+
+    rm -f ${SCRIPT}
+    rm -f ${OUT}
+}
 
 # test_mpi4py_clear_pypath() {
 #     install_mpich
@@ -305,10 +318,10 @@ test_cmd_info() {
 #     assertEquals "\$OUT must be empty" "$OUT" ""
 # }
 
-# suite() {
-#     suite_addTest "test_cmd_info"
-#     #suite_addTest "test_mpi4py_clear_pypath"
-# }
+suite() {
+    suite_addTest "test_mpi4py"
+    #suite_addTest "test_mpi4py_clear_pypath"
+}
 
 
 #-----------------------------------------------------------

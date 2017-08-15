@@ -42,7 +42,7 @@ class OpenMPI(mpibase.MpiBase):
         self._version = ver
         self._mpi_version = mpi_ver
         # Open MPI does not provide a way to get configure params
-        self._conf_params = []
+        self._conf_params = {}
         self._default_name = "openmpi-{}".format(ver)
         self._c = info.get('bindings:c')
         self._cxx = info.get('bindings:cxx')
@@ -77,13 +77,12 @@ class OpenMPI(mpibase.MpiBase):
         return []
 
     def exec_(self, cmds):
-        envs = {}
+        envs = {}  # extra envs
         for v in ['PYTHONPATH', 'PATH', 'LD_LIBRARY_PATH']:
             cmds[:0] = ['-x', v]
 
         pref = self.prefix
         cmds[:0] = ['-prefix', pref]
-
         cmds[:0] = [self.mpiexec]
 
         self.run_cmd(cmds, envs)
