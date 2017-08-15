@@ -263,18 +263,20 @@ EOF
     mpienv use ${MPICH}
     mpienv use --mpi4py ${MPICH}
     mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue $?
+    assertTrue "$LINENO: import mpi4py should success" $?
     
     mpienv exec -n 2 python $SCRIPT >$OUT
-    assertEquals "01" "$(cat $OUT)"
+    assertTrue "$LINENO: success" "$?"
+    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
     mpienv exec -n 3 python $SCRIPT >$OUT
-    assertEquals "012" "$(cat $OUT)"
+    assertTrue "$LINENO: success" "$?"
+    assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
 
     # test Open MPI
     mpienv use --mpi4py ${OMPI}
     mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue $?
+    assertTrue "$LINENO: command success" "$?"
 
     mpienv exec -n 2 python $SCRIPT >$OUT
     assertEquals "01" "$(cat $OUT)"
