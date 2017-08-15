@@ -314,13 +314,13 @@ test_reg_issue10(){
 
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].
-    assertEquals "\$OUT must be empty" "${OUT}" ""
+    assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-# suite() {
-#     # suite_addTest "test_mpi4py"
-#     suite_addTest "test_mpi4py_clear_pypath"
-# }
+suite() {
+    # suite_addTest "test_mpi4py"
+    suite_addTest "test_mpi4py_clear_pypath"
+}
 
 
 #-----------------------------------------------------------
