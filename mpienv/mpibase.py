@@ -169,8 +169,6 @@ class MpiBase(object):
 
         envs['LD_LIBRARY_PATH'] = ld_lib_path
 
-        sys.stderr.write("run_cmds: {}\n".format(":".join(cmd)))
-
         p = Popen(cmd, env=envs)
         p.wait()
         exit(p.returncode)
