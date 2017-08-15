@@ -286,39 +286,40 @@ EOF
     rm -f ${OUT}
 }
 
-# test_mpi4py_clear_pypath() {
-#     install_mpich
+test_mpi4py_clear_pypath() {
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
 
-#     unset PYTHONPATH
-#     assertNull "${PYTHONPATH:-}"
+    unset PYTHONPATH
+    assertNull "${PYTHONPATH:-}"
 
-#     mpienv use ${MPICH}
-#     assertNull "${PYTHONPATH:-}"
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
 
-#     mpienv use --mpi4py ${MPICH}
-#     assertNotNull "${PYTHONPATH:-}"
+    mpienv use --mpi4py ${MPICH}
+    assertNotNull "${PYTHONPATH:-}"
 
-#     mpienv use ${MPICH}
-#     assertNull "${PYTHONPATH:-}"
-# }
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
+}
 
-# test_reg_issue10(){
-#     # Regression test for #10
-#     # https://github.com/keisukefukuda/mpienv/issues/10
-#     install_mpich
-#     mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
-#     mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
+test_reg_issue10(){
+    # Regression test for #10
+    # https://github.com/keisukefukuda/mpienv/issues/10
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
 
-#     OUT=$(mpienv use --mpi4py mpix 2>&1) # this command should NOT intall mpi4py again.
+    mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
+    mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
 
-#     # If the `use` command does not run `pip install mpi4py`,
-#     # which is a correct behavior, E-S should be < 1 [s].
-#     assertEquals "\$OUT must be empty" "$OUT" ""
-# }
+    OUT=$(mpienv use --mpi4py mpix 2>&1) # this command should NOT intall mpi4py again
+
+    # If the `use` command does not run `pip install mpi4py`,
+    # which is a correct behavior, E-S should be < 1 [s].
+    assertEquals "\$OUT must be empty" "${OUT}" ""
+}
 
 # suite() {
-#     suite_addTest "test_mpi4py"
-#     #suite_addTest "test_mpi4py_clear_pypath"
+#     # suite_addTest "test_mpi4py"
+#     suite_addTest "test_mpi4py_clear_pypath"
 # }
 
 
