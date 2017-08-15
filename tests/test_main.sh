@@ -260,29 +260,27 @@ for i in range(0, comm.Get_size()):
         sys.stdout.flush()
     comm.barrier()
 EOF
-    # mpienv use ${MPICH}
-    # mpienv use --mpi4py ${MPICH}
-    # mpienv exec -n 2 python -c "from mpi4py import MPI"
-    # assertTrue $?
-    # mpienv exec -n 2 python $SCRIPT >$OUT
-    # assertEquals "01" "$(cat $OUT)"
+    mpienv use ${MPICH}
+    mpienv use --mpi4py ${MPICH}
+    mpienv exec -n 2 python -c "from mpi4py import MPI"
+    assertTrue $?
+    
+    mpienv exec -n 2 python $SCRIPT >$OUT
+    assertEquals "01" "$(cat $OUT)"
+    
+    mpienv exec -n 3 python $SCRIPT >$OUT
+    assertEquals "012" "$(cat $OUT)"
 
     # test Open MPI
-    echo "1::::::::::::::::::"
-    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
     mpienv use --mpi4py ${OMPI}
-    echo "2::::::::::::::::::"
     mpienv exec -n 2 python -c "from mpi4py import MPI"
-    echo "3::::::::::::::::::"
     assertTrue $?
 
-    return
-
-    echo "4::::::::::::::::::"
-    echo $LD_LIBRARY_PATH
     mpienv exec -n 2 python $SCRIPT >$OUT
-    echo "5::::::::::::::::::"
     assertEquals "01" "$(cat $OUT)"
+
+    mpienv exec -n 4 python $SCRIPT >$OUT
+    assertEquals "0123" "$(cat $OUT)"
 
     rm -f ${SCRIPT}
     rm -f ${OUT}
@@ -318,10 +316,10 @@ EOF
 #     assertEquals "\$OUT must be empty" "$OUT" ""
 # }
 
-suite() {
-    suite_addTest "test_mpi4py"
-    #suite_addTest "test_mpi4py_clear_pypath"
-}
+# suite() {
+#     suite_addTest "test_mpi4py"
+#     #suite_addTest "test_mpi4py_clear_pypath"
+# }
 
 
 #-----------------------------------------------------------
