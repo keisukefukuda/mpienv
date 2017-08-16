@@ -242,6 +242,55 @@ test_cmd_info() {
     assertSuccess test -d $(mpienv prefix)
 }
 
+test_mpicc() {
+    export TMPDIR=/tmp
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+
+    local OUT=$(mktemp)
+    local SRC=$(mktemp /tmp/mpienv-test.XXXXXXXX.c)
+
+    cat <<EOF >${SRC}
+#include <stdio.h>
+#include <mpi.h>
+int main(int argc, char **argv) {
+    int size, rank, i;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    for (i=0; i < size; i++) {
+        if (i == rank) {
+            printf("%d", i);
+            fflush(stdout);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+    MPI_Finalize();
+    return 0;
+}
+EOF
+    mpienv use ${MPICH}
+    mpicc ${SRC} -o a.out
+    mpiexec -n 2 ./a.out >${OUT}
+    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+    mpiexec -n 3 ./a.out >${OUT}
+    assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
+
+    rm -f a.out
+    mpienv use ${OMPI}
+    mpicc ${SRC} -o a.out
+    mpiexec -n 2 ./a.out >${OUT}
+    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+    mpiexec -n 3 ./a.out >${OUT}
+    assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
+
+    mpienv use ${MPICH}
+    mpienv use ${OMPI}
+    mpiexec -n 2 ./a.out >${OUT}
+    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+    
+    rm -f ${SRC} ${OUT} a.out
+}
+
 test_mpi4py() {
     assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
     export TMPDIR=/tmp
@@ -319,10 +368,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-# suite() {
-#     # suite_addTest "test_mpi4py"
-#     suite_addTest "test_mpi4py_clear_pypath"
-# }
+suite() {
+    # suite_addTest "test_mpi4py"
+    suite_addTest "test_mpicc"
+}
 
 
 #-----------------------------------------------------------
