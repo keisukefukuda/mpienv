@@ -251,19 +251,26 @@ test_mpicc() {
 
     cat <<EOF >${SRC}
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 #include <mpi.h>
 int main(int argc, char **argv) {
     int size, rank, i;
+    int *vals;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    for (i=0; i < size; i++) {
-        if (i == rank) {
-            printf("%d", i);
-            fflush(stdout);
+
+    vals = malloc(sizeof(int) * size);
+    assert(vals);
+    MPI_Gather(&rank, 1, MPI_INT, vals, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (rank == 0) {
+        for(i=0; i<size; i++) {
+            printf("%d", vals[i]);
         }
-        MPI_Barrier(MPI_COMM_WORLD);
+        fflush(stdout);
     }
+    free(vals);
     MPI_Finalize();
     return 0;
 }
@@ -369,7 +376,7 @@ test_reg_issue10(){
 }
 
 # suite() {
-#     suite_addTest "test_mpi4py"
+#     # suite_addTest "test_mpi4py"
 #     suite_addTest "test_mpicc"
 # }
 
