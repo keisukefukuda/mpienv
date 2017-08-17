@@ -275,12 +275,12 @@ int main(int argc, char **argv) {
     return 0;
 }
 EOF
-    mpienv use ${MPICH}
-    mpicc ${SRC} -o a.out
-    mpiexec -n 2 ./a.out >${OUT}
-    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-    mpiexec -n 3 ./a.out >${OUT}
-    assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
+    # mpienv use ${MPICH}
+    # mpicc ${SRC} -o a.out
+    # mpiexec -n 2 ./a.out >${OUT}
+    # assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+    # mpiexec -n 3 ./a.out >${OUT}
+    # assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
 
     rm -f a.out
     mpienv use ${OMPI}
