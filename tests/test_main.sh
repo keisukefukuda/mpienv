@@ -33,6 +33,8 @@ echo MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
 mkdir -p ${PIP_DOWNLOAD_CACHE}
 
+export PYTHON=$(which python)
+
 rm -rf "$MPIENV_VERSIONS_DIR" |:
 rm -rf "$MPIENV_CACHE_DIR" |:
 
@@ -299,9 +301,8 @@ EOF
 }
 
 test_mpi4py() {
-    PYTHON=$(which python)
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
     export TMPDIR=/tmp
+    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
 
     local OUT=$(mktemp)
     local SCRIPT=$(mktemp)
@@ -311,31 +312,50 @@ import sys
 #print(MPI.__file__)
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
-for i in range(0, comm.Get_size()):
-    if i == rank:
-        sys.stdout.write(str(rank))
-        sys.stdout.flush()
-    comm.barrier()
+
+
+ans = comm.gather(rank, root=0)
+
+if rank == 0:
+    print(''.join([str(s) for s in ans]))
 EOF
     if ! is_ubuntu1404 ; then
-        echo "====================================== mpich"
+        # Ubuntu 14.04's mpich is somehow buggy...
         mpienv use ${MPICH}
         mpienv use --mpi4py ${MPICH}
-        mpienv exec -n 2 python -c "from mpi4py import MPI"
+        mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
         assertTrue "$LINENO: import mpi4py should success" $?
     
-        mpienv exec -n 2 python $SCRIPT >$OUT
+        mpienv exec -n 2 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
-        mpienv exec -n 3 python $SCRIPT >$OUT
+        mpienv exec -n 3 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
     fi
         
     # test Open MPI
-
     mpienv use --mpi4py ${OMPI}
+
+    # echo "#### echo PATH=$PATH"
+    # echo "#### " mpienv exec -n 1 sh -c \"echo \$PATH\"
+    # mpienv exec -n 1 sh -c "echo PATH=\$PATH"
+    # echo
+
+    # echo "#### " mpienv exec -n 1 sh -c \"env | grep PATH\"
+    # mpienv exec -n 1 sh -c "env | grep -E '^PATH'"
+    # echo
+
+    # echo "#### which python = " $(which python)
+    # echo "#### " mpienv exec -n 1 sh -c \"which python\"
+    # mpienv exec -n 1 sh -c "which python"
+    # echo
+
+    # echo "#### " which python from exec
+    # mpienv exec -n 1 $PYTHON -c "import sys; print(sys.executable)"
+    # echo
+
     mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
     assertTrue "test_mpi4py $LINENO: command success" "$?"
 
@@ -343,7 +363,7 @@ EOF
     assertEquals "01" "$(cat $OUT)"
 
     mpienv exec -n 4 $PYTHON $SCRIPT >$OUT
-    assertEquals "0123" "$(cat $OUT)"
+    assertEquals "test_mpi4py $LINENO: " "0123" "$(cat $OUT)"
 
     rm -f ${SCRIPT}
     rm -f ${OUT}
@@ -380,10 +400,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-suite() {
-    suite_addTest "test_mpi4py"
-    # suite_addTest "test_mpicc"
-}
+# suite() {
+#     suite_addTest "test_mpi4py"
+#     # suite_addTest "test_mpicc"
+# }
 
 
 #-----------------------------------------------------------

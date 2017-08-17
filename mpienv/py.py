@@ -56,7 +56,7 @@ class PyModule(object):
             check_call(['pip', 'install',
                         # '-v',
                         '-t', self._pylib_dir,
-                        # '--no-cache-dir',
+                        '--no-cache-dir',
                         self._libname],
                        stdout=sys.stderr,
                        # stdout=devnull,
