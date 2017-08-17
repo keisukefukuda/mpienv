@@ -37,17 +37,10 @@ class PyModule(object):
         return len(libs) > 0
 
     def install(self):
-        PATH = os.path.join(self._mpi_dir, 'bin')
-        LD = os.path.join(self._mpi_dir, 'lib')
-
         env = os.environ.copy()
-        env['PATH'] = "{}:{}".format(PATH, env['PATH'])
 
-        if env.get('LD_LIBRARY_PATH'):
-            env['LD_LIBRARY_PATH'] = "{}:{}".format(LD,
-                                                    env.get('LD_LIBRARY_PATH'))
-        else:
-            env['LD_LIBRARY_PATH'] = "{}".format(LD)
+        if 'LD_LIBRARY_PATH' not in env:
+            env['LD_LIBRARY_PATH'] = ""
 
         with open(os.devnull, 'w') as devnull:
             sys.stderr.write(

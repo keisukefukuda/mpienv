@@ -341,20 +341,26 @@ EOF
     # echo "#### echo PATH=$PATH"
     # echo "#### " mpienv exec -n 1 sh -c \"echo \$PATH\"
     # mpienv exec -n 1 sh -c "echo PATH=\$PATH"
+    # mpiexec -n 1 sh -c "echo PATH=\$PATH"
     # echo
 
     # echo "#### " mpienv exec -n 1 sh -c \"env | grep PATH\"
     # mpienv exec -n 1 sh -c "env | grep -E '^PATH'"
+    # mpiexec -n 1 sh -c "env | grep -E '^PATH'"
     # echo
 
     # echo "#### which python = " $(which python)
     # echo "#### " mpienv exec -n 1 sh -c \"which python\"
     # mpienv exec -n 1 sh -c "which python"
+    # mpiexec -n 1 sh -c "which python"
     # echo
 
     # echo "#### " which python from exec
-    # mpienv exec -n 1 $PYTHON -c "import sys; print(sys.executable)"
+    # mpienv exec -n 1 python -c "import sys; print(sys.executable)"
+    # mpiexec -n 1 python -c "import sys; print(sys.executable)"
     # echo
+
+    # return 
 
     mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
     assertTrue "test_mpi4py $LINENO: command success" "$?"
