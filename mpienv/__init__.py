@@ -67,6 +67,7 @@ class Mpienv(object):
 
         self._mpi_dir = os.path.join(self._vers_dir, 'mpi')
         self._pylib_dir = os.path.join(self._vers_dir, 'pylib', pybin_enc)
+        self._pybuild_dir = os.path.join(self._vers_dir, 'pybuild', pybin_enc)
         self._cache_dir = os.environ.get("MPIENV_CACHE_DIR",
                                          os.path.join(root_dir, 'cache'))
         self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
@@ -75,6 +76,7 @@ class Mpienv(object):
         mkdir_p(self._vers_dir)
         mkdir_p(self._mpi_dir)
         mkdir_p(self._pylib_dir)
+        mkdir_p(self._pybuild_dir)
         mkdir_p(self._cache_dir)
         mkdir_p(self._build_dir)
 
@@ -85,6 +87,7 @@ class Mpienv(object):
         self._conf['vers_dir'] = self._vers_dir
         self._conf['mpi_dir'] = self._mpi_dir
         self._conf['pylib_dir'] = self._pylib_dir
+        self._conf['pybuild_dir'] = self._pybuild_dir
         self._conf['cache_dir'] = self._cache_dir
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
@@ -103,6 +106,9 @@ class Mpienv(object):
 
     def pylib_dir(self):
         return self._pylib_dir
+
+    def pybuild_dir(self):
+        return self._pybuild_dir
 
     def _load_mpi_info(self):
         # Get the current status of the MPI environment.

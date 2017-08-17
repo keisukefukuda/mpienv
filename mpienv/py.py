@@ -26,6 +26,7 @@ class PyModule(object):
         self._root_dir = conf['root_dir']
         self._mpi_dir = conf['mpi_dir']
         self._pylib_dir = os.path.join(conf['pylib_dir'], name)
+        self._pybuild_dir = os.path.join(conf['pybuild_dir'], name)
         self._name = name
         self._conf = conf
 
@@ -49,7 +50,8 @@ class PyModule(object):
             check_call(['pip', 'install',
                         # '-v',
                         '-t', self._pylib_dir,
-                        '--no-cache-dir',
+                        '-b', self._pybuild_dir,
+                        # '--no-cache-dir',
                         self._libname],
                        stdout=sys.stderr,
                        # stdout=devnull,
