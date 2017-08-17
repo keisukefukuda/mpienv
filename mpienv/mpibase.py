@@ -160,9 +160,6 @@ class MpiBase(object):
         shimd = self.conf['shims_dir']
         ld_lib_path = "{}/lib:{}/lib64".format(shimd, shimd)
 
-        sys.stderr.write("\tfrom mpibase.py PATH={}\n".format(envs['PATH']))
-        sys.stderr.write("\tfrom mpibase.py cmd={}\n".format(' '.join(cmd)))
-
         # We need to construct LD_LIBRARY_PATH for the child mpiexec process
         # because setuid-ed programs ignore 'LD_LIBRARY_PATH'.
         if 'LD_LIBRARY_PATH' in envs:

@@ -53,7 +53,8 @@ class PyModule(object):
             sys.stderr.write(
                 "Installing {} using pip...".format(self._libname))
             sys.stderr.flush()
-            check_call(['pip', 'install', '-v',
+            check_call(['pip', 'install',
+                        # '-v',
                         '-t', self._pylib_dir,
                         # '--no-cache-dir',
                         self._libname],

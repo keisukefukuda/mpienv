@@ -299,6 +299,7 @@ EOF
 }
 
 test_mpi4py() {
+    PYTHON=$(which python)
     assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
     export TMPDIR=/tmp
 
@@ -333,35 +334,15 @@ EOF
     fi
         
     # test Open MPI
-    echo "====================================== openmpi"
+
     mpienv use --mpi4py ${OMPI}
-    echo "#### " which python
-    which python
-
-    echo "#### " ls -l $(which python)
-    ls -l $(which python)
-    echo
-
-    echo "#### " mpienv exec -n 1 sh -c \"echo \$PATH\"
-    mpienv exec -n 1 sh -c "echo PATH=\$PATH"
-    echo
-
-    echo "#### " mpienv exec -n 1 sh -c \"env | grep PATH\"
-    mpienv exec -n 1 sh -c "env | grep PATH"
-    echo
-
-    echo "#### " which python from exec
-    mpienv exec -n 1 python -c "import sys; print(sys.executable)"
-    echo
-
-    mpienv exec -n 2 $(which python) -c "from mpi4py import MPI"
+    mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
     assertTrue "test_mpi4py $LINENO: command success" "$?"
-    return
 
-    mpienv exec -n 2 python $SCRIPT >$OUT
+    mpienv exec -n 2 $PYTHON $SCRIPT >$OUT
     assertEquals "01" "$(cat $OUT)"
 
-    mpienv exec -n 4 python $SCRIPT >$OUT
+    mpienv exec -n 4 $PYTHON $SCRIPT >$OUT
     assertEquals "0123" "$(cat $OUT)"
 
     rm -f ${SCRIPT}
