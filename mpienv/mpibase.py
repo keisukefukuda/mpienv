@@ -156,11 +156,12 @@ class MpiBase(object):
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()
         envs.update(extra_envs)
-        # sys.stderr.write("MpiBase::run_cmd(): {}\n\n".format(' '.join(cmd)))
-        # sys.stderr.write("MpiBase::run_cmd(): envs={}\n\n".format(envs))
 
         shimd = self.conf['shims_dir']
         ld_lib_path = "{}/lib:{}/lib64".format(shimd, shimd)
+
+        sys.stderr.write("\tfrom mpibase.py PATH={}\n".format(envs['PATH']))
+        sys.stderr.write("\tfrom mpibase.py cmd={}\n".format(' '.join(cmd)))
 
         # We need to construct LD_LIBRARY_PATH for the child mpiexec process
         # because setuid-ed programs ignore 'LD_LIBRARY_PATH'.

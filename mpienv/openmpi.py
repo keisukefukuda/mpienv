@@ -81,8 +81,10 @@ class OpenMPI(mpibase.MpiBase):
         for v in ['PYTHONPATH', 'PATH', 'LD_LIBRARY_PATH']:
             cmds[:0] = ['-x', v]
 
-        pref = self.prefix
-        cmds[:0] = ['-prefix', pref]
+        sys.stderr.write(
+            "\tfrom openmpi.py PATH={}\n".format(os.environ['PATH']))
+
         cmds[:0] = [self.mpiexec]
+        # cmds[:0] = [self.mpiexec, '-prefix', self.prefix]
 
         self.run_cmd(cmds, envs)

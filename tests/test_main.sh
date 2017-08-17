@@ -316,23 +316,47 @@ for i in range(0, comm.Get_size()):
         sys.stdout.flush()
     comm.barrier()
 EOF
-    mpienv use ${MPICH}
-    mpienv use --mpi4py ${MPICH}
-    mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue "$LINENO: import mpi4py should success" $?
+    if ! is_ubuntu1404 ; then
+        echo "====================================== mpich"
+        mpienv use ${MPICH}
+        mpienv use --mpi4py ${MPICH}
+        mpienv exec -n 2 python -c "from mpi4py import MPI"
+        assertTrue "$LINENO: import mpi4py should success" $?
     
-    mpienv exec -n 2 python $SCRIPT >$OUT
-    assertTrue "$LINENO: success" "$?"
-    assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+        mpienv exec -n 2 python $SCRIPT >$OUT
+        assertTrue "$LINENO: success" "$?"
+        assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
-    mpienv exec -n 3 python $SCRIPT >$OUT
-    assertTrue "$LINENO: success" "$?"
-    assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
-
+        mpienv exec -n 3 python $SCRIPT >$OUT
+        assertTrue "$LINENO: success" "$?"
+        assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
+    fi
+        
     # test Open MPI
+    echo "====================================== openmpi"
     mpienv use --mpi4py ${OMPI}
-    mpienv exec -n 2 python -c "from mpi4py import MPI"
-    assertTrue "$LINENO: command success" "$?"
+    echo "#### " which python
+    which python
+
+    echo "#### " ls -l $(which python)
+    ls -l $(which python)
+    echo
+
+    echo "#### " mpienv exec -n 1 sh -c \"echo \$PATH\"
+    mpienv exec -n 1 sh -c "echo PATH=\$PATH"
+    echo
+
+    echo "#### " mpienv exec -n 1 sh -c \"env | grep PATH\"
+    mpienv exec -n 1 sh -c "env | grep PATH"
+    echo
+
+    echo "#### " which python from exec
+    mpienv exec -n 1 python -c "import sys; print(sys.executable)"
+    echo
+
+    mpienv exec -n 2 $(which python) -c "from mpi4py import MPI"
+    assertTrue "test_mpi4py $LINENO: command success" "$?"
+    return
 
     mpienv exec -n 2 python $SCRIPT >$OUT
     assertEquals "01" "$(cat $OUT)"
@@ -375,10 +399,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-# suite() {
-#     # suite_addTest "test_mpi4py"
-#     suite_addTest "test_mpicc"
-# }
+suite() {
+    suite_addTest "test_mpi4py"
+    # suite_addTest "test_mpicc"
+}
 
 
 #-----------------------------------------------------------
