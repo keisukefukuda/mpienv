@@ -44,7 +44,7 @@ setUp() {
 }
 
 tearDown() {
-    echo rm -rf ${MPIENV_VERSIONS_DIR}
+    rm -rf ${MPIENV_VERSIONS_DIR}
 }
 
 assertSuccess() {
@@ -365,13 +365,13 @@ EOF
     # return 
 
     mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
-    assertTrue "test_mpi4py $LINENO: command success" "$?"
+    assertTrue "$LINENO: importing mpi4py from ${OMPI}" "$?"
 
     mpienv exec -n 2 $PYTHON $SCRIPT >$OUT
-    assertEquals "01" "$(cat $OUT)"
+    assertEquals "$LINENO: Gather(NP=2) for ${OMPI}" "01" "$(cat $OUT)"
 
     mpienv exec -n 4 $PYTHON $SCRIPT >$OUT
-    assertEquals "test_mpi4py $LINENO: " "0123" "$(cat $OUT)"
+    assertEquals "$LINENO: Gather(NP=4) for ${OMPI}" "0123" "$(cat $OUT)"
 
     rm -f ${SCRIPT}
     rm -f ${OUT}
@@ -408,10 +408,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-suite() {
-    suite_addTest "test_mpi4py"
-    # suite_addTest "test_mpicc"
-}
+# suite() {
+#     suite_addTest "test_mpi4py"
+#     # suite_addTest "test_mpicc"
+# }
 
 
 #-----------------------------------------------------------
