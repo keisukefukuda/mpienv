@@ -67,6 +67,7 @@ class Mpienv(object):
 
         self._mpi_dir = os.path.join(self._vers_dir, 'mpi')
         self._pylib_dir = os.path.join(self._vers_dir, 'pylib', pybin_enc)
+        self._pybuild_dir = os.path.join(self._vers_dir, 'pybuild', pybin_enc)
         self._cache_dir = os.environ.get("MPIENV_CACHE_DIR",
                                          os.path.join(root_dir, 'cache'))
         self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
@@ -75,6 +76,7 @@ class Mpienv(object):
         mkdir_p(self._vers_dir)
         mkdir_p(self._mpi_dir)
         mkdir_p(self._pylib_dir)
+        mkdir_p(self._pybuild_dir)
         mkdir_p(self._cache_dir)
         mkdir_p(self._build_dir)
 
@@ -85,6 +87,7 @@ class Mpienv(object):
         self._conf['vers_dir'] = self._vers_dir
         self._conf['mpi_dir'] = self._mpi_dir
         self._conf['pylib_dir'] = self._pylib_dir
+        self._conf['pybuild_dir'] = self._pybuild_dir
         self._conf['cache_dir'] = self._cache_dir
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
@@ -104,24 +107,32 @@ class Mpienv(object):
     def pylib_dir(self):
         return self._pylib_dir
 
+    def pybuild_dir(self):
+        return self._pybuild_dir
+
     def _load_mpi_info(self):
         # Get the current status of the MPI environment.
         self._installed = {}
-        for prefix in glob.glob(os.path.join(self._mpi_dir, '*')):
-            name = os.path.split(prefix)[-1]
+        for mpiexec_link in glob.glob(os.path.join(self._mpi_dir, '*')):
+            assert(os.path.islink(mpiexec_link))
+            name = os.path.split(mpiexec_link)[-1]
             try:
-                mpi = self.get_mpi_from_prefix(prefix)
+                mpiexec = os.readlink(mpiexec_link)
+            except EnvironmentError:
+                raise RuntimeError("Internal Error: {} is not a file or link"
+                                   .format(mpiexec_link))
+            try:
+                mpi = self.get_mpi_from_mpiexec(mpiexec)
             except RuntimeError:
                 # If the directory exists but MPI is not found,
                 # then it's a broken MPI.
-                mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-                if os.path.exists(prefix) and not os.path.exists(mpiexec):
-                    mpi = BrokenMPI(prefix)
+                if os.path.exists(mpiexec):
+                    mpi = BrokenMPI(mpiexec)
                 else:
                     sys.stderr.write("mpienv: [Warning] Directory '{}' "
                                      "is registered as {} but no mpiexec "
                                      "is found.\n".format(
-                                         os.path.realpath(prefix),
+                                         mpiexec,
                                          name))
                     continue  # skip
             mpi.name = name
@@ -141,10 +152,12 @@ class Mpienv(object):
         self._conf = DefaultConf.copy()
         self._conf.update(conf)
 
-    def get_mpi_from_prefix(self, prefix):
-        mpiexec = os.path.join(prefix, 'bin', 'mpiexec')
-        mpi_class = MPI(mpiexec)
-        return mpi_class(prefix, self._conf)
+    def config(self):
+        return self._conf
+
+    def get_mpi_from_mpiexec(self, mpiexec):
+        mpi_class = MPI(self, mpiexec)
+        return mpi_class(mpiexec, self._conf)
 
     def prefix(self, name):
         return os.path.join(self._mpi_dir, name)
@@ -156,9 +169,9 @@ class Mpienv(object):
                              "'{}'\n".format(name))
             exit(-1)
 
-        mpiexec = os.path.join(self.prefix(name), 'bin', 'mpiexec')
-        mpi_class = MPI(mpiexec)
-        return mpi_class(self.prefix(name), self._conf, name)
+        mpiexec = os.readlink(os.path.join(self._mpi_dir, name))
+        mpi_class = MPI(self, mpiexec)
+        return mpi_class(mpiexec, self._conf, name)
 
     def items(self):
         return self._installed.items()
@@ -180,19 +193,15 @@ class Mpienv(object):
         return os.path.realpath(os.path.join(
             self._mpi_dir, name, 'bin', 'mpiexec'))
 
-    def is_installed(self, path):
+    def is_installed(self, mpiexec):
         # Find mpiexec in the path or something and check if it is already
         # under our control.
-        assert type(path) == str or type(path) == bytes
-        mpiexec = None
-        path = os.path.realpath(path)
-        if os.path.isdir(path):
-            mpiexec = os.path.realpath(os.path.join(path, 'bin', 'mpiexec'))
-        else:
-            raise RuntimeError("todo: path={}".format(path))
+        prefix = os.path.abspath(os.path.join(os.path.dirname(mpiexec),
+                                              os.path.pardir))
+        assert os.path.isdir(prefix)
 
         for name, mpi in self.items():
-            if mpi.mpiexec == mpiexec:
+            if os.path.realpath(mpi.mpiexec) == mpiexec:
                 return name
 
         return None
@@ -203,17 +212,22 @@ class Mpienv(object):
         except StopIteration:
             raise UnknownMPI()
 
-    def add(self, prefix, name=None):
-        mpi = self.get_mpi_from_prefix(prefix)
+    def add(self, target, name=None):
+        # `target` is expected to be an mpiexec command or its prefix
+        if os.path.isdir(target):
+            # target seems to be prefix
+            target = os.path.join(target, 'bin', 'mpiexec')
 
-        if mpi is BrokenMPI:
-            sys.stderr.write("Cannot find MPI in {}\n".format(prefix))
+        mpi = self.get_mpi_from_mpiexec(target)
+
+        if isinstance(mpi, BrokenMPI):
+            sys.stderr.write("Cannot find MPI in {}\n".format(target))
             exit(-1)
 
-        n = self.is_installed(prefix)
+        n = self.is_installed(target)
         if n is not None:
             raise RuntimeError("{} is already managed "
-                               "as '{}'".format(prefix, n))
+                               "as '{}'".format(target, n))
 
         if self._installed.get(name) is not None:
             raise RuntimeError("Specifed name '{}' is "
@@ -225,12 +239,12 @@ class Mpienv(object):
                                  "Recommended name for {} is {}, "
                                  "but the name is "
                                  "already used. "
-                                 "Try -n option.".format(prefix, name))
+                                 "Try -n option.\n".format(target, name))
                 exit(-1)
 
         # dst -> src
         dst = os.path.join(self._mpi_dir, name)
-        src = prefix
+        src = target
 
         os.symlink(src, dst)
 
@@ -271,6 +285,7 @@ class Mpienv(object):
         mpi = self.get_mpi_from_name(name)
 
         if isinstance(mpi, BrokenMPI):
+            print(mpi)
             sys.stderr.write("mpienv-use: Error: "
                              "'{}' seems to be broken. Maybe it is removed.\n"
                              "".format(name))

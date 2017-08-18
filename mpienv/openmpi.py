@@ -1,6 +1,8 @@
 # coding: utf-8
 import os.path
+import re
 from subprocess import check_output
+import sys  # NOQA
 
 from mpienv import mpibase
 from mpienv.ompi import parse_ompi_info
@@ -15,35 +17,44 @@ def _call_ompi_info(bin):
 
 
 class OpenMPI(mpibase.MpiBase):
-    def __init__(self, *args):
-        super(OpenMPI, self).__init__(*args)
+    def __init__(self, mpiexec, conf, name=None):
+        # `mpiexec` might be 'mpiexec' or 'mpiexec.ompi'
+        mpicc = re.sub('mpiexec', 'mpicc', mpiexec)
+        assert os.path.exists(mpicc)
+        prefix = os.path.abspath(
+            os.path.join(os.path.dirname(mpiexec), os.path.pardir))
+        ompi_info = os.path.join(prefix, 'bin', 'ompi_info')
+
+        info = _call_ompi_info(ompi_info)
+
+        inc_dir = info.get('path:incdir')
+        lib_dir = info.get('path:libdir')
+
+        super(OpenMPI, self).__init__(prefix, mpiexec, mpicc,
+                                      inc_dir, lib_dir, conf, name)
 
         self._type = 'Open MPI'
 
-        ompi = _call_ompi_info(os.path.join(self.prefix,
-                                            'bin', 'ompi_info'))
-
-        ver = ompi.get('ompi:version:full')
-        mpi_ver = ompi.get('mpi-api:version:full')
+        ver = info.get('ompi:version:full')
+        mpi_ver = info.get('mpi-api:version:full')
 
         self._type = 'Open MPI'
         self._version = ver
         self._mpi_version = mpi_ver
         # Open MPI does not provide a way to get configure params
-        self._conf_params = []
+        self._conf_params = {}
         self._default_name = "openmpi-{}".format(ver)
-        self._c = ompi.get('bindings:c')
-        self._cxx = ompi.get('bindings:cxx')
-        self._fortran = ompi.get('bindings:mpif.h')
+        self._c = info.get('bindings:c')
+        self._cxx = info.get('bindings:cxx')
+        self._fortran = info.get('bindings:mpif.h')
         self._default_name = "openmpi-{}".format(ver)
 
-        self._cuda = ompi.get(
+        self._cuda = info.get(
             'mca:opal:base:param:opal_built_with_cuda_support')
 
     def bin_files(self):
         return util.glob_list([self.prefix, 'bin'],
-                              ['mpi*',
-                               'ompi-*',
+                              ['ompi-*',
                                'ompi_*',
                                'orte*',
                                'opal_'])
@@ -66,13 +77,11 @@ class OpenMPI(mpibase.MpiBase):
         return []
 
     def exec_(self, cmds):
-        envs = {}
+        envs = {}  # extra envs
         for v in ['PYTHONPATH', 'PATH', 'LD_LIBRARY_PATH']:
             cmds[:0] = ['-x', v]
 
-        pref = self.prefix
-        cmds[:0] = ['-prefix', pref]
-
-        cmds[:0] = [self.mpiexec]
+        cmds[:0] = ["mpiexec"]
+        # cmds[:0] = [self.mpiexec, '-prefix', self.prefix]
 
         self.run_cmd(cmds, envs)
