@@ -65,11 +65,6 @@ class Mpich(mpibase.MpiBase):
 
         self._type = "MPICH"
 
-        # TODO(keisukefukuda) find prefix
-        # TODO(keisukefukuda) find includedir
-        # TODO(keisukefukuda) find libexec_dir
-        # TODO(keisukefukuda) find lib_dir
-
         # Parse 'Configure options' section
         # Config options are like this:
         # '--disable-option-checking' '--prefix=NONE' '--enable-cuda'
