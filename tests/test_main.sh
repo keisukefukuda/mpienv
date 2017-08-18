@@ -44,7 +44,7 @@ setUp() {
 }
 
 tearDown() {
-    rm -rf ${MPIENV_VERSIONS_DIR}
+    echo rm -rf ${MPIENV_VERSIONS_DIR}
 }
 
 assertSuccess() {
@@ -320,7 +320,8 @@ if rank == 0:
     print(''.join([str(s) for s in ans]))
 EOF
     if ! is_ubuntu1404 ; then
-        # Ubuntu 14.04's mpich is somehow buggy...
+        echo "============== ${MPICH} =============="
+        # Ubuntu 14.04's mpich seems to be broken somehow.
         mpienv use ${MPICH}
         mpienv use --mpi4py ${MPICH}
         mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
@@ -335,6 +336,7 @@ EOF
         assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
     fi
         
+    echo "============== ${OMPI} =============="
     # test Open MPI
     mpienv use --mpi4py ${OMPI}
 
@@ -406,10 +408,10 @@ test_reg_issue10(){
     assertEquals "\$OUT must be empty" "" "${OUT}"
 }
 
-# suite() {
-#     suite_addTest "test_mpi4py"
-#     # suite_addTest "test_mpicc"
-# }
+suite() {
+    suite_addTest "test_mpi4py"
+    # suite_addTest "test_mpicc"
+}
 
 
 #-----------------------------------------------------------

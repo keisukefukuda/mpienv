@@ -47,17 +47,21 @@ class PyModule(object):
             sys.stderr.write(
                 "Installing {} using pip...".format(self._libname))
             sys.stderr.flush()
-            check_call(['pip', 'install',
-                        # '-v',
-                        '-t', self._pylib_dir,
-                        '-b', self._pybuild_dir,
-                        # '--no-cache-dir',
-                        self._libname],
+            sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
+            cmd = ['pip', 'install',
+                   # '-q',
+                   # '-v',
+                   '-t', self._pylib_dir,
+                   '-b', self._pybuild_dir,
+                   # '--no-cache-dir',
+                   self._libname]
+            check_call(cmd,
                        stdout=sys.stderr,
                        # stdout=devnull,
                        env=env)
             devnull  # NOQA
             sys.stderr.write(" done.\n")
+            sys.stderr.write("{}\n".format(' '.join(cmd)))
             sys.stderr.flush()
 
     def use(self):
