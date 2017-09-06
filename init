@@ -3,7 +3,7 @@
 export MPIENV_ROOT="$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)"
 
 
-if [ -z "${MPIENV_VERSIONS_DIR}" ]; then
+if [ -z "${MPIENV_VERSIONS_DIR:-}" ]; then
     export MPIENV_VERSIONS_DIR=$MPIENV_ROOT/versions
 fi
 
