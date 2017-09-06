@@ -80,6 +80,11 @@ def list_mpiexec(dirpath):
     lst = glob.glob(os.path.join(dirpath, 'bin', '*mpiexec*'))
     link_rel = {}
 
+    # As an exception, we need to exclude binaries like
+    # 'mpiexec.mpirun_rsh' in a rule-based filter. This is because
+    # these command does not accept --version arguments.
+    lst = [x for x in lst if re.search(r'mpiexec.mpirun_rsh', x) is None]
+
     # mx: mpiexec
     for mx in lst:
         link_dst = os.path.realpath(mx)

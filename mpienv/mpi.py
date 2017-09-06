@@ -20,20 +20,6 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 
-def _find_mpich_mpi_h(ver_str):
-    """Find mpi.h file from MPICH mpiexec binary"""
-    line = next(ln for ln in ver_str.split("\n")
-                if re.search(r'Configure options', ln))
-    dir_cands = re.findall(r'--includedir=([^\' \n]+)', line)
-    inc_paths = re.findall(r'--includedir=([^\' \n]+)', line)
-    prefixes = re.findall(r'--prefix=([^\' \n]+)', line)
-
-    dir_cands = inc_paths + [os.path.join(d, 'include') for d in prefixes]
-    inc_dir = next(p for p in dir_cands
-                   if os.path.exists(os.path.join(p, 'mpi.h')))
-    return os.path.join(inc_dir, 'mpi.h')
-
-
 def _is_broken_symlink(path):
     return os.path.islink(path) and not os.path.exists(path)
 
@@ -80,7 +66,7 @@ def MPI(mpienv, mpiexec):
         # the MPI type.
         # This is because MVAPCIH uses MPICH's mpiexec,
         # so we cannot distinguish them only from mpiexec.
-        mpi_h = _find_mpich_mpi_h(ver_str)
+        mpi_h = mpich.find_mpi_h(mpiexec, ver_str)
         ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h],
                    stderr=DEVNULL)
         if ret == 0:

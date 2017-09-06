@@ -1,10 +1,42 @@
 # coding: utf-8
+import os
 import re
 from subprocess import check_output
+from subprocess import PIPE
+from subprocess import Popen
 import sys  # NOQA
 
 from mpienv import mpibase
 from mpienv import util
+
+
+def find_mpi_h(mpiexec, ver_str=None):
+    """Find mpi.h file from MPICH mpiexec binary"""
+    if ver_str is None:
+        p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
+        out, err = p.communicate()
+        ver_str = util.decode(out + err)
+
+    # Search prefix from configure options
+    line = next(ln for ln in ver_str.split("\n")
+                if re.search(r'Configure options', ln))
+    dir_cands = re.findall(r'--includedir=([^\' \n]+)', line)
+    inc_paths = re.findall(r'--includedir=([^\' \n]+)', line)
+    prefixes = [d for d in re.findall(r'--prefix=([^\' \n]+)', line)
+                if os.path.isdir(d)]
+
+    # Search prefix from the binary's path
+    m = re.match(r'^(.*)/bin/[^/]+$', mpiexec)
+    if m is not None:
+        incdir = m.group(1)
+        if os.path.isdir(incdir):
+            prefixes += [incdir]
+
+    dir_cands = inc_paths + [os.path.join(d, 'include') for d in prefixes]
+    inc_dir = next(p for p in dir_cands
+                   if os.path.exists(os.path.join(p, 'mpi.h')))
+    # print("return {}".format(os.path.join(inc_dir, 'mpi.h')))
+    return os.path.join(inc_dir, 'mpi.h')
 
 
 def _parse_mpich_version(mpiexec):

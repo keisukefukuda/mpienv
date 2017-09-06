@@ -12,7 +12,7 @@ class Mvapich(mpich.Mpich):
         super(Mvapich, self).__init__(*args)
 
         self._type = 'MVAPICH'
-        mpi_h = os.path.join(self.prefix, 'include', 'mpi.h')
+        mpi_h = mpich.find_mpi_h(self.mpiexec)
         if not os.path.exists(mpi_h):
             raise RuntimeError("Error: Cannot find {}".format(mpi_h))
 
