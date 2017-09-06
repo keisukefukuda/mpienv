@@ -1,5 +1,3 @@
-nose
+wheel
 hacking
 autopep8
-coverage==4.3.4
-codeclimate-test-reporter

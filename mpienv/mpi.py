@@ -2,7 +2,6 @@
 
 import os.path
 import re
-import shutil
 from subprocess import call
 from subprocess import PIPE
 from subprocess import Popen
@@ -21,24 +20,18 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 
-def _find_mpi_h(mpiexec):
-    """Find mpi.h file from mpiexec/mpicc binary"""
-    mpicc = re.sub(r'mpiexec', 'mpicc', mpiexec)
+def _find_mpich_mpi_h(ver_str):
+    """Find mpi.h file from MPICH mpiexec binary"""
+    line = next(ln for ln in ver_str.split("\n")
+                if re.search(r'Configure options', ln))
+    dir_cands = re.findall(r'--includedir=([^\' \n]+)', line)
+    inc_paths = re.findall(r'--includedir=([^\' \n]+)', line)
+    prefixes = re.findall(r'--prefix=([^\' \n]+)', line)
 
-    if not os.path.exists(mpiexec):
-        raise RuntimeError("Internal Error: mpicc not found")
-
-    p = Popen([mpicc, '-show'], stdout=PIPE)
-    out, err = p.communicate()
-
-    m = re.search(r'-I(\S+)', out.decode(sys.getdefaultencoding()))
-    if m is None:
-        raise RuntimeError("Internal Error: mpicc -show does not include -I")
-
-    cpath = m.group(1)
-
-    mpi_h = os.path.join(cpath, 'mpi.h')
-    return mpi_h
+    dir_cands = inc_paths + [os.path.join(d, 'include') for d in prefixes]
+    inc_dir = next(p for p in dir_cands
+                   if os.path.exists(os.path.join(p, 'mpi.h')))
+    return os.path.join(inc_dir, 'mpi.h')
 
 
 def _is_broken_symlink(path):
@@ -46,8 +39,9 @@ def _is_broken_symlink(path):
 
 
 class BrokenMPI(object):
-    def __init__(self, prefix, conf, name=None):
-        self._prefix = prefix
+    def __init__(self, mpiexec, conf, name=None):
+        # assert os.path.islink(mpiexec)
+        self._mpiexec = mpiexec
         self._conf = conf
         self._name = name
 
@@ -56,25 +50,18 @@ class BrokenMPI(object):
         return True
 
     def remove(self):
-        if os.path.islink(self._prefix):
-            os.remove(self._prefix)
-        else:
-            shutil.rmtree(self._prefix)
+        os.remove(self._mpiexec)
 
 
-def MPI(mpiexec):
+def MPI(mpienv, mpiexec):
     """Return the class of the MPI"""
     if not os.path.exists(mpiexec):
-        prefix = os.path.abspath(
-            os.path.join(os.path.dirname(mpiexec), os.pardir))
-        if os.path.isdir(prefix):
-            # prefix directory does exist but prefix/bin/mpiexec
-            # does not. --> It seems that the MPI has been
-            # uninstalled after registered to mpienv?
-            return BrokenMPI
-        else:
-            sys.stderr.write("mpienv [Error]: no such directory: {}"
-                             .format(prefix))
+        # prefix directory does exist but prefix/bin/mpiexec
+        # does not. --> It seems that the MPI has been
+        # uninstalled after registered to mpienv?
+        sys.stderr.write("'{}' seems to be broken because "
+                         "there's no such file or directory\n".format(mpiexec))
+        return BrokenMPI
 
     if _is_broken_symlink(mpiexec):
         return BrokenMPI
@@ -93,7 +80,7 @@ def MPI(mpiexec):
         # the MPI type.
         # This is because MVAPCIH uses MPICH's mpiexec,
         # so we cannot distinguish them only from mpiexec.
-        mpi_h = _find_mpi_h(mpiexec)
+        mpi_h = _find_mpich_mpi_h(ver_str)
         ret = call(['grep', 'MVAPICH2_VERSION', '-q', mpi_h],
                    stderr=DEVNULL)
         if ret == 0:

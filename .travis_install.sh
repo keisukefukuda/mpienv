@@ -6,6 +6,7 @@ mkdir -p $HOME/tmp
 
 # Install zsh
 if [ ! -x $HOME/zsh/bin/zsh ]; then
+    cd $HOME
     rm -f zsh-5.3.1.tar.gz
     rm -rf zsh  # clear zsh/ directory
     
@@ -15,14 +16,13 @@ if [ ! -x $HOME/zsh/bin/zsh ]; then
     tar -xf zsh-5.3.1.tar.gz
     cd zsh-5.3.1
     echo configure
-    ./configure --prefix=$HOME/zsh >/dev/null 2>&1
+    ./configure --prefix=$HOME/zsh --with-tcsetpgrp # >/dev/null 2>&1
     echo make
-    make -j2  >/dev/null 2>&1
+    make -j2  # >/dev/null 2>&1
     echo make install
-    make install >/dev/null 2>&1
+    make install # >/dev/null 2>&1
     cd
 else
     echo zsh is ready
     $HOME/zsh/bin/zsh --version
 fi
-

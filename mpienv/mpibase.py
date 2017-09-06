@@ -20,8 +20,14 @@ def _which(cmd):
 
 
 class MpiBase(object):
-    def __init__(self, prefix, conf, name=None):
+    def __init__(self, prefix, mpiexec, mpicc,
+                 inc_dir, lib_dir,
+                 conf, name=None):
         self._prefix = prefix
+        self._mpiexec = mpiexec
+        self._mpicc = mpicc
+        self._inc_dir = inc_dir
+        self._lib_dir = lib_dir
         self._conf = conf
         self._name = name
 
@@ -60,6 +66,10 @@ class MpiBase(object):
         return self._conf_params
 
     @property
+    def conf(self):
+        return self._conf
+
+    @property
     def version(self):
         return self._version
 
@@ -69,18 +79,15 @@ class MpiBase(object):
 
     @property
     def mpiexec(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpiexec')
-        return os.path.realpath(ex)
+        return self._mpiexec
 
     @property
     def mpicxx(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpicxx')
-        return os.path.realpath(ex)
+        return self.mpicc.replace('mpicc', 'mpicxx')
 
     @property
     def mpicc(self):
-        ex = os.path.join(self.prefix, 'bin', 'mpicc')
-        return os.path.realpath(ex)
+        return self._mpicc
 
     @property
     def is_symlink(self):
@@ -98,10 +105,8 @@ class MpiBase(object):
         if ex2 is None or not os.path.exists(ex2):
             return False
 
-        if os.path.islink(ex1):
-            ex1 = os.readlink(ex1)
-        if os.path.islink(ex2):
-            ex2 = os.readlink(ex2)
+        ex1 = os.path.realpath(ex1)
+        ex2 = os.path.realpath(ex2)
 
         return ex1 == ex2
 
@@ -109,18 +114,24 @@ class MpiBase(object):
     def is_broken(self):
         return False
 
-    def _mirror_file(self, f, dst_dir):
-        dst = os.path.join(dst_dir, os.path.basename(f))
+    def _mirror_file(self, f, dst_dir, dst_bname=None):
+        if dst_bname is None:
+            dst = os.path.join(dst_dir, os.path.basename(f))
+        else:
+            dst = os.path.join(dst_dir, dst_bname)
 
         if os.path.islink(f):
             src = os.path.realpath(f)
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
         elif os.path.isdir(f):
             src = f
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
         else:
             # ordinary files
             src = f
+            # sys.stderr.write("link {} -> {}\n".format(src, dst))
             os.symlink(src, dst)
 
     @property
@@ -145,7 +156,17 @@ class MpiBase(object):
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()
         envs.update(extra_envs)
-        # sys.stderr.write("MpiBase::run_cmd(): {}\n".format(' '.join(cmd)))
+
+        shimd = self.conf['shims_dir']
+        ld_lib_path = "{}/lib:{}/lib64".format(shimd, shimd)
+
+        # We need to construct LD_LIBRARY_PATH for the child mpiexec process
+        # because setuid-ed programs ignore 'LD_LIBRARY_PATH'.
+        if 'LD_LIBRARY_PATH' in envs:
+            ld_lib_path = envs['LD_LIBRARY_PATH'] + ":" + ld_lib_path
+
+        envs['LD_LIBRARY_PATH'] = ld_lib_path
+
         p = Popen(cmd, env=envs)
         p.wait()
         exit(p.returncode)
@@ -170,7 +191,11 @@ class MpiBase(object):
                 os.mkdir(dr)
 
         for f in bin_files:
-            self._mirror_file(f, os.path.join(shim, 'bin'))
+            bin = os.path.join(shim, 'bin')
+            self._mirror_file(f, bin)
+        self._mirror_file(self.mpiexec, bin, 'mpiexec')
+        self._mirror_file(self.mpicc, bin, 'mpicc')
+        self._mirror_file(self.mpicxx, bin, 'mpicxx')
 
         for f in lib_files:
             self._mirror_file(f, os.path.join(shim, 'lib'))

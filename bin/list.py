@@ -20,8 +20,9 @@ def _print_info(mpi, max_label_len):
             width=max_label_len
         ))
     else:
+        mark = "*" if mpi.is_active else " "
         print(" {} {:<{width}} -> {}".format(
-            "*" if mpi.is_active else " ",
+            mark,
             mpi.name,
             mpi.prefix,
             width=max_label_len))
