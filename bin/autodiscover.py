@@ -141,6 +141,14 @@ def investigate_path(path, flg_to_add, done={}):
                     try:
                         name = mpienv.add(mpiexec)
                         prints("Added {} as {}".format(path, name))
+
+                    except FileExistsError as e:
+                        sys.stderr.write("Tried to register '{}', "
+                                         "but the name is already taken "
+                                         "by another MPI instance. "
+                                         "Please use `mpienv add` with `-n` "
+                                         "option manually.\n".format(name))
+
                     except RuntimeError as e:
                         prints("Error occured while "
                                "adding {}".format(path))

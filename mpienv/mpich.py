@@ -39,6 +39,18 @@ def find_mpi_h(mpiexec, ver_str=None):
     return os.path.join(inc_dir, 'mpi.h')
 
 
+def find_prefix(mpiexec, info=None):
+    if info is None:
+        info = _parse_mpich_version(mpiexec)
+
+    prefix = info['Configure options']['--prefix']
+    if not os.path.isdir(prefix):
+        m = re.match(r'^(.*)/bin/mpiexec.*$', mpiexec)
+        assert m is not None
+        prefix = m.group(1)
+    return prefix
+
+
 def _parse_mpich_version(mpiexec):
     out = util.decode(check_output([mpiexec, '--version']))
 
@@ -89,7 +101,7 @@ class Mpich(mpibase.MpiBase):
         self._mpich_ver_info = info
         inc_dir, lib_dir = _parse_mpich_mpicc_show(mpicc)
 
-        prefix = info['Configure options']['--prefix']
+        prefix = find_prefix(mpiexec, info)
         inc_dir = inc_dir
         lib_dir = lib_dir
         super(Mpich, self).__init__(prefix, mpiexec, mpicc,
