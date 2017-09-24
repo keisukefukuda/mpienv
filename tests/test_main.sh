@@ -418,4 +418,6 @@ test_reg_issue10(){
 # call shunit2
 cd ${old_wd}
 
-. ${test_dir}/shunit2/source/2.1/src/shunit2
+SHUNIT2=$(find ${test_dir} -name "shunit2" -type f -path "*2.1*")
+#. ${test_dir}/shunit2/2.1/src/shunit2
+. ${SHUNIT2}
