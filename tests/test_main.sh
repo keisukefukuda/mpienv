@@ -419,5 +419,6 @@ test_reg_issue10(){
 cd ${old_wd}
 
 SHUNIT2=$(find ${test_dir} -name "shunit2" -type f -path "*2.1*")
+echo SHUNIT2="${SHUNIT2}"
 #. ${test_dir}/shunit2/2.1/src/shunit2
 . ${SHUNIT2}
