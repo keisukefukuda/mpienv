@@ -50,11 +50,14 @@ class PyModule(object):
             sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
             cmd = ['pip', 'install',
                    # '-q',
-                   # '-v',
+                   '--no-binary', ':all:',
                    '-t', self._pylib_dir,
                    '-b', self._pybuild_dir,
                    # '--no-cache-dir',
                    self._libname]
+            if os.environ.get("MPIENV_PIP_VERBOSE") is not None:
+                cmd[2:3] = ['-v']
+            sys.stderr.write(' '.join(cmd) + "\n")
             check_call(cmd,
                        stdout=sys.stderr,
                        # stdout=devnull,
