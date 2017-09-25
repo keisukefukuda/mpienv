@@ -18,7 +18,7 @@ echo "proj_dir=$proj_dir"
 cd ${test_dir}
 
 if [ ! -d "${test_dir}/shunit2" ] ; then
-    git clone https://github.com/kward/shunit2.git ${test_dir}/shunit2
+    git clone https://github.com/kward/shunit2.git --branch v2.1.6 ${test_dir}/shunit2
 fi
 
 export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
