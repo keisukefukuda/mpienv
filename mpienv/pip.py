@@ -1,0 +1,66 @@
+# coding: utf-8
+
+import os
+import re
+from subprocess import check_call
+from subprocess import PIPE
+from subprocess import Popen
+import sys
+
+from mpienv import util
+
+# We support pip 9.x.x or 1.5
+_pip_ver = None
+
+
+def _get_pip_ver():
+    global _pip_ver
+
+    p = Popen(['pip', '--version'], stdout=PIPE)
+    out, err = p.communicate()
+
+    m = re.match(r'pip (\S+)', util.decode(out))
+    ver = m.group(1)
+
+    if ver.startswith("1.5"):
+        _pip_ver = '1.5'
+    elif ver.startswith("9"):
+        _pip_ver = '9'
+    else:
+        raise RuntimeError("Error: Unsupported pip version")
+
+
+def install(libname, target_dir, build_dir):
+    if _pip_ver is None:
+        _get_pip_ver()
+
+    env = os.environ.copy()
+
+    if 'LD_LIBRARY_PATH' not in env:
+        env['LD_LIBRARY_PATH'] = ""
+
+    cmd = None
+
+    if _pip_ver == '9':
+        # 9.x.x
+        cmd = ['pip', 'install',
+               # '-q',
+               '--no-binary', ':all:',
+               '-t', target_dir,
+               '-b', build_dir,
+               # '--no-cache-dir',
+               libname]
+    else:
+        # 1.5.x
+        cmd = ['pip', 'install',
+               # '-q',
+               '-t', target_dir,
+               '-b', build_dir,
+               libname]
+
+    if os.environ.get("MPIENV_PIP_VERBOSE") is not None:
+        cmd[2:3] = ['-v']
+    sys.stderr.write("{}\n".format(' '.join(cmd)))
+    check_call(cmd,
+               stdout=sys.stderr,
+               env=env)
