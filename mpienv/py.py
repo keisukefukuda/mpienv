@@ -6,8 +6,9 @@ import glob
 import os
 import os.path
 import shutil
-from subprocess import check_call
 import sys
+
+import mpienv.pip
 
 
 def mkdir_p(path):
@@ -38,34 +39,13 @@ class PyModule(object):
         return len(libs) > 0
 
     def install(self):
-        env = os.environ.copy()
-
-        if 'LD_LIBRARY_PATH' not in env:
-            env['LD_LIBRARY_PATH'] = ""
-
-        with open(os.devnull, 'w') as devnull:
-            sys.stderr.write(
-                "Installing {} using pip...".format(self._libname))
-            sys.stderr.flush()
-            sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
-            cmd = ['pip', 'install',
-                   # '-q',
-                   '--no-binary', ':all:',
-                   '-t', self._pylib_dir,
-                   '-b', self._pybuild_dir,
-                   # '--no-cache-dir',
-                   self._libname]
-            if os.environ.get("MPIENV_PIP_VERBOSE") is not None:
-                cmd[2:3] = ['-v']
-            sys.stderr.write(' '.join(cmd) + "\n")
-            check_call(cmd,
-                       stdout=sys.stderr,
-                       # stdout=devnull,
-                       env=env)
-            devnull  # NOQA
-            sys.stderr.write(" done.\n")
-            sys.stderr.write("{}\n".format(' '.join(cmd)))
-            sys.stderr.flush()
+        sys.stderr.write(
+            "Installing {} using pip...".format(self._libname))
+        sys.stderr.flush()
+        sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
+        mpienv.pip.install(self._libname, self._pylib_dir, self._pybuild_dir)
+        sys.stderr.write(" done.\n")
+        sys.stderr.flush()
 
     def use(self):
         pypath = os.environ.get('PYTHONPATH', None)
