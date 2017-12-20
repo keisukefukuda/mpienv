@@ -11,6 +11,8 @@ parser = argparse.ArgumentParser(
     prog='mpienv list', description='List all available MPI environments.')
 parser.add_argument('--json', action="store_true",
                     default=None)
+parser.add_argument('--simple', action="store_true",
+                    default=None)
 
 
 def _print_info(mpi, max_label_len):
@@ -41,6 +43,9 @@ if __name__ == '__main__':
     if args.json:
         lst = {name: info for name, info in mpienv.items()}
         json.dump(lst, sys.stdout, default=util.dump_json)
+    elif args.simple:
+        lst = [info.name for info in lst]
+        print(' '.join(lst))
     else:
         print("\nInstalled MPIs:\n")
         for info in lst:
