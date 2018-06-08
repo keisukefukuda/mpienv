@@ -232,7 +232,7 @@ class Mpienv(object):
         if self._installed.get(name) is not None:
             raise RuntimeError("Specifed name '{}' is "
                                "already taken".format(name))
-        else:
+        elif name is None:
             name = mpi.default_name
             if name in self:
                 sys.stderr.write("Error: "
