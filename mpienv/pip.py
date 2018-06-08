@@ -9,7 +9,7 @@ import sys
 
 from mpienv import util
 
-# We support pip 9.x.x or 1.5
+# We support pip 10.x.x, 9.x.x and 1.5
 _pip_ver = None
 
 
@@ -26,6 +26,8 @@ def _get_pip_ver():
         _pip_ver = '1.5'
     elif ver.startswith("9"):
         _pip_ver = '9'
+    elif ver.startswith("10"):
+        _pip_ver = '10'
     else:
         raise RuntimeError("Error: Unsupported pip version")
 
@@ -41,7 +43,7 @@ def install(libname, target_dir, build_dir):
 
     cmd = None
 
-    if _pip_ver == '9':
+    if float(_pip_ver) > 8:  # >= 9
         # 9.x.x
         cmd = ['pip', 'install',
                # '-q',
