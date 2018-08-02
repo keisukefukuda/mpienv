@@ -181,7 +181,13 @@ class MpiBase(object):
         # sys.stderr.write("use: self={}\n".format(self))
         shim = self._conf['shims_dir']
         if os.path.exists(shim):
-            shutil.rmtree(shim)
+            if os.path.islink(shim):
+                os.unlink(shim)
+            else:
+                try:
+                    shutil.rmtree(shim)
+                except OSError:
+                    os.unlink(shim)
 
         os.mkdir(shim)
 
