@@ -9,6 +9,11 @@ import sys  # NOQA
 from mpienv import mpibase
 from mpienv import util
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 def find_mpi_h(mpiexec, ver_str=None):
     """Find mpi.h file from MPICH mpiexec binary"""
@@ -32,10 +37,14 @@ def find_mpi_h(mpiexec, ver_str=None):
         if os.path.isdir(incdir):
             prefixes += [incdir]
 
-    dir_cands = inc_paths + [os.path.join(d, 'include') for d in prefixes]
-    inc_dir = next(p for p in dir_cands
-                   if os.path.exists(os.path.join(p, 'mpi.h')))
-    # print("return {}".format(os.path.join(inc_dir, 'mpi.h')))
+    dir_cands = set(inc_paths + [os.path.join(d, 'include') for d in prefixes])
+    try:
+        inc_dir = next(p for p in dir_cands
+                       if os.path.exists(os.path.join(p, 'mpi.h')))
+    except StopIteration:
+        raise FileNotFoundError(
+            "mpi.h not found in {}".format(",".join(dir_cands)))
+
     return os.path.join(inc_dir, 'mpi.h')
 
 
@@ -96,6 +105,9 @@ class Mpich(mpibase.MpiBase):
         # `mpiexec` might be 'mpiexec' or 'mpiexec.mpich' etc.
         mpiexec = mpiexec
         mpicc = re.sub('mpiexec', 'mpicc', mpiexec)
+
+        if not os.path.exists(mpicc):
+            sys.stderr.write("mpicc does not exist: {}".format(mpicc))
 
         info = _parse_mpich_version(mpiexec)
         self._mpich_ver_info = info

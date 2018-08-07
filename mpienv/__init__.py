@@ -21,6 +21,12 @@ class UnknownMPI(RuntimeError):
     pass
 
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
 def yes_no_input(msg):
     if hasattr(__builtin__, 'raw_input'):
         input = __builtin__.raw_input
@@ -156,7 +162,11 @@ class Mpienv(object):
         return self._conf
 
     def get_mpi_from_mpiexec(self, mpiexec):
-        mpi_class = MPI(self, mpiexec)
+        try:
+            mpi_class = MPI(self, mpiexec)
+        except FileNotFoundError:
+            return BrokenMPI(mpiexec, self._conf)
+
         return mpi_class(mpiexec, self._conf)
 
     def prefix(self, name):
@@ -221,7 +231,9 @@ class Mpienv(object):
         mpi = self.get_mpi_from_mpiexec(target)
 
         if isinstance(mpi, BrokenMPI):
-            sys.stderr.write("Cannot find MPI in {}\n".format(target))
+            sys.stderr.write("Cannot find MPI from {}. "
+                             "The MPI installation "
+                             "seems to be broken.\n".format(target))
             exit(-1)
 
         n = self.is_installed(target)
