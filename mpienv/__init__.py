@@ -21,6 +21,12 @@ class UnknownMPI(RuntimeError):
     pass
 
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
 def yes_no_input(msg):
     if hasattr(__builtin__, 'raw_input'):
         input = __builtin__.raw_input

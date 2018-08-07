@@ -9,6 +9,11 @@ import sys  # NOQA
 from mpienv import mpibase
 from mpienv import util
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 def find_mpi_h(mpiexec, ver_str=None):
     """Find mpi.h file from MPICH mpiexec binary"""
