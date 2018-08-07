@@ -37,7 +37,8 @@ def find_mpi_h(mpiexec, ver_str=None):
         inc_dir = next(p for p in dir_cands
                        if os.path.exists(os.path.join(p, 'mpi.h')))
     except StopIteration:
-        raise FileNotFoundError("mpi.h not found in {}".format(",".join(dir_cands)))
+        raise FileNotFoundError(
+            "mpi.h not found in {}".format(",".join(dir_cands)))
 
     return os.path.join(inc_dir, 'mpi.h')
 
@@ -101,7 +102,7 @@ class Mpich(mpibase.MpiBase):
         mpicc = re.sub('mpiexec', 'mpicc', mpiexec)
 
         if not os.path.exists(mpicc):
-          sys.stderr.write("mpicc does not exist: {}".format(mpicc))
+            sys.stderr.write("mpicc does not exist: {}".format(mpicc))
 
         info = _parse_mpich_version(mpiexec)
         self._mpich_ver_info = info
