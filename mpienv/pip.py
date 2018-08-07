@@ -22,12 +22,13 @@ def _get_pip_ver():
     m = re.match(r'pip (\S+)', util.decode(out))
     ver = m.group(1)
 
-    if ver.startswith("1.5"):
+    m = re.match(r'(\d+)[.](\S+)', ver)
+    major_ver = int(m.group(1))
+
+    if major_ver >= 9:
+        _pip_ver = str(major_ver)
+    elif ver.startswith("1.5"):
         _pip_ver = '1.5'
-    elif ver.startswith("9"):
-        _pip_ver = '9'
-    elif ver.startswith("10"):
-        _pip_ver = '10'
     else:
         raise RuntimeError("Error: Unsupported pip version")
 
