@@ -78,7 +78,7 @@ def list_mpiexec(dirpath):
       * Otherwise, one is randomly chosen
     """
 
-    lst = glob.glob(os.path.join(dirpath, 'bin', '*mpiexec*'))
+    lst = glob.glob(os.path.join(glob.escape(dirpath), 'bin', '*mpiexec*'))
     link_rel = {}
 
     # As an exception, we need to exclude binaries like
