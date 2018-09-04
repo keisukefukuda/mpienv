@@ -15,6 +15,11 @@ old_wd=$PWD
 
 echo "proj_dir=$proj_dir"
 
+# Load mpienv
+cd ${proj_dir}
+python setup.py develop
+source mpienv-init
+
 cd ${test_dir}
 
 if [ ! -d "${test_dir}/shunit2" ] ; then
@@ -52,9 +57,6 @@ assertSuccess() {
     $* || ret=$?
     assertTrue "'$*' Success" "$?"
 }
-
-# Load mpienv
-. ${proj_dir}/mpienv-init
 
 is_ubuntu1404() {
     ret=0
