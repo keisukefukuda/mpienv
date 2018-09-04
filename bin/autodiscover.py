@@ -36,6 +36,15 @@ _verbose = None
 _quiet = None
 
 
+try:
+    _glob_escape = glob.escape
+except AttributeError:
+    # Python <3.4
+    def _glob_escape(pathname):
+        pat = re.compile(r'([[?*])')
+        return pat.sub(r'[\1]', pathname)
+
+
 def printv(s):
     if _verbose:
         sys.stderr.write(s + "\n")
@@ -78,7 +87,7 @@ def list_mpiexec(dirpath):
       * Otherwise, one is randomly chosen
     """
 
-    lst = glob.glob(os.path.join(dirpath, 'bin', '*mpiexec*'))
+    lst = glob.glob(os.path.join(_glob_escape(dirpath), 'bin', '*mpiexec*'))
     link_rel = {}
 
     # As an exception, we need to exclude binaries like
