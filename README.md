@@ -19,13 +19,13 @@ $ git clone https://github.com/keisukefukuda/mpienv.git .mpienv
 First, you need to load the `mpienv` tool into your shell environment.
 
 ```bash
-$ . ~/.mpienv/init
+$ . ~/.mpienv/mpienv-init
 ```
 
 If you downloaded `mpienv` to a different location, just replace the path.
 
 ```bash
-$ . ${YOUR_MPIENV_DIRECTORY}/init
+$ . ${YOUR_MPIENV_DIRECTORY}/mpienv-init
 ```
 
 OK, let's see what `mpienv` does.

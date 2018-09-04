@@ -54,7 +54,7 @@ assertSuccess() {
 }
 
 # Load mpienv
-. ${proj_dir}/init
+. ${proj_dir}/mpienv-init
 
 is_ubuntu1404() {
     ret=0
