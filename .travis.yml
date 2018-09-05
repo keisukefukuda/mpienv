@@ -4,6 +4,10 @@ sudo: false
 
 dist: trusty
 
+cache:
+    directories:
+     - /home/travis/mpi
+
 env:
   - PIP_VER=9.0.1  TEST_SHELL_CMD=zsh   LANG=C
   - PIP_VER=9.0.1  TEST_SHELL_CMD=zsh   LANG=en_US.utf-8

@@ -73,14 +73,14 @@ is_macos() {
 if is_ubuntu1404 ; then
     echo "Running on Ubuntu 14.04"
     export MPICH_VER=3.0.4
-    export MPICH_EXEC="/usr/bin/mpiexec.mpich"
-    export MPICH_CC_BIN="/usr/bin/mpicc.mpich" # avoid MPICH_CC
-    export MPICH_PREF="/usr"
+    export MPICH_PREF="$HOME/mpi/mpich-3.0.4"
+    export MPICH_EXEC="$MPICH_PREF/bin/mpiexec"
+    export MPICH_CC_BIN="$MPICH_PREF/bin/mpicc" # avoid MPICH_CC
 
-    export OMPI_VER=1.6.5
-    export OMPI_EXEC="/usr/bin/mpiexec.openmpi"
-    export OMPI_CC_BIN="/usr/bin/mpicc.openmpi"
-    export OMPI_PREF="/usr"
+    export OMPI_VER=3.1.2
+    export OMPI_PREF="$HOME/mpi/openmpi-3.1.2"
+    export OMPI_EXEC="$OMPI_PREF/bin/mpiexec"
+    export OMPI_CC_BIN="$OMPI_PREF/bin/mpicc"
 
     export SYS_PREFIX=/usr
 
