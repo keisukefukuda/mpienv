@@ -31,10 +31,10 @@ python:
   # - "3.2"
   # - "3.3"
   # - "3.4"
-  - 3.5
+  # - 3.5
   # - "3.5-dev" # 3.5 development branch
   - 3.6
-  - 3.7-dev
+  - 3.7-dev  # To be '3.7' ?
   - "nightly"
 
 cache:
@@ -54,14 +54,10 @@ addons:
       - ibverbs-utils
       - libibverbs-dev
       - zsh
-      - libmpich-dev
-      - mpich
-      - libopenmpi-dev
-      - openmpi-bin
-      - openmpi-common
 
 before_script:
-  - echo # sh ./.travis_install.sh
+  - export MPI=openmpi-3.1.2
+  - bash tests/build_ompi.sh
 
 install:
   - pip install "pip==${PIP_VER}"
@@ -71,5 +67,8 @@ script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8
   - test ! -s check_autopep8
   - flake8 $(find . -name "*.py")
+  - export MPI=$HOME/mpienv/openmpi-3.1.2
+  - export PATH=$MPI/bin:$PATH
+  - export LD_LIBRARY_PATH=$MPI/lib:$LD_LIBRARY_PATH
   - ${TEST_SHELL_CMD} ./tests/test_main.sh
   # - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting
