@@ -127,7 +127,5 @@ BUILD_DIR=$HOME/mpi-build
 mkdir -p ~/mpi
 mkdir -p $BUILD_DIR
 
-MPI=openmpi-3.1.2
-
 install_ompi openmpi-3.1.2
 install_mpich mpich-3.0.4

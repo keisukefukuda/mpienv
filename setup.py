@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="mpienv",
     version="0.1",
-    scripts=['mpienv-init',
+    scripts=['bin/mpienv-init',
              'bin/mpienv-add.py',
              'bin/mpienv-autodiscover.py',
              'bin/mpienv-build.py',

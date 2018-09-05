@@ -1,30 +1,10 @@
+#!/bin/bash
 set -u
 
-date
-hostname
-
-if [ -n "${ZSH_VERSION:-}" ]; then
-    setopt shwordsplit
-    SHUNIT_PARENT=$0
-fi
-
-declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
-declare -r proj_dir=$(cd ${test_dir}/..; pwd)
-
-old_wd=$PWD
-
-echo "proj_dir=$proj_dir"
-
-# Load mpienv
-cd ${proj_dir}
-python setup.py develop
-source mpienv-init
-
-cd ${test_dir}
-
-if [ ! -d "${test_dir}/shunit2" ] ; then
-    git clone https://github.com/kward/shunit2.git --branch v2.1.6 ${test_dir}/shunit2
-fi
+# ==============================================================
+# Configuration
+# ==============================================================
+MPI_PREFIX=$HOME/mpi
 
 export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
 echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
@@ -42,6 +22,50 @@ export PYTHON=$(which python)
 
 rm -rf "$MPIENV_VERSIONS_DIR" |:
 rm -rf "$MPIENV_CACHE_DIR" |:
+
+# ==============================================================
+# Dump INFO
+# ==============================================================
+
+date
+hostname
+
+# ==============================================================
+# Setup
+# ==============================================================
+
+
+pip uninstall -y mpienv ||:
+
+if [ -n "${ZSH_VERSION:-}" ]; then
+    setopt shwordsplit
+    SHUNIT_PARENT=$0
+fi
+
+declare -r test_dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+declare -r proj_dir=$(cd ${test_dir}/..; pwd)
+
+old_wd=$PWD
+
+echo "proj_dir=$proj_dir"
+
+# Load mpienv
+cd ${proj_dir}
+python setup.py develop
+
+set +u
+eval "$(mpienv-init)"
+set -u
+
+cd ${test_dir}
+
+if [ ! -d "${test_dir}/shunit2" ] ; then
+    git clone https://github.com/kward/shunit2.git --branch v2.1.6 ${test_dir}/shunit2
+fi
+
+# ==============================================================
+# Test functions
+# ==============================================================
 
 setUp() {
     rm -rf ${MPIENV_VERSIONS_DIR}
@@ -70,47 +94,17 @@ is_macos() {
     return $ret
 }
 
-if is_ubuntu1404 ; then
-    echo "Running on Ubuntu 14.04"
-    export MPICH_VER=3.0.4
-    export MPICH_PREF="$HOME/mpi/mpich-3.0.4"
-    export MPICH_EXEC="$MPICH_PREF/bin/mpiexec"
-    export MPICH_CC_BIN="$MPICH_PREF/bin/mpicc" # avoid MPICH_CC
-
-    export OMPI_VER=3.1.2
-    export OMPI_PREF="$HOME/mpi/openmpi-3.1.2"
-    export OMPI_EXEC="$OMPI_PREF/bin/mpiexec"
-    export OMPI_CC_BIN="$OMPI_PREF/bin/mpicc"
-
-    export SYS_PREFIX=/usr
-
-elif is_macos; then
-    echo "Running on MacOS"
-    export MPICH_VER=3.2
-    export MPICH_PREF="/usr/local/Cellar/mpich/3.2_3"
-    export MPICH_EXEC="${MPICH_PREF}/bin/mpiexec"
-    export MPICH_CC_BIN="${MPICH_PREF}/bin/mpicc"
-
-    export OMPI_VER=2.1.1
-    export OMPI_PREF="/usr/local/Cellar/open-mpi/2.1.1"
-    export OMPI_EXEC="${OMPI_PREF}/bin/mpiexec"
-    export OMPI_CC_BIN="${OMPI_PREF}/bin/mpicc"
-
-    export SYS_PREFIX=/usr/local/Cellar
-else
-    echo "Unknown test platform: OSTYPE=${OSTYPE}" >&2
-    echo "----------------------------"
-    if [ -f /etc/lsb-release ]; then
-        echo "/etc/lsb-release:"
-        cat  /etc/lsb-release
-    else
-        echo "/etc/lsb-release does not exist."
-    fi
-    echo "----------------------------"
-    exit -1
-fi
-
+echo "Running on Ubuntu 14.04"
+export MPICH_VER=3.0.4
+export MPICH_ROOT="$MPI_PREFIX/mpich-3.0.4"
+export MPICH_EXEC="$MPICH_ROOT/bin/mpiexec"
+export MPICH_CC_BIN="$MPICH_ROOT/bin/mpicc" # avoid MPICH_CC
 export MPICH=mpich-${MPICH_VER}
+
+export OMPI_VER=3.1.2
+export OMPI_ROOT="$HOME/mpi/openmpi-3.1.2"
+export OMPI_EXEC="$OMPI_ROOT/bin/mpiexec"
+export OMPI_CC_BIN="$OMPI_ROOT/bin/mpicc"
 export OMPI=openmpi-${OMPI_VER}
 
 print_mpi_info() {
@@ -154,7 +148,7 @@ test_mpich_info() {
     assertEquals ${MPICH_CC_BIN} ${CC}
 
     local PREF=$(print_mpi_info ${MPICH_EXEC} "prefix")
-    assertEquals ${MPICH_PREF} "${PREF}"
+    assertEquals ${MPICH_ROOT} "${PREF}"
 
     local VER=$(print_mpi_info ${MPICH_EXEC} "version")
     assertEquals ${MPICH_VER} ${VER}
@@ -168,7 +162,7 @@ test_openmpi_info() {
     assertEquals ${OMPI_CC_BIN} ${CC}
 
     local PREF=$(print_mpi_info ${OMPI_EXEC} "prefix")
-    assertEquals ${OMPI_PREF} ${PREF}
+    assertEquals ${OMPI_ROOT} ${PREF}
 
     local VER=$(print_mpi_info ${OMPI_EXEC} "version")
     assertEquals ${OMPI_VER} ${VER}
@@ -176,35 +170,35 @@ test_openmpi_info() {
 
 test_1mpi() {
     # mpienv list
-    mpienv autodiscover -q --add ${SYS_PREFIX}
+    mpienv autodiscover -q --add ${MPI_PREFIX}
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertTrue "$?"
 
     # Test json output
-    mpienv list --json | python -c "import json;import sys; json.load(sys.stdin)"
-    assertTrue "$?"
+    mpienv list --json | python -m json.tool >/dev/null
+    assertTrue "mpienv list --json produces proper JSON" "$?"
 
     # Test rename
     # rename mpich -> my-cool-mpi
     mpienv rename mpich-${MPICH_VER} my-cool-mpi
-    assertTrue "$?"
+    assertTrue "rename my-cool-mpi" "$?"
     mpienv list | grep -qE 'my-cool-mpi'
-    assertTrue "$?"
+    assertTrue "renamed" "$?"
 
-    mpienv list | grep -qE mpich-${MPICH_VER}
-    assertFalse "$?"
+    mpienv list | sed -e 's/->.*$//' | grep -q "mpich-${MPICH_VER}"
+    assertFalse "mpich-${MPICH_VER} is renamed and disappeared." "$?"
 
     # Rename back to mpich
     mpienv rename my-cool-mpi mpich-${MPICH_VER}
     mpienv list | grep -q "mpich-${MPICH_VER}"
-    assertTrue "$?"
+    assertTrue "rename my-cool-mpi back to mpich-${MPICH_VER} " "$?"
 
     # Remove mpich
     assertSuccess mpienv use openmpi-${OMPI_VER}  # Activate Open MPI to remove mpich
     assertSuccess mpienv rm mpich-${MPICH_VER}    # Remove mpich
     mpienv list | grep -q mpich-${MPICH_VER} # Check if it's removed
-    assertFalse "$?"  # THus the grep should fail
+    assertFalse "remove mpich-${MPICH_VER}" "$?"  # Thus the grep should fail
 }
 
 json_get() {
@@ -222,15 +216,12 @@ json_check_key() {
 }
 
 test_cmd_info() {
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
     mpienv use mpich-${MPICH_VER}
 
     mpienv info mpich-${MPICH_VER} --json >a.json
-    mpienv info --json >b.json
-
-    assertSuccess diff -q a.json b.json
-
-    rm -f a.json b.json
+    assertSuccess python -mjson.tool <a.json >/dev/null
+    rm -f a.json
 
     # Currently mpich is active
     assertEquals "False" "$(mpienv info --json | json_get "broken")"
@@ -248,7 +239,7 @@ test_cmd_info() {
 
 test_mpicc() {
     export TMPDIR=/tmp
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
     local OUT=$(mktemp)
     local SRC=$(mktemp /tmp/mpienv-test.XXXXXXXX.c)
@@ -304,7 +295,7 @@ EOF
 
 test_mpi4py() {
     export TMPDIR=/tmp
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
     local OUT=$(mktemp)
     local SCRIPT=$(mktemp)
@@ -380,7 +371,7 @@ EOF
 }
 
 test_mpi4py_clear_pypath() {
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
     unset PYTHONPATH
     assertNull "${PYTHONPATH:-}"
@@ -398,7 +389,7 @@ test_mpi4py_clear_pypath() {
 test_reg_issue10(){
     # Regression test for #10
     # https://github.com/keisukefukuda/mpienv/issues/10
-    assertSuccess mpienv autodiscover -q --add ${SYS_PREFIX}
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
     mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
     mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'

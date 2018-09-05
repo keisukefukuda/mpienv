@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cat <<'EOF'
+
 export MPIENV_ROOT="$HOME/.mpienv"
 
 if [ -z "${MPIENV_VERSIONS_DIR:-}" ]; then
@@ -126,3 +128,5 @@ function mpienv() {
             ;;
     esac
 }
+EOF
+
