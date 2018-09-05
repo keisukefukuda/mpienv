@@ -126,6 +126,28 @@ def list_mpiexec(dirpath):
     return res
 
 
+def install_mpi(path, mpiexec):
+    try:
+        name = mpienv.add(mpiexec)
+        prints("Added {} as {}".format(path, name))
+
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            sys.stderr.write("Tried to register '{}', "
+                             "but the name is already taken "
+                             "by another MPI instance. "
+                             "Please use `mpienv add` with"
+                             " `-n` option manually.\n".format(
+                                 name))
+        else:
+            raise
+    except RuntimeError as e:
+        prints("Error occured while "
+               "adding {}".format(path))
+        prints(e)
+        prints()
+
+
 def investigate_path(path, flg_to_add, done={}):
     for mpiexec in list_mpiexec(path):
         if mpiexec in done:
@@ -133,42 +155,25 @@ def investigate_path(path, flg_to_add, done={}):
         else:
             done.add(mpiexec)
 
-        if os.path.isfile(mpiexec):
-            printv("checking {}".format(mpiexec))
-
-            # Exclude mpienv's own directory
-            name = mpienv.is_installed(path)
-            if name:
-                prints("{}\n\t Already known as "
-                       "'{}'".format(path, name))
-                prints()
-            else:
-                prints("--------------------------------------")
-                prints("Found {}".format(mpiexec))
-                prints(pprint.pformat(mpienv.get_mpi_from_mpiexec(mpiexec)))
-                # Install the new MPI
-                if flg_to_add:
-                    try:
-                        name = mpienv.add(mpiexec)
-                        prints("Added {} as {}".format(path, name))
-
-                    except OSError as e:
-                        if e.errno == errno.EEXIST:
-                            sys.stderr.write("Tried to register '{}', "
-                                             "but the name is already taken "
-                                             "by another MPI instance. "
-                                             "Please use `mpienv add` with"
-                                             " `-n` option manually.\n".format(
-                                                 name))
-                        else:
-                            raise
-                    except RuntimeError as e:
-                        prints("Error occured while "
-                               "adding {}".format(path))
-                        prints(e)
-                        prints()
-        else:
+        if not os.path.isfile(mpiexec):
             printv("No such file '{}'".format(mpiexec))
+            continue
+
+        printv("checking {}".format(mpiexec))
+
+        # Exclude mpienv's own directory
+        name = mpienv.is_installed(path)
+        if name:
+            prints("{}\n\t Already known as "
+                   "'{}'".format(path, name))
+            prints()
+        else:
+            prints("--------------------------------------")
+            prints("Found {}".format(mpiexec))
+            prints(pprint.pformat(mpienv.get_mpi_from_mpiexec(mpiexec)))
+            # Install the new MPI
+            if flg_to_add:
+                install_mpi(path, mpiexec)
 
     return done
 
