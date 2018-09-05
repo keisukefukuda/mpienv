@@ -106,7 +106,7 @@ function install_mpich {
         tar -xf $FILE
         cd $(find . -maxdepth 1 -mindepth 1 -type d)
         ./configure --prefix=$PREFIX \
-                    --disable-fortran \
+                    --disable-f77 --disable-fc\
                     --enable-cxx \
                     --enable-shared=yes
         make -j4 && make install

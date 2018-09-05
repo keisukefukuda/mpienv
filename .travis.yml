@@ -61,7 +61,7 @@ addons:
 
 before_script:
   - export MPI=openmpi-3.1.2
-  - bash tests/build_ompi.sh
+  - bash tests/build_mpi.sh
 
 install:
   - pip install "pip==${PIP_VER}"
