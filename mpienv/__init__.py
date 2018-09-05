@@ -152,7 +152,7 @@ class Mpienv(object):
             with open(conf_json) as f:
                 conf = json.load(f)
         else:
-            sys.stderr.write("Warning: Cannot find config file\n")
+            # sys.stderr.write("Warning: Cannot find config file\n")
             conf = {}
 
         self._conf = DefaultConf.copy()
