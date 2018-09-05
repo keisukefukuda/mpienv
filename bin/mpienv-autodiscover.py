@@ -83,10 +83,9 @@ def list_mpiexec(dirpath):
       * if the filename is 'mpiexec', then it's selected.
       * If a file "the_file.replace('mpiexec', 'mpicc')" exists,
         then the_file is selected.
-      * If a filename matches r'mpiexec.*mpi*', it is chosen.
-      * Otherwise, one is randomly chosen
+      * If a filename matches r'mpiexec.*mpi*', it is selected.
+      * Otherwise, one is randomly selected
     """
-
     lst = glob.glob(os.path.join(_glob_escape(dirpath), 'bin', '*mpiexec*'))
     link_rel = {}
 
@@ -122,7 +121,6 @@ def list_mpiexec(dirpath):
                 break
         else:
             res.append(cands[0])
-
     return res
 
 
