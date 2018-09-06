@@ -12,20 +12,15 @@ MPI environment selector, like pyenv or rbenv.
 
 ## Installation
 
-```bash
-$ cd $HOME
-$ git clone https://github.com/keisukefukuda/mpienv.git .mpienv
-```
-
-## How to start using
-
 First, install mpienv via `pip`
 
 ```bash
 $ pip install mpienv
 ```
 
-Then, insert the following line into your `.bashrc` or any other initialization shell script.
+## How to start using
+
+After installing, insert the following line into your `.bashrc` or any other initialization shell script.
 ```
 $ eval "$(mpienv-init)"
 ```
