@@ -20,6 +20,8 @@ mkdir -p ${PIP_DOWNLOAD_CACHE}
 
 export PYTHON=$(which python)
 
+export OMPI_MCA_btl_base_warn_component_unused=1
+
 rm -rf "$MPIENV_VERSIONS_DIR" |:
 rm -rf "$MPIENV_CACHE_DIR" |:
 
