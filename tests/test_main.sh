@@ -56,9 +56,14 @@ echo "proj_dir=$proj_dir"
 cd ${proj_dir}
 pip install .
 
+set +x
 set +u
 eval "$(mpienv-init)"
 set -u
+
+set -x
+mpienv list
+set +x
 
 cd ${test_dir}
 
