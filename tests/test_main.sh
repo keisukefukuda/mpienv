@@ -55,7 +55,7 @@ echo "proj_dir=$proj_dir"
 # Load mpienv
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
-pip install .
+pip install --user .
 
 set +x
 set +u
