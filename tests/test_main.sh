@@ -53,7 +53,7 @@ echo "proj_dir=$proj_dir"
 
 # Load mpienv
 cd ${proj_dir}
-python setup.py develop
+pip install .
 
 set +u
 eval "$(mpienv-init)"
