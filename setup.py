@@ -1,4 +1,5 @@
 from setuptools import setup
+from setuptools import find_packages
 
 setup(
     name="mpienv",
@@ -8,5 +9,5 @@ setup(
     author_email="keisukefukuda@gmail.com",
     url="https://github.com/keisukefukuda/mpienv",
     scripts=['bin/mpienv-init'],
-    packages=['mpienv'],
+    packages=find_packages(),
 )
