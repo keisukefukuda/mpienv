@@ -56,7 +56,7 @@ echo "proj_dir=$proj_dir"
 echo "=================== Install mpienv =================="
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
-pip install --user .
+pip install .
 
 echo "=================== Load mpienv =================="
 which mpienv-init
