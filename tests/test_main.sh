@@ -53,16 +53,21 @@ old_wd=$PWD
 echo "proj_dir=$proj_dir"
 
 # Load mpienv
+echo "=================== Install mpienv =================="
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
 pip install --user .
+
+echo "=================== Load mpienv =================="
+which mpienv-init
 
 set +x
 set +u
 eval "$(mpienv-init)"
 set -u
-
 set -x
+
+echo "=================== Call mpienv =================="
 mpienv list
 set +x
 
