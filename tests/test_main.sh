@@ -58,6 +58,8 @@ cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
 pip install .
 
+find /home/travis/virtualenv/python2.7.14 -name "mpienv"
+
 echo "=================== Load mpienv =================="
 which mpienv-init
 
@@ -65,11 +67,9 @@ set +x
 set +u
 eval "$(mpienv-init)"
 set -u
-set -x
 
 echo "=================== Call mpienv =================="
 mpienv list
-set +x
 
 exit 0
 
