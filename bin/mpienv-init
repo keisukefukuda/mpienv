@@ -39,7 +39,7 @@ function mpienv() {
         "use" )
             {
                 eval $(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                           mpienv-use.py $*)
+                           python -m mpienv.command.use $*)
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi
@@ -48,79 +48,79 @@ function mpienv() {
         "configure" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-configure.py "$@"
+                    python -m mpienv.command.configure "$@"
             }
             ;;
         "build" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-build.py "$@"
+                    python -m mpienv.command.build "$@"
             }
             ;;
         "install" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-install.py "$@"
+                    python -m mpienv.command.install "$@"
             }
             ;;
         "clean" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-clean.py "$@"
+                    python -m mpienv.command.clean "$@"
             }
             ;;
         "add" )
             {
                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                   mpienv-add.py $*
+                   python -m mpienv.command.add $*
             }
             ;;
         "rm" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-rm.py "$@"
+                    python -m mpienv.command.rm "$@"
             }
             ;;
         "rename" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-rename.py "$@"
+                    python -m mpienv.command.rename "$@"
             }
             ;;
         "list" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-list.py "$@"
+                    python -m mpienv.command.list "$@"
             }
             ;;
         "info" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-info.py "$@"
+                    python -m mpienv.command.info "$@"
             }
             ;;
         "autodiscover" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-autodiscover.py "$@"
+                    python -m mpienv.command.autodiscover "$@"
             }
             ;;
         "prefix" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-prefix.py "$@"
+                    python -m mpienv.command.prefix "$@"
             }
             ;;
         "exec" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-exec.py "$@"
+                    python -m mpienv.command.exec "$@"
             }
             ;;
         "help" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    mpienv-help.py "$@"
+                    python -m mpienv.command.help "$@"
             }
             ;;
         * )

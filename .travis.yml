@@ -36,7 +36,6 @@ python:
   # - "3.3"
   # - "3.4"
   # - 3.5
-  # - "3.5-dev" # 3.5 development branch
   - 3.6
   - 3.7-dev  # To be '3.7' ?
   - "nightly"

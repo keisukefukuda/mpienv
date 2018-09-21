@@ -1,5 +1,6 @@
 #!/bin/bash
 set -u
+set -x
 
 # ==============================================================
 # Configuration
@@ -52,12 +53,21 @@ old_wd=$PWD
 echo "proj_dir=$proj_dir"
 
 # Load mpienv
+echo "=================== Install mpienv =================="
 cd ${proj_dir}
-python setup.py develop
+rm -rf mpienv.egg-info dist ||:
+pip install .
 
+echo "=================== Load mpienv =================="
+which mpienv-init
+
+set +x
 set +u
 eval "$(mpienv-init)"
 set -u
+
+echo "=================== Call mpienv =================="
+mpienv list
 
 cd ${test_dir}
 
