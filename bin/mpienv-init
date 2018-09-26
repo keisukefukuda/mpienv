@@ -45,30 +45,6 @@ function mpienv() {
                 fi
             }
             ;;
-        "configure" )
-            {
-                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python -m mpienv.command.configure "$@"
-            }
-            ;;
-        "build" )
-            {
-                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python -m mpienv.command.build "$@"
-            }
-            ;;
-        "install" )
-            {
-                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python -m mpienv.command.install "$@"
-            }
-            ;;
-        "clean" )
-            {
-                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
-                    python -m mpienv.command.clean "$@"
-            }
-            ;;
         "add" )
             {
                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
