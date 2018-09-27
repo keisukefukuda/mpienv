@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="mpienv",
-    version="0.1.1",
+    version="0.1.2",
     description="MPI environment switcher",
     author="Keisuke Fukuda",
     author_email="keisukefukuda@gmail.com",
