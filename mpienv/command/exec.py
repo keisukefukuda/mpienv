@@ -11,7 +11,8 @@ parser = argparse.ArgumentParser(
     prog='mpienv exec',
     description='Call mpiexec with appropriate arguments')
 parser.add_argument('args', nargs=argparse.REMAINDER,
-                    default=[])
+                    default=[],
+                    help='Arguments passed to mpiexec')
 
 
 def main():

@@ -68,7 +68,9 @@ if __name__ == '__main__':
         parser.print_help()
     else:
         try:
-            mod = importlib.import_module(args.command)
+            command = "mpienv.command.{}".format(args.command)
+            print("command = {}".format(command))
+            mod = importlib.import_module(command)
             mod.parser.print_help()
         except BaseException:
             print('mpienv: no such command {}'.format(args.command))

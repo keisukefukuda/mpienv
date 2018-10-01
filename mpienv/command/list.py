@@ -9,10 +9,11 @@ from mpienv import util
 
 parser = argparse.ArgumentParser(
     prog='mpienv list', description='List all available MPI environments.')
-parser.add_argument('--json', action="store_true",
-                    default=None)
-parser.add_argument('--simple', action="store_true",
-                    default=None)
+parser.add_argument('--json', action="store_true", default=None,
+                    help="Print in JSON format (useful for parsing)")
+parser.add_argument('--simple', action="store_true", default=None,
+                    help="Print in a simpler format "
+                    "(useful for shell command)")
 
 
 def _print_info(mpi, max_label_len):
