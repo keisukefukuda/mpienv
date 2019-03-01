@@ -19,7 +19,7 @@ if [ ! -f $MPIENV_VERSIONS_DIR/shims ]; then
 fi
 
 export PATH=$MPIENV_VERSIONS_DIR/shims/bin:${PATH:-}
-export LD_LIBRARY_PATH=${MPIENV_VERSIONS_DIR}/shims/lib:${MPIENV_VERSIONS_DIR}/shims/lib64:${LD_LIBRARY_PATH:-}
+export LD_LIBRARY_PATH=${MPIENV_VERSIONS_DIR}/shims/lib:${MPIENV_VERSIONS_DIR}/shims/lib64:${LD_LIBRARY_PATH:-}  # NOQA
 
 function usage() {
     echo "Usage: mpienv [command] [options...]"
