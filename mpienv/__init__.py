@@ -316,7 +316,6 @@ class Mpienv(object):
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds)
 
-
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
              os.path.join(os.path.expanduser('~'), '.mpienv'))
 mpienv = Mpienv(_root_dir)

@@ -125,9 +125,9 @@ print_mpi_info() {
     local MPIEXEC=$1
     local INFO=$2
     cat <<EOF >${tmpfile}
-from mpienv.mpi import MPI
+from mpienv.mpi import get_mpi_class
 from mpienv import mpienv
-cls = MPI(mpienv, '${MPIEXEC}')
+cls = get_mpi_class(mpienv, '${MPIEXEC}')
 mpi = cls('${MPIEXEC}', mpienv.config())
 print(mpi.${INFO})
 EOF
