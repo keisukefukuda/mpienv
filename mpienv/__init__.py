@@ -8,7 +8,7 @@ import shutil
 import sys
 
 from mpienv.mpi import BrokenMPI
-from mpienv.mpi import MPI
+from mpienv.mpi import get_mpi_class
 from mpienv.py import MPI4Py
 
 try:
@@ -163,7 +163,7 @@ class Mpienv(object):
 
     def get_mpi_from_mpiexec(self, mpiexec):
         try:
-            mpi_class = MPI(self, mpiexec)
+            mpi_class = get_mpi_class(self, mpiexec)
         except FileNotFoundError:
             return BrokenMPI(mpiexec, self._conf)
 
@@ -180,7 +180,7 @@ class Mpienv(object):
             exit(-1)
 
         mpiexec = os.readlink(os.path.join(self._mpi_dir, name))
-        mpi_class = MPI(self, mpiexec)
+        mpi_class = get_mpi_class(self, mpiexec)
         return mpi_class(mpiexec, self._conf, name)
 
     def items(self):

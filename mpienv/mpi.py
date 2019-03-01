@@ -39,7 +39,7 @@ class BrokenMPI(object):
         os.remove(self._mpiexec)
 
 
-def MPI(mpienv, mpiexec):
+def get_mpi_class(mpienv, mpiexec):
     """Return the class of the MPI"""
     if not os.path.exists(mpiexec):
         # prefix directory does exist but prefix/bin/mpiexec
