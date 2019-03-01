@@ -125,9 +125,9 @@ print_mpi_info() {
     local MPIEXEC=$1
     local INFO=$2
     cat <<EOF >${tmpfile}
-from mpienv.mpi import MPI
+from mpienv.mpi import get_mpi_class
 from mpienv import mpienv
-cls = MPI(mpienv, '${MPIEXEC}')
+cls = get_mpi_class(mpienv, '${MPIEXEC}')
 mpi = cls('${MPIEXEC}', mpienv.config())
 print(mpi.${INFO})
 EOF
@@ -292,14 +292,14 @@ EOF
     rm -f a.out
     mpienv use ${OMPI}
     mpicc ${SRC} -o a.out
-    mpiexec -n 2 ./a.out >${OUT}
+    mpiexec -n 2 --oversubscribe ./a.out >${OUT}
     assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-    mpiexec -n 3 ./a.out >${OUT}
+    mpiexec -n 3 --oversubscribe ./a.out >${OUT}
     assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
 
     mpienv use ${MPICH}
     mpienv use ${OMPI}
-    mpiexec -n 2 ./a.out >${OUT}
+    mpiexec -n 2 -host localhost:2 ./a.out >${OUT}
     assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
     rm -f ${SRC} ${OUT} a.out
@@ -329,14 +329,14 @@ EOF
         # Ubuntu 14.04's mpich seems to be broken somehow.
         mpienv use ${MPICH}
         mpienv use --mpi4py ${MPICH}
-        mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
+        mpienv exec -host localhost:2 -n 2 $PYTHON -c "from mpi4py import MPI"
         assertTrue "$LINENO: import mpi4py should success" $?
     
-        mpienv exec -n 2 $PYTHON $SCRIPT >$OUT
+        mpienv exec -host localhost:2 -n 2 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
-        mpienv exec -n 3 $PYTHON $SCRIPT >$OUT
+        mpienv exec -host localhost:2 -n 3 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
     fi
@@ -369,13 +369,13 @@ EOF
 
     # return 
 
-    mpienv exec -n 2 $PYTHON -c "from mpi4py import MPI"
+    mpienv exec --oversubscribe -n 2 $PYTHON -c "from mpi4py import MPI"
     assertTrue "$LINENO: importing mpi4py from ${OMPI}" "$?"
 
-    mpienv exec -n 2 $PYTHON $SCRIPT >$OUT
+    mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
     assertEquals "$LINENO: Gather(NP=2) for ${OMPI}" "01" "$(cat $OUT)"
 
-    mpienv exec -n 4 $PYTHON $SCRIPT >$OUT
+    mpienv exec --oversubscribe -n 4 $PYTHON $SCRIPT >$OUT
     assertEquals "$LINENO: Gather(NP=4) for ${OMPI}" "0123" "$(cat $OUT)"
 
     rm -f ${SCRIPT}

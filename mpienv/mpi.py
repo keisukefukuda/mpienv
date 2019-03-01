@@ -36,10 +36,11 @@ class BrokenMPI(object):
         return True
 
     def remove(self):
-        os.remove(self._mpiexec)
+        link = os.path.join(self._conf['mpi_dir'], self._name)
+        os.remove(link)
 
 
-def MPI(mpienv, mpiexec):
+def get_mpi_class(mpienv, mpiexec):
     """Return the class of the MPI"""
     if not os.path.exists(mpiexec):
         # prefix directory does exist but prefix/bin/mpiexec
@@ -52,7 +53,15 @@ def MPI(mpienv, mpiexec):
     if _is_broken_symlink(mpiexec):
         return BrokenMPI
 
-    p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE)
+    # Add LD_LIBRARY_PATH
+    bin_dir = os.path.dirname(mpiexec)
+    lib_dir = os.path.abspath(os.path.join(bin_dir, os.pardir, 'lib'))
+
+    env = os.environ.copy()
+    ld_lib_path = [lib_dir] + env.get('LD_LIBRARY_PATH', '').split(':')
+    env['LD_LIBRARY_PATH'] = ':'.join(ld_lib_path)
+
+    p = Popen([mpiexec, '--version'], stderr=PIPE, stdout=PIPE, env=env)
     out, err = p.communicate()
     ver_str = util.decode(out + err)
 
