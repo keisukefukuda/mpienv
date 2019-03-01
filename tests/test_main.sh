@@ -292,9 +292,9 @@ EOF
     rm -f a.out
     mpienv use ${OMPI}
     mpicc ${SRC} -o a.out
-    mpiexec -n 2 -host localhost:slots=2 -map-by ppr:2:node ./a.out >${OUT}
+    mpiexec -n 2 --oversubscribe ./a.out >${OUT}
     assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-    mpiexec -n 3 -host localhost:slots=3 -map-by ppr:3:node ./a.out >${OUT}
+    mpiexec -n 3 --oversubscribe ./a.out >${OUT}
     assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
 
     mpienv use ${MPICH}
