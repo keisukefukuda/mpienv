@@ -8,6 +8,8 @@ setup(
     author="Keisuke Fukuda",
     author_email="keisukefukuda@gmail.com",
     url="https://github.com/keisukefukuda/mpienv",
-    scripts=['bin/mpienv-init'],
     packages=find_packages(),
+    entry_points={
+        'console_scripts': ['mpienv-init=mpienv.mpienv_init:main'],
+    }
 )
