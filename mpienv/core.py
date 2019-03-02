@@ -99,10 +99,10 @@ class Mpienv(object):
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
 
-        self.config = ConfigParser()
+        self.config2 = ConfigParser()
 
         if os.path.exists(self.config_file_path()):
-            self.config.read(self.config_file_path())
+            self.config2.read(self.config_file_path())
 
     def root_dir(self):
         return self._root_dir
@@ -112,7 +112,7 @@ class Mpienv(object):
 
     def config_save(self):
         with open(self.config_file_path(), 'w') as f:
-            self.config.write(f)
+            self.config2.write(f)
 
     def build_dir(self):
         return self._build_dir
@@ -268,9 +268,9 @@ class Mpienv(object):
                                  "Try -n option.\n".format(target, name))
                 exit(-1)
 
-        self.config.add_section(name)
-        self.config[name]['name'] = name
-        self.config[name]['mpiexec'] = target
+        self.config2.add_section(name)
+        self.config2[name]['name'] = name
+        self.config2[name]['mpiexec'] = target
 
         self.config_save()
 
