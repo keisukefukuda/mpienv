@@ -1,10 +1,6 @@
 # coding: utf-8
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser
-    configparser = ConfigParser
+from configparser import ConfigParser
 import glob
 import json
 import os.path
@@ -103,7 +99,7 @@ class Mpienv(object):
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
 
-        self.config = configparser.ConfigParser()
+        self.config = ConfigParser()
 
         if os.path.exists(self.config_file_path()):
             self.config.read(self.config_file_path())
