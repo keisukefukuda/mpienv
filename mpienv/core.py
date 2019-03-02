@@ -88,6 +88,11 @@ class Mpienv(object):
         mkdir_p(self._cache_dir)
         mkdir_p(self._build_dir)
 
+        self.config2 = ConfigParser()
+
+        if os.path.exists(self.config_file_path()):
+            self.config2.read(self.config_file_path())
+
         self._load_config()
         self._load_mpi_info()
 
@@ -99,12 +104,6 @@ class Mpienv(object):
         self._conf['cache_dir'] = self._cache_dir
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
-
-        self.config2 = ConfigParser()
-
-        if os.path.exists(self.config_file_path()):
-            print()
-            self.config2.read(self.config_file_path())
 
     def root_dir(self):
         return self._root_dir
@@ -135,30 +134,12 @@ class Mpienv(object):
         # Get the current status of the MPI environment.
         self._installed = {}
 
-        for mpiexec_link in glob.glob(os.path.join(self._mpi_dir, '*')):
-            assert(os.path.islink(mpiexec_link))
-            name = os.path.split(mpiexec_link)[-1]
-            try:
-                mpiexec = os.readlink(mpiexec_link)
-            except EnvironmentError:
-                raise RuntimeError("Internal Error: {} is not a file or link"
-                                   .format(mpiexec_link))
-            try:
+        for name in self.config2:
+            if name != 'DEFAULT':
+                mpiexec = self.config2[name]['mpiexec']
                 mpi = self.get_mpi_from_mpiexec(mpiexec)
-            except RuntimeError:
-                # If the directory exists but MPI is not found,
-                # then it's a broken MPI.
-                if os.path.exists(mpiexec):
-                    mpi = BrokenMPI(mpiexec)
-                else:
-                    sys.stderr.write("mpienv: [Warning] Directory '{}' "
-                                     "is registered as {} but no mpiexec "
-                                     "is found.\n".format(
-                                         mpiexec,
-                                         name))
-                    continue  # skip
-            mpi.name = name
-            self._installed[name] = mpi
+                mpi.name = name
+                self._installed[name] = mpi
 
     def _load_config(self):
         conf_json = os.path.join(self._root_dir, "config.json")
@@ -189,13 +170,13 @@ class Mpienv(object):
         return os.path.join(self._mpi_dir, name)
 
     def get_mpi_from_name(self, name):
-        if name not in self:
+        if name not in self.config2:
             sys.stderr.write("mpienv: Error: "
                              "unknown MPI installation: "
                              "'{}'\n".format(name))
             exit(-1)
 
-        mpiexec = os.readlink(os.path.join(self._mpi_dir, name))
+        mpiexec = self.config2[name]['mpiexec']
         mpi_class = get_mpi_class(self, mpiexec)
         return mpi_class(mpiexec, self._conf, name)
 
@@ -226,9 +207,10 @@ class Mpienv(object):
                                               os.path.pardir))
         assert os.path.isdir(prefix)
 
-        for name, mpi in self.items():
-            if os.path.realpath(mpi.mpiexec) == mpiexec:
-                return name
+        for name in self.config2:
+            if name != 'DEFAULT':
+                if self.config2[name]['mpiexec'] == mpiexec:
+                    return name
 
         return None
 
@@ -254,12 +236,13 @@ class Mpienv(object):
 
         n = self.is_installed(target)
         if n is not None:
-            raise RuntimeError("{} is already managed "
-                               "as '{}'".format(target, n))
+            sys.stderr.write("'{}' is already managed "
+                             "as '{}'\n".format(target, n))
+            exit(1)
 
         if self._installed.get(name) is not None:
-            raise RuntimeError("Specifed name '{}' is "
-                               "already taken".format(name))
+            sys.stderr.write("Specifed name '{}' is "
+                               "already taken\n".format(name))
         elif name is None:
             name = mpi.default_name
             if name in self:
@@ -270,11 +253,13 @@ class Mpienv(object):
                                  "Try -n option.\n".format(target, name))
                 exit(-1)
 
-        self.config2.add_section(name)
-        self.config2[name]['name'] = name
-        self.config2[name]['mpiexec'] = target
-
-        self.config_save()
+        if name in self.config2:
+            sys.stderr.write("{} is already registered.".format(name))
+        else:
+            self.config2.add_section(name)
+            self.config2[name]['name'] = name
+            self.config2[name]['mpiexec'] = target
+            self.config_save()
 
         return name
 
@@ -294,16 +279,16 @@ class Mpienv(object):
             mpi4py.rm()
 
     def rename(self, name_from, name_to):
-        if name_from not in self:
+        if name_from not in self.config2:
             raise RuntimeError("No such MPI: '{}'".format(name_from))
 
-        if name_to in self:
+        if name_to in self.config2:
             raise RuntimeError("Name '{}' already exists".format(name_to))
 
-        path_from = os.path.join(self._mpi_dir, name_from)
-        path_to = os.path.join(self._mpi_dir, name_to)
-
-        shutil.move(path_from, path_to)
+        v = self.config2[name_from]
+        self.config2[name_to] = v
+        self.config2.remove_section(name_from)
+        self.config_save()
 
         mpi4py = MPI4Py(self._conf, name_from)
         if mpi4py.is_installed():
