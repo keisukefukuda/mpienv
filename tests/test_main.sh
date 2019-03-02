@@ -141,6 +141,7 @@ test_qc() {
     test ! -s check_autopep8
     assertEquals 0 $?
 
+    flake8 --version
     flake8 $(find . -name "*.py" | grep -v pylib)
     assertEquals 0 $?
 }
