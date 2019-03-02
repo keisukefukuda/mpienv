@@ -84,6 +84,7 @@ class Mpienv(object):
 
         sys.stderr.write('************ root_dir = {}\n'.format(root_dir))
 
+        mkdir_p(self._root_dir)
         mkdir_p(self._vers_dir)
         mkdir_p(self._mpi_dir)
         mkdir_p(self._pylib_dir)
