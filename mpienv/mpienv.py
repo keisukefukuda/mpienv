@@ -100,16 +100,18 @@ class Mpienv(object):
         self._conf['shims_dir'] = self._shims_dir
 
         self.config = configparser.ConfigParser()
-        self.config.read(self.config_file_path())
+
+        if os.path.exists(self.config_file_path()):
+            self.config.read(self.config_file_path())
 
     def root_dir(self):
         return self._root_dir
 
     def config_file_path(self):
-        return os.path.join(self._root_dir, 'mpienv.init')
+        return os.path.join(self._root_dir, 'mpienv.ini')
 
     def config_save(self):
-        with open(self.config_file_path()) as f:
+        with open(self.config_file_path(), 'w') as f:
             self.config.write(f)
 
     def build_dir(self):
