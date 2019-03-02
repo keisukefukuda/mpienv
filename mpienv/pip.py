@@ -7,7 +7,7 @@ from subprocess import PIPE
 from subprocess import Popen
 import sys
 
-from . import util
+from ..mpienv import util
 
 # We support pip 10.x.x, 9.x.x and 1.5
 _pip_ver = None
