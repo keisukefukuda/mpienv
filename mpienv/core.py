@@ -12,9 +12,9 @@ import re
 import shutil
 import sys
 
-from .mpi import BrokenMPI
-from .mpi import get_mpi_class
-from .py import MPI4Py
+from mpienv.mpi import BrokenMPI
+from mpienv.mpi import get_mpi_class
+from mpienv.py import MPI4Py
 
 try:
     exec("import __builtin__")  # To avoid IDE's grammar check

@@ -2,11 +2,10 @@
 import os.path
 import re
 from subprocess import check_output
-import sys  # NOQA
 
-from ..mpienv import mpibase
-from .ompi import parse_ompi_info
-from ..mpienv import util
+import mpienv.mpibase as mpibase
+from mpienv.ompi import parse_ompi_info
+import mpienv.util as util
 
 
 def _call_ompi_info(bin):

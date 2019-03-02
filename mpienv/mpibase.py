@@ -6,8 +6,8 @@ import shutil
 from subprocess import Popen
 import sys  # NOQA
 
-from .py import MPI4Py
-from . import util
+from mpienv.py import MPI4Py
+import mpienv.util as util
 
 
 def _which(cmd):

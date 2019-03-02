@@ -6,8 +6,8 @@ from subprocess import PIPE
 from subprocess import Popen
 import sys  # NOQA
 
-from . import mpibase
-from . import util
+import mpienv.mpibase as mpibase
+import mpienv.util as util
 
 try:
     FileNotFoundError

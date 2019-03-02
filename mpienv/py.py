@@ -8,7 +8,7 @@ import os.path
 import shutil
 import sys
 
-from . import pip
+import mpienv.pip as pip
 
 
 def mkdir_p(path):

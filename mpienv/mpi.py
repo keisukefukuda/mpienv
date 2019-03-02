@@ -7,10 +7,10 @@ from subprocess import PIPE
 from subprocess import Popen
 import sys
 
-from . import mpich
-from . import mvapich
-from . import openmpi
-from . import util
+import mpienv.mpich as mpich
+import mpienv.mvapich as mvapich
+import mpienv.openmpi as openmpi
+import mpienv.util as util
 
 
 try:
