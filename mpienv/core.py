@@ -112,7 +112,8 @@ class Mpienv(object):
         return os.path.join(self._root_dir, 'mpienv.ini')
 
     def config_save(self):
-        print('/home/travis/.mpienv = {}'.format(os.path.exists('/home/travis/.mpienv')))
+        import sys
+        sys.stderr.write('/home/travis/.mpienv = {}\n'.format(os.path.exists('/home/travis/.mpienv')))
         with open(self.config_file_path(), 'w') as f:
             self.config2.write(f)
 
