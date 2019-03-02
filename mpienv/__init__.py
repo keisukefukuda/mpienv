@@ -1,1 +1,1 @@
-from .mpienv import Mpienv, mpienv
+from .mpienv import Mpienv, mpienv  # NOQA

@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import configparser
 import glob
 import json
 import os.path
@@ -98,8 +99,18 @@ class Mpienv(object):
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
 
+        self.config = configparser.ConfigParser()
+        self.config.read(self.config_file_path())
+
     def root_dir(self):
         return self._root_dir
+
+    def config_file_path(self):
+        return os.path.join(self._root_dir, 'mpienv.init')
+
+    def config_save(self):
+        with open(self.config_file_path()) as f:
+            self.config.write(f)
 
     def build_dir(self):
         return self._build_dir
@@ -254,11 +265,11 @@ class Mpienv(object):
                                  "Try -n option.\n".format(target, name))
                 exit(-1)
 
-        # dst -> src
-        dst = os.path.join(self._mpi_dir, name)
-        src = target
+        self.config.add_section(name)
+        self.config[name]['name'] = name
+        self.config[name]['mpiexec'] = target
 
-        os.symlink(src, dst)
+        self.config_save()
 
         return name
 
