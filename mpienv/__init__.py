@@ -1,1 +1,1 @@
-from .core import Mpienv, mpienv  # NOQA
+from .core import Mpienv, mpienv, UnknownMPI  # NOQA

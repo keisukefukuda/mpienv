@@ -272,7 +272,8 @@ class Mpienv(object):
             exit(-1)
 
         if (not prompt) or yes_no_input("Remove '{}' ?".format(name)):
-            mpi.remove()
+            self.config2.remove_section(name)
+            self.config_save()
 
         mpi4py = MPI4Py(self._conf, name)
         if mpi4py.is_installed():
