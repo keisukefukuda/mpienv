@@ -1,11 +1,9 @@
 # coding: utf-8
 
 from configparser import ConfigParser
-import glob
 import json
 import os.path
 import re
-import shutil
 import sys
 
 from mpienv.mpi import BrokenMPI
@@ -242,7 +240,7 @@ class Mpienv(object):
 
         if self._installed.get(name) is not None:
             sys.stderr.write("Specifed name '{}' is "
-                               "already taken\n".format(name))
+                             "already taken\n".format(name))
         elif name is None:
             name = mpi.default_name
             if name in self:
