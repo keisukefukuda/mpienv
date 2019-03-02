@@ -4,9 +4,9 @@ import re
 from subprocess import check_output
 import sys  # NOQA
 
-from mpienv import mpibase
-from mpienv.ompi import parse_ompi_info
-from mpienv import util
+from . import mpibase
+from .ompi import parse_ompi_info
+from . import util
 
 
 def _call_ompi_info(bin):

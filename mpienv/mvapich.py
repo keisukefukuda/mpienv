@@ -3,8 +3,8 @@ import os.path
 import re
 from subprocess import check_output
 
-from mpienv import mpich
-from mpienv import util
+from . import mpich
+from . import util
 
 
 class Mvapich(mpich.Mpich):

@@ -8,7 +8,7 @@ import os.path
 import shutil
 import sys
 
-import mpienv.pip
+from . import pip
 
 
 def mkdir_p(path):
@@ -43,7 +43,7 @@ class PyModule(object):
             "Installing {} using pip...".format(self._libname))
         sys.stderr.flush()
         sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
-        mpienv.pip.install(self._libname, self._pylib_dir, self._pybuild_dir)
+        pip.install(self._libname, self._pylib_dir, self._pybuild_dir)
         sys.stderr.write(" done.\n")
         sys.stderr.flush()
 

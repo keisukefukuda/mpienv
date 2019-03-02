@@ -1,6 +1,10 @@
 # coding: utf-8
 
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser
+    configparser = ConfigParser
 import glob
 import json
 import os.path
@@ -8,9 +12,9 @@ import re
 import shutil
 import sys
 
-from mpienv.mpi import BrokenMPI
-from mpienv.mpi import get_mpi_class
-from mpienv.py import MPI4Py
+from .mpi import BrokenMPI
+from .mpi import get_mpi_class
+from .py import MPI4Py
 
 try:
     exec("import __builtin__")  # To avoid IDE's grammar check
@@ -132,6 +136,7 @@ class Mpienv(object):
     def _load_mpi_info(self):
         # Get the current status of the MPI environment.
         self._installed = {}
+
         for mpiexec_link in glob.glob(os.path.join(self._mpi_dir, '*')):
             assert(os.path.islink(mpiexec_link))
             name = os.path.split(mpiexec_link)[-1]

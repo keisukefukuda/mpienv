@@ -6,8 +6,8 @@ import shutil
 from subprocess import Popen
 import sys  # NOQA
 
-from mpienv.py import MPI4Py
-import mpienv.util
+from .py import MPI4Py
+from . import util
 
 
 def _which(cmd):
@@ -15,7 +15,7 @@ def _which(cmd):
     if exe is None:
         return None
 
-    exe = mpienv.util.decode(os.path.realpath(exe))
+    exe = util.decode(os.path.realpath(exe))
     return exe
 
 
