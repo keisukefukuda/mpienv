@@ -49,10 +49,8 @@ def yes_no_input(msg):
 
 
 def mkdir_p(path):
-    sys.stderr.write('************* mkdir -p {}\n'.format(path))
     if not os.path.exists(path):
         os.makedirs(path)
-    sys.stderr.write('************* check {} = {}\n'.format(path, os.path.exists(path)))
 
 
 DefaultConf = {
@@ -81,8 +79,6 @@ class Mpienv(object):
                                          os.path.join(root_dir, 'cache'))
         self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
                                          os.path.join(root_dir, 'builds'))
-
-        sys.stderr.write('************ root_dir = {}\n'.format(root_dir))
 
         mkdir_p(self._root_dir)
         mkdir_p(self._vers_dir)
@@ -117,8 +113,6 @@ class Mpienv(object):
         return os.path.join(self._root_dir, 'mpienv.ini')
 
     def config_save(self):
-        import sys
-        sys.stderr.write('************* /home/travis/.mpienv = {}\n'.format(os.path.exists('/home/travis/.mpienv')))
         with open(self.config_file_path(), 'w') as f:
             self.config2.write(f)
 
