@@ -78,20 +78,9 @@ class Mpienv(object):
         self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
                                          os.path.join(root_dir, 'builds'))
 
-        mkdir_p(self._root_dir)
-        mkdir_p(self._vers_dir)
-        mkdir_p(self._mpi_dir)
-        mkdir_p(self._pylib_dir)
-        mkdir_p(self._pybuild_dir)
-        mkdir_p(self._cache_dir)
-        mkdir_p(self._build_dir)
+        self._make_directories()
+        self._setup_config()
 
-        self.config2 = ConfigParser()
-
-        if os.path.exists(self.config_file_path()):
-            self.config2.read(self.config_file_path())
-
-        self._load_config()
         self._load_mpi_info()
 
         self._conf['root_dir'] = self._root_dir
@@ -102,6 +91,23 @@ class Mpienv(object):
         self._conf['cache_dir'] = self._cache_dir
         self._conf['build_dir'] = self._build_dir
         self._conf['shims_dir'] = self._shims_dir
+
+    def _make_directories(self):
+        mkdir_p(self._root_dir)
+        mkdir_p(self._vers_dir)
+        mkdir_p(self._mpi_dir)
+        mkdir_p(self._pylib_dir)
+        mkdir_p(self._pybuild_dir)
+        mkdir_p(self._cache_dir)
+        mkdir_p(self._build_dir)
+
+    def _setup_config(self):
+        self.config2 = ConfigParser()
+
+        if os.path.exists(self.config_file_path()):
+            self.config2.read(self.config_file_path())
+
+        self._load_config()
 
     def root_dir(self):
         return self._root_dir
