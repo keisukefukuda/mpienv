@@ -56,7 +56,7 @@ echo "proj_dir=$proj_dir"
 echo "=================== Install mpienv =================="
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
-pip install .
+pip install -e .
 
 echo "=================== Load mpienv =================="
 which mpienv-init
@@ -141,6 +141,7 @@ test_qc() {
     test ! -s check_autopep8
     assertEquals 0 $?
 
+    flake8 --version
     flake8 $(find . -name "*.py" | grep -v pylib)
     assertEquals 0 $?
 }
