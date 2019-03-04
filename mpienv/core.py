@@ -66,7 +66,6 @@ class Mpienv(object):
         self._root_dir = root_dir
         self._vers_dir = os.path.join(os.environ.get("MPIENV_VERSIONS_DIR") or
                                       os.path.join(root_dir, 'versions'))
-        self._shims_dir = os.path.join(self._vers_dir, 'shims')
         pybin = os.path.realpath(sys.executable)
         pybin_enc = re.sub(r'[^a-zA-Z0-9.]', '_', re.sub('^/', '', pybin))
 
@@ -90,7 +89,6 @@ class Mpienv(object):
         self._conf['pybuild_dir'] = self._pybuild_dir
         self._conf['cache_dir'] = self._cache_dir
         self._conf['build_dir'] = self._build_dir
-        self._conf['shims_dir'] = self._shims_dir
 
     def _make_directories(self):
         mkdir_p(self._root_dir)

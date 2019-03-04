@@ -9,17 +9,6 @@ if [ -z "${MPIENV_VERSIONS_DIR:-}" ]; then
 fi
 
 mkdir -p ${MPIENV_VERSIONS_DIR}
-mkdir -p ${MPIENV_VERSIONS_DIR}/shims
-
-if [ ! -f $MPIENV_VERSIONS_DIR/shims ]; then
-    G=$MPIENV_VERSIONS_DIR/version_global
-    if [ -f $G ]; then
-        ln -s $(cat $G) $MPIENV_VERSIONS_DIR/shims
-    fi
-fi
-
-export PATH=$MPIENV_VERSIONS_DIR/shims/bin:${PATH:-}
-export LD_LIBRARY_PATH=${MPIENV_VERSIONS_DIR}/shims/lib:${MPIENV_VERSIONS_DIR}/shims/lib64:${LD_LIBRARY_PATH:-}  # NOQA
 
 function usage() {
     echo "Usage: mpienv [command] [options...]"
