@@ -6,6 +6,7 @@ import shutil
 from subprocess import Popen
 import sys  # NOQA
 
+import mpienv
 from mpienv.py import MPI4Py
 import mpienv.util as util
 
@@ -171,6 +172,14 @@ class MpiBase(object):
         exit(p.returncode)
 
     def use(self, name, mpi4py=False):
+        # Check if the specified `name` is the same as the current one
+        try:
+            cur_name = mpienv.mpienv.config2['DEFAULT']['name']
+            cur_mpi4py = mpienv.mpienv.config2.getboolean('DEFAULT', 'mpi4py')
+            if cur_name == name and cur_mpi4py == mpi4py:
+                return
+        except KeyError:
+            pass
 
         env_path = os.environ.get('PATH', '').split(':')
         env_ldlib = os.environ.get('LIBRARY_PATH', '').split(':')
@@ -186,9 +195,14 @@ class MpiBase(object):
         for dir_name in ['lib', 'lib64']:
             lib_dir = os.path.join(self.prefix, dir_name)
             if os.path.exists(lib_dir):
+                # Remove if lib_is already a part of LD_LIBRARY_PATH
                 if lib_dir in env_ldlib:
                     env_ldlib.remove(lib_dir)
                 env_ldlib = [lib_dir] + env_ldlib
+
+        mpienv.mpienv.config2['DEFAULT']['active'] = name
+        mpienv.mpienv.config2['DEFAULT']['mpi4py'] = str(mpi4py)
+        mpienv.mpienv.config_save()
 
         print('export PATH={}'.format(':'.join(env_path)))
         print('export LD_LIBRARY_PATH={}'.format(':'.join(env_ldlib)))
