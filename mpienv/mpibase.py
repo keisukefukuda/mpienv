@@ -172,45 +172,27 @@ class MpiBase(object):
         exit(p.returncode)
 
     def use(self, name, mpi4py=False):
-        # Defined in child classes (Mpich, Mvapich, OpenMPI ,etc)
-        bin_files = self.bin_files()
-        lib_files = self.lib_files()
-        inc_files = self.inc_files()
-        libexec_files = self.libexec_files()
 
-        # sys.stderr.write("use: self={}\n".format(self))
-        shim = self._conf['shims_dir']
-        if os.path.exists(shim):
-            if os.path.islink(shim):
-                os.unlink(shim)
-            else:
-                try:
-                    shutil.rmtree(shim)
-                except OSError:
-                    os.unlink(shim)
+        env_path = os.environ.get('PATH', '').split(':')
+        env_ldlib = os.environ.get('LIBRARY_PATH', '').split(':')
 
-        os.mkdir(shim)
+        # Remove all directory that contains 'mpiexec' from PATH
+        bin_dir = os.path.join(self.prefix, 'bin')
+        assert os.path.exists(os.path.join(bin_dir, 'mpiexec'))
+        if bin_dir in env_path:
+            env_path.remove(bin_dir)
+        env_path = [bin_dir] + env_path
 
-        for d in ['bin', 'lib', 'include', 'libexec']:
-            dr = os.path.join(self._conf['shims_dir'], d)
-            if not os.path.exists(dr):
-                os.mkdir(dr)
+        # Remove all directory that contains 'mpiexec'
+        for dir_name in ['lib', 'lib64']:
+            lib_dir = os.path.join(self.prefix, dir_name)
+            if os.path.exists(lib_dir):
+                if lib_dir in env_ldlib:
+                    env_ldlib.remove(lib_dir)
+                env_ldlib = [lib_dir] + env_ldlib
 
-        for f in bin_files:
-            bin = os.path.join(shim, 'bin')
-            self._mirror_file(f, bin)
-        self._mirror_file(self.mpiexec, bin, 'mpiexec')
-        self._mirror_file(self.mpicc, bin, 'mpicc')
-        self._mirror_file(self.mpicxx, bin, 'mpicxx')
-
-        for f in lib_files:
-            self._mirror_file(f, os.path.join(shim, 'lib'))
-
-        for f in inc_files:
-            self._mirror_file(f, os.path.join(shim, 'include'))
-
-        for f in libexec_files:
-            self._mirror_file(f, os.path.join(shim, 'libexec'))
+        print('export PATH={}'.format(':'.join(env_path)))
+        print('export LD_LIBRARY_PATH={}'.format(':'.join(env_ldlib)))
 
         py = MPI4Py(self._conf, name)
         if mpi4py:
