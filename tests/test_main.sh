@@ -322,6 +322,18 @@ test_mpi4py_clear_pypath() {
 
     mpienv use ${MPICH}
     assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py ${MPICH}
+    echo "$PYTHONPATH" | grep ${MPICH}
+    assertEquals "PYTHONPATH must contain ${MPICH}" 0 $?
+
+    mpienv rename "${MPICH}" mpix
+    mpienv use mpix
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py mpix
+    echo "$PYTHONPATH" | grep mpix
+    assertEquals "PYTHONPATH must contain mpix" 0 $?
 }
 
 test_mpi4py() {
