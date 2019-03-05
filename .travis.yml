@@ -67,6 +67,7 @@ addons:
     packages:
       - ibverbs-utils
       - libibverbs-dev
+      - wget
       - zsh
 
 before_script:

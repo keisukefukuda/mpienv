@@ -38,12 +38,12 @@ class PyModule(object):
         libs = glob.glob(os.path.join(self._pylib_dir, self._libname, '*.so'))
         return len(libs) > 0
 
-    def install(self):
+    def install(self, env):
         sys.stderr.write(
             "Installing {} using pip...".format(self._libname))
         sys.stderr.flush()
         sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
-        pip.install(self._libname, self._pylib_dir, self._pybuild_dir)
+        pip.install(self._libname, self._pylib_dir, self._pybuild_dir, env=env)
         sys.stderr.write(" done.\n")
         sys.stderr.flush()
 

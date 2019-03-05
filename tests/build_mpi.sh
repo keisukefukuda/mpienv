@@ -1,11 +1,12 @@
 #!/bin/bash
 
+set -e
 
 function install_ompi {
     MPI=$1
     VER=$(echo "$MPI" | grep -Eo "[0-9.]+$")
     MAJOR=$(echo "$VER" | grep -Eo "^[0-9]+\.[0-9]+")
-    DIST="https://www.open-mpi.org/software/ompi/v${MAJOR}/downloads/openmpi-${VER}.tar.bz2"
+    DIST="https://download.open-mpi.org/release/open-mpi/v${MAJOR}/openmpi-${VER}.tar.bz2"
 
     PREFIX=$HOME/mpi/$MPI
     FILE=$(basename $DIST)
@@ -36,7 +37,8 @@ function install_ompi {
                 fi
                 rm -f ${FILE}
                 sleep 2
-                curl -L ${DIST} >${FILE}
+                echo curl -OL "${DIST}"
+                curl -OL "${DIST}"
                 RETRY_COUNT=$(expr ${RETRY_COUNT} + 1)
             fi
         done
@@ -116,12 +118,16 @@ function install_mpich {
 }
 
 
+if [ "$(uname)" == "Darwin" ]; then
+  SELF="$(readlink $0 || echo $0)"
+  TEST_DIR=$(dirname $SELF)
+else
+  TEST_DIR=$(dirname $(readlink -e $0))
+fi
 
-TEST_DIR=$(dirname $(readlink -e $0))
+echo TEST_DIR=$TEST_DIR
 PROJ_DIR=$(cd ${TEST_DIR}/..; pwd -P)
-CHECKSUM=${TEST_DIR}/md5checksum.txt
-
-echo CHECKSUM=$CHECKSUM
+CHECKSUM=$(cd $TEST_DIR; pwd)/md5checksum.txt
 
 BUILD_DIR=$HOME/mpi-build
 mkdir -p ~/mpi

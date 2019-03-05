@@ -3,6 +3,7 @@
 import os
 import re
 from subprocess import check_call
+from subprocess import check_output
 from subprocess import PIPE
 from subprocess import Popen
 import sys
@@ -33,14 +34,12 @@ def _get_pip_ver():
         raise RuntimeError("Error: Unsupported pip version")
 
 
-def install(libname, target_dir, build_dir):
+def install(libname, target_dir, build_dir, env):
     if _pip_ver is None:
         _get_pip_ver()
 
-    env = os.environ.copy()
-
-    if 'LD_LIBRARY_PATH' not in env:
-        env['LD_LIBRARY_PATH'] = ""
+    # if 'LD_LIBRARY_PATH' not in env:
+    #    env['LD_LIBRARY_PATH'] = ""
 
     cmd = None
 
@@ -63,7 +62,8 @@ def install(libname, target_dir, build_dir):
 
     if os.environ.get("MPIENV_PIP_VERBOSE") is not None:
         cmd[2:3] = ['-v']
-    sys.stderr.write("{}\n".format(' '.join(cmd)))
+
+    # sys.stderr.write("{}\n".format(' '.join(cmd)))
     check_call(cmd,
                stdout=sys.stderr,
                env=env)

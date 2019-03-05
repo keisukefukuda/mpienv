@@ -207,10 +207,14 @@ class MpiBase(object):
         print('export PATH={}'.format(':'.join(env_path)))
         print('export LD_LIBRARY_PATH={}'.format(':'.join(env_ldlib)))
 
+        env = os.environ.copy()
+        env['PATH'] = ':'.join(env_path)
+        env['LD_LIBRARY_PATH'] = ':'.join(env_ldlib)
+
         py = MPI4Py(self._conf, name)
         if mpi4py:
             if not py.is_installed():
-                py.install()
+                py.install(env)
             py.use()
         else:
             # If --mpi4py is not specified, must modify PYTHONPATH

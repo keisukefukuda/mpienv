@@ -64,18 +64,15 @@ DefaultConf = {
 class Mpienv(object):
     def __init__(self, root_dir):
         self._root_dir = root_dir
-        self._vers_dir = os.path.join(os.environ.get("MPIENV_VERSIONS_DIR") or
-                                      os.path.join(root_dir, 'versions'))
+        self._vers_dir = os.path.join(os.path.join(root_dir, 'versions'))
         pybin = os.path.realpath(sys.executable)
         pybin_enc = re.sub(r'[^a-zA-Z0-9.]', '_', re.sub('^/', '', pybin))
 
         self._mpi_dir = os.path.join(self._vers_dir, 'mpi')
         self._pylib_dir = os.path.join(self._vers_dir, 'pylib', pybin_enc)
         self._pybuild_dir = os.path.join(self._vers_dir, 'pybuild', pybin_enc)
-        self._cache_dir = os.environ.get("MPIENV_CACHE_DIR",
-                                         os.path.join(root_dir, 'cache'))
-        self._build_dir = os.environ.get("MPIENV_BUILD_DIR",
-                                         os.path.join(root_dir, 'builds'))
+        self._cache_dir = os.path.join(root_dir, 'cache')
+        self._build_dir = os.path.join(root_dir, 'builds')
 
         self._make_directories()
         self._setup_config()
