@@ -38,12 +38,12 @@ class PyModule(object):
         libs = glob.glob(os.path.join(self._pylib_dir, self._libname, '*.so'))
         return len(libs) > 0
 
-    def install(self):
+    def install(self, env):
         sys.stderr.write(
             "Installing {} using pip...".format(self._libname))
         sys.stderr.flush()
         sys.stderr.write("build_dir={}\n".format(self._pybuild_dir))
-        pip.install(self._libname, self._pylib_dir, self._pybuild_dir)
+        pip.install(self._libname, self._pylib_dir, self._pybuild_dir, env=env)
         sys.stderr.write(" done.\n")
         sys.stderr.flush()
 
@@ -66,9 +66,9 @@ class PyModule(object):
                             if not p.startswith(self._conf['pylib_dir'])])
 
         if newpath == "":
-            print("unset PYTHONPATH")
+            print("unset PYTHONPATH;")
         else:
-            print("export PYTHONPATH={}".format(newpath))
+            sys.stderr.write("export PYTHONPATH={}\n".format(newpath))
 
     def rm(self):
         if os.path.exists(self._pylib_dir):

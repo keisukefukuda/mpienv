@@ -7,14 +7,12 @@ set -x
 # ==============================================================
 MPI_PREFIX=$HOME/mpi
 
-export MPIENV_VERSIONS_DIR=${HOME}/.mpienv-test-ver
-echo MPIENV_VERSIONS_DIR=${MPIENV_VERSIONS_DIR}
-
-export MPIENV_BUILD_DIR=${HOME}/.mpienv-build
-echo MPIENV_BUILD_DIR=${HOME}/.mpienv-build
-
-export MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
-echo MPIENV_CACHE_DIR=${HOME}/.mpienv-cache
+if [ ! -d "${TMPDIR:-}" ]; then
+  TMPDIR=/tmp/$USER/$$
+  mdkir -p $TMPDIR
+fi
+export MPIENV_ROOT=$TMPDIR/mpienv/
+echo MPIENV_ROOT=$MPIENV_ROOT
 
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
 mkdir -p ${PIP_DOWNLOAD_CACHE}
@@ -23,8 +21,9 @@ export PYTHON=$(which python)
 
 export OMPI_MCA_btl_base_warn_component_unused=1
 
-rm -rf "$MPIENV_VERSIONS_DIR" |:
-rm -rf "$MPIENV_CACHE_DIR" |:
+mkdir -p $MPIENV_ROOT
+rm -rf $MPIENV_ROOT/* |:
+rm -rf $MPIENV_ROOT/.* |:
 
 # ==============================================================
 # Dump INFO
@@ -56,14 +55,14 @@ echo "proj_dir=$proj_dir"
 echo "=================== Install mpienv =================="
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
-pip install -e .
+python -m pip install -e .
 
 echo "=================== Load mpienv =================="
-which mpienv-init
+INIT=$(which mpienv-init)
 
 set +x
 set +u
-eval "$(mpienv-init)"
+eval "$($INIT)"
 set -u
 
 echo "=================== Call mpienv =================="
@@ -80,12 +79,13 @@ fi
 # ==============================================================
 
 setUp() {
-    rm -rf ${MPIENV_VERSIONS_DIR}
-    mkdir -p ${MPIENV_VERSIONS_DIR}
+  export MPIENV_ROOT=$TMPDIR/mpienv/
+  rm -rf $MPIENV_ROOT |:
+  mkdir -p $MPIENV_ROOT
 }
 
 tearDown() {
-    rm -rf ${MPIENV_VERSIONS_DIR}
+  rm -rf $MPIENV_ROOT |:
 }
 
 assertSuccess() {
@@ -148,6 +148,8 @@ test_qc() {
 
 test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
+    echo MPIENV_ROOT=$MPIENV_ROOT
+    ls -a $MPIENV_ROOT
     mpienv list
     local LEN=$(mpienv list | wc -c)
     assertEquals 0 $LEN
@@ -306,6 +308,34 @@ EOF
     rm -f ${SRC} ${OUT} a.out
 }
 
+test_mpi4py_clear_pypath() {
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
+
+    unset PYTHONPATH
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py ${MPICH}
+    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
+
+    mpienv use ${MPICH}
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py ${MPICH}
+    echo "$PYTHONPATH" | grep ${MPICH}
+    assertEquals "PYTHONPATH must contain ${MPICH}" 0 $?
+
+    mpienv rename "${MPICH}" mpix
+    mpienv use mpix
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py mpix
+    echo "$PYTHONPATH" | grep mpix
+    assertEquals "PYTHONPATH must contain mpix" 0 $?
+}
+
 test_mpi4py() {
     export TMPDIR=/tmp
     assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
@@ -332,48 +362,31 @@ EOF
         mpienv use --mpi4py ${MPICH}
         mpienv exec -host localhost:2 -n 2 $PYTHON -c "from mpi4py import MPI"
         assertTrue "$LINENO: import mpi4py should success" $?
-    
+
         mpienv exec -host localhost:2 -n 2 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-    
+
         mpienv exec -host localhost:2 -n 3 $PYTHON $SCRIPT >$OUT
         assertTrue "$LINENO: success" "$?"
         assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
     fi
-        
+
     echo "============== ${OMPI} =============="
     # test Open MPI
     mpienv use --mpi4py ${OMPI}
 
-    # echo "#### echo PATH=$PATH"
-    # echo "#### " mpienv exec -n 1 sh -c \"echo \$PATH\"
-    # mpienv exec -n 1 sh -c "echo PATH=\$PATH"
-    # mpiexec -n 1 sh -c "echo PATH=\$PATH"
-    # echo
-
-    # echo "#### " mpienv exec -n 1 sh -c \"env | grep PATH\"
-    # mpienv exec -n 1 sh -c "env | grep -E '^PATH'"
-    # mpiexec -n 1 sh -c "env | grep -E '^PATH'"
-    # echo
-
-    # echo "#### which python = " $(which python)
-    # echo "#### " mpienv exec -n 1 sh -c \"which python\"
-    # mpienv exec -n 1 sh -c "which python"
-    # mpiexec -n 1 sh -c "which python"
-    # echo
-
-    # echo "#### " which python from exec
-    # mpienv exec -n 1 python -c "import sys; print(sys.executable)"
-    # mpiexec -n 1 python -c "import sys; print(sys.executable)"
-    # echo
-
-    # return 
+    echo PYTHONPATH=$PYTHONPATH
 
     mpienv exec --oversubscribe -n 2 $PYTHON -c "from mpi4py import MPI"
+    which mpiexec
+    $PYTHON -c "from mpi4py import MPI; print(MPI.__file__)"
     assertTrue "$LINENO: importing mpi4py from ${OMPI}" "$?"
 
-    mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
+    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT
+    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
+    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT
+    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
     assertEquals "$LINENO: Gather(NP=2) for ${OMPI}" "01" "$(cat $OUT)"
 
     mpienv exec --oversubscribe -n 4 $PYTHON $SCRIPT >$OUT
@@ -383,21 +396,6 @@ EOF
     rm -f ${OUT}
 }
 
-test_mpi4py_clear_pypath() {
-    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
-
-    unset PYTHONPATH
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use ${MPICH}
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use --mpi4py ${MPICH}
-    assertNotNull "${PYTHONPATH:-}"
-
-    mpienv use ${MPICH}
-    assertNull "${PYTHONPATH:-}"
-}
 
 test_reg_issue10(){
     # Regression test for #10
