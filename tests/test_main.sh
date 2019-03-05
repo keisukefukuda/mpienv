@@ -135,6 +135,29 @@ EOF
     rm -f ${tmpfile}
 }
 
+test_mpi4py_clear_pypath() {
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
+
+    unset PYTHONPATH
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py ${MPICH}
+    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
+
+    echo "====================="
+    python -m mpienv.command.use ${MPICH}
+    echo "====================="
+    echo "(1) PYTHONPATH=${PYTHONPATH:-}"
+    mpienv use ${MPICH}
+    echo "(2) PYTHONPATH=${PYTHONPATH:-}"
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+
+    exit 0
+}
+
 test_mpi4py() {
     export TMPDIR=/tmp
     assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
@@ -368,22 +391,6 @@ EOF
     rm -f ${SRC} ${OUT} a.out
 }
 
-
-test_mpi4py_clear_pypath() {
-    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
-
-    unset PYTHONPATH
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use ${MPICH}
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use --mpi4py ${MPICH}
-    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
-
-    mpienv use ${MPICH}
-    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
-}
 
 test_reg_issue10(){
     # Regression test for #10

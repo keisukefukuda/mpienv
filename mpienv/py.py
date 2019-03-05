@@ -62,13 +62,17 @@ class PyModule(object):
 
     def clear(self):
         pypath = os.environ.get('PYTHONAPTH', "")
+        sys.stderr.write("** PYTHONPATH={}\n".format(os.environ.get('PYTHONPATH', '')))
+        sys.stderr.write("** pylib_dir={}\n".format(self._conf['pylib_dir']))
         newpath = ':'.join([p for p in pypath.split(':')
                             if not p.startswith(self._conf['pylib_dir'])])
 
         if newpath == "":
-            print("unset PYTHONPATH")
+            print("unset PYTHONPATH;")
+            sys.stderr.write("unset PYTHONPATH\n")
         else:
-            print("export PYTHONPATH={}".format(newpath))
+            sys.stderr.write("export PYTHONPATH={}\n".format(newpath))
+            print("export PYTHONPATH={};".format(newpath))
 
     def rm(self):
         if os.path.exists(self._pylib_dir):
