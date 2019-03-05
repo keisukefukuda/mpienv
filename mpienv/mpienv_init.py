@@ -27,7 +27,7 @@ function mpienv() {
     case "$command" in
         "use" )
             {
-                eval "$(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} $PYTHON -m mpienv.command.use $*)"
+                eval "$(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} $PYTHON -m mpienv.command.use $*)"  # NOQA
                 if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
                     rehash
                 fi

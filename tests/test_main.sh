@@ -135,89 +135,6 @@ EOF
     rm -f ${tmpfile}
 }
 
-test_mpi4py_clear_pypath() {
-    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
-
-    unset PYTHONPATH
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use ${MPICH}
-    assertNull "${PYTHONPATH:-}"
-
-    mpienv use --mpi4py ${MPICH}
-    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
-
-    echo "====================="
-    python -m mpienv.command.use ${MPICH}
-    echo "====================="
-    echo "(1) PYTHONPATH=${PYTHONPATH:-}"
-    mpienv use ${MPICH}
-    echo "(2) PYTHONPATH=${PYTHONPATH:-}"
-    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
-
-    exit 0
-}
-
-test_mpi4py() {
-    export TMPDIR=/tmp
-    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
-
-    local OUT=$(mktemp)
-    local SCRIPT=$(mktemp)
-    cat <<EOF >$SCRIPT
-from mpi4py import MPI
-import sys
-#print(MPI.__file__)
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-
-
-ans = comm.gather(rank, root=0)
-
-if rank == 0:
-    print(''.join([str(s) for s in ans]))
-EOF
-    if ! is_ubuntu1404 ; then
-        echo "============== ${MPICH} =============="
-        # Ubuntu 14.04's mpich seems to be broken somehow.
-        mpienv use ${MPICH}
-        mpienv use --mpi4py ${MPICH}
-        mpienv exec -host localhost:2 -n 2 $PYTHON -c "from mpi4py import MPI"
-        assertTrue "$LINENO: import mpi4py should success" $?
-
-        mpienv exec -host localhost:2 -n 2 $PYTHON $SCRIPT >$OUT
-        assertTrue "$LINENO: success" "$?"
-        assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-
-        mpienv exec -host localhost:2 -n 3 $PYTHON $SCRIPT >$OUT
-        assertTrue "$LINENO: success" "$?"
-        assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
-    fi
-
-    echo "============== ${OMPI} =============="
-    # test Open MPI
-    mpienv use --mpi4py ${OMPI}
-
-    echo PYTHONPATH=$PYTHONPATH
-
-    mpienv exec --oversubscribe -n 2 $PYTHON -c "from mpi4py import MPI"
-    which mpiexec
-    $PYTHON -c "from mpi4py import MPI; print(MPI.__file__)"
-    assertTrue "$LINENO: importing mpi4py from ${OMPI}" "$?"
-
-    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT
-    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
-    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT
-    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
-    assertEquals "$LINENO: Gather(NP=2) for ${OMPI}" "01" "$(cat $OUT)"
-
-    mpienv exec --oversubscribe -n 4 $PYTHON $SCRIPT >$OUT
-    assertEquals "$LINENO: Gather(NP=4) for ${OMPI}" "0123" "$(cat $OUT)"
-
-    rm -f ${SCRIPT}
-    rm -f ${OUT}
-}
-
 #-----------------------------------------------------------
 test_qc() {
     autopep8 --exclude pylib --diff -r . --global-config .pep8 | tee check_autopep8
@@ -389,6 +306,82 @@ EOF
     assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
     
     rm -f ${SRC} ${OUT} a.out
+}
+
+test_mpi4py_clear_pypath() {
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
+
+    unset PYTHONPATH
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use ${MPICH}
+    assertNull "${PYTHONPATH:-}"
+
+    mpienv use --mpi4py ${MPICH}
+    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
+
+    mpienv use ${MPICH}
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
+}
+
+test_mpi4py() {
+    export TMPDIR=/tmp
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
+
+    local OUT=$(mktemp)
+    local SCRIPT=$(mktemp)
+    cat <<EOF >$SCRIPT
+from mpi4py import MPI
+import sys
+#print(MPI.__file__)
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+
+
+ans = comm.gather(rank, root=0)
+
+if rank == 0:
+    print(''.join([str(s) for s in ans]))
+EOF
+    if ! is_ubuntu1404 ; then
+        echo "============== ${MPICH} =============="
+        # Ubuntu 14.04's mpich seems to be broken somehow.
+        mpienv use ${MPICH}
+        mpienv use --mpi4py ${MPICH}
+        mpienv exec -host localhost:2 -n 2 $PYTHON -c "from mpi4py import MPI"
+        assertTrue "$LINENO: import mpi4py should success" $?
+
+        mpienv exec -host localhost:2 -n 2 $PYTHON $SCRIPT >$OUT
+        assertTrue "$LINENO: success" "$?"
+        assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
+
+        mpienv exec -host localhost:2 -n 3 $PYTHON $SCRIPT >$OUT
+        assertTrue "$LINENO: success" "$?"
+        assertEquals "$LINENO: 012" "012" "$(cat $OUT)"
+    fi
+
+    echo "============== ${OMPI} =============="
+    # test Open MPI
+    mpienv use --mpi4py ${OMPI}
+
+    echo PYTHONPATH=$PYTHONPATH
+
+    mpienv exec --oversubscribe -n 2 $PYTHON -c "from mpi4py import MPI"
+    which mpiexec
+    $PYTHON -c "from mpi4py import MPI; print(MPI.__file__)"
+    assertTrue "$LINENO: importing mpi4py from ${OMPI}" "$?"
+
+    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT
+    mpiexec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
+    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT
+    # mpienv exec --oversubscribe -n 2 $PYTHON $SCRIPT >$OUT
+    assertEquals "$LINENO: Gather(NP=2) for ${OMPI}" "01" "$(cat $OUT)"
+
+    mpienv exec --oversubscribe -n 4 $PYTHON $SCRIPT >$OUT
+    assertEquals "$LINENO: Gather(NP=4) for ${OMPI}" "0123" "$(cat $OUT)"
+
+    rm -f ${SCRIPT}
+    rm -f ${OUT}
 }
 
 

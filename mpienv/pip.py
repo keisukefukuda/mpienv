@@ -3,7 +3,7 @@
 import os
 import re
 from subprocess import check_call
-from subprocess import check_output
+from subprocess import check_output  # NOQA
 from subprocess import PIPE
 from subprocess import Popen
 import sys
