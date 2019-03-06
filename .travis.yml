@@ -77,6 +77,7 @@ before_script:
 install:
   - pip install "pip==${PIP_VER}"
   - pip install -r requirements.txt
+  - pip install pytest
 
 script:
   - autopep8 --diff -r . --global-config .pep8 | tee check_autopep8

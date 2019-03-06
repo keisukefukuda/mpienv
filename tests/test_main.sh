@@ -146,6 +146,11 @@ test_qc() {
     assertEquals 0 $?
 }
 
+test_pytest() {
+    pytest
+    assertEquals 0 $?
+}
+
 test_empty_list() {
     # There should  be nothing in MPIENV_VERSIONS_DIR
     echo MPIENV_ROOT=$MPIENV_ROOT
