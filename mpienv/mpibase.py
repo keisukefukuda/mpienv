@@ -57,7 +57,7 @@ def _parse_hostfile(file_name):
 def parse_hosts(cmds):
     hosts = []
 
-    cmds = cmds.copy()
+    cmds = list(cmds)
 
     while len(cmds) > 0:
         head = cmds.pop(0)
