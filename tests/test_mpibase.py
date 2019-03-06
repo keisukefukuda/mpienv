@@ -40,6 +40,9 @@ def test_parse_hosts():
         assert ['host1', 'host2'] == parse_hosts([opt, 'host2,host1'])
         assert ['host1'] == parse_hosts([opt, 'host1,host1'])
 
+        assert ['host1', 'host2'] == parse_hosts([opt, 'host1:slot=2,host2'])
+        assert ['host1', 'host2'] == parse_hosts([opt, 'host1,host2:slots=1'])
+
 
 def test_split_mpi_user_prog():
     cmd = ['-n', '2', 'ls', '-l']
