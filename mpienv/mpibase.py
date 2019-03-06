@@ -300,6 +300,10 @@ class MpiBase(object):
             f.write("export PYTHONPATH={}\n\n".format(':'.join(pypath)))
 
             # Write some extra environmental variables
+            f.write("export MPIENV_MPI_TYPE=\"{}\"\n".format(self.type_))
+            f.write("export MPIENV_MPI_VERSION=\"{}\"\n".format(self.version))
+            f.write("export MPIENV_MPI_NAME=\"{}\"\n".format(self.name))
+            f.write("\n")
 
             # construct the command line
             _, cmds = split_mpi_user_prog(cmds)
@@ -311,7 +315,7 @@ class MpiBase(object):
 
         os.chmod(file_name, 0o744)
 
-    def exec_(self, cmds):
+    def exec_(self, cmds, dry_run=False, verbose=False):
         # Determine the temporary shell script name
         # Determine the remote hosts
         # Transfer the shell script to remote hosts
@@ -321,8 +325,9 @@ class MpiBase(object):
         tempfile = _gen_temp_script_name()
         remote_hosts = parse_hosts(cmds)
 
-        print("tempfile = {}".format(tempfile))
-        print("hosts = {}".format(remote_hosts))
+        if verbose:
+            print("tempfile = {}".format(tempfile))
+            print("hosts = {}".format(remote_hosts))
 
         self._generate_exec_script(tempfile, cmds)
 
@@ -334,10 +339,17 @@ class MpiBase(object):
         # Run the mpiexec command
         args, _ = split_mpi_user_prog(cmds)
         mpiexec = self.mpiexec
-        sys.stdout.flush()
-        sys.stderr.flush()
-        print([mpiexec] + args + [tempfile])
-        os.execv(mpiexec, [mpiexec] + args + [tempfile])
+        if dry_run:
+            print(' '.join([mpiexec] + args + [tempfile]))
+            if verbose:
+                print("")
+                print(tempfile)
+                print("---")
+                check_call(['cat', tempfile])
+        else:
+            sys.stdout.flush()
+            sys.stderr.flush()
+            os.execv(mpiexec, [mpiexec] + args + [tempfile])
 
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()

@@ -312,10 +312,10 @@ class Mpienv(object):
 
         mpi.use(name, mpi4py=mpi4py)
 
-    def exec_(self, cmds):
+    def exec_(self, cmds, **kwargs):
         name = self.get_current_name()
         mpi = self.get_mpi_from_name(name)
-        mpi.exec_(cmds)
+        mpi.exec_(cmds, **kwargs)
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
