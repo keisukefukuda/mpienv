@@ -151,9 +151,3 @@ class Mpich(mpibase.MpiBase):
 
     def libexec_files(self):
         return []
-
-    def exec_(self, cmds):
-        if '-genvall' not in cmds:
-            cmds[:0] = ['-genvlist', 'PYTHONPATH,PATH,LD_LIBRARY_PATH']
-        cmds[:0] = ["mpiexec"]
-        self.run_cmd(cmds, {})

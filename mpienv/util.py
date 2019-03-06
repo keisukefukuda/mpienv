@@ -2,6 +2,7 @@
 import glob
 import json
 import os.path
+import re
 import sys
 
 try:
@@ -21,6 +22,19 @@ def glob_list(dire, pat_list):
 
     # return flattened list
     return [item for sublist in lol for item in sublist]
+
+
+def escape_shell_commands(cmds):
+    new_cmds = []
+
+    for cmd in cmds:
+        if '"' in cmd:
+            cmd = '"' + re.sub(r'"', '\\"', cmd) + '"'
+        elif re.search(r'[\'\s[\]*]', cmd):
+            cmd = '"' + cmd + '"'
+
+        new_cmds.append(cmd)
+    return new_cmds
 
 
 def decode(s):

@@ -47,7 +47,7 @@ class PyModule(object):
         sys.stderr.write(" done.\n")
         sys.stderr.flush()
 
-    def use(self):
+    def gen_pythonpath(self):
         pypath = os.environ.get('PYTHONPATH', None)
         if pypath is None:
             paths = [self._pylib_dir]
@@ -56,8 +56,10 @@ class PyModule(object):
             paths = [p for p in pypath.split(':')
                      if p.find(self._root_dir) < 0]
             paths[:0] = [self._pylib_dir]
-        pypath = ':'.join(paths)
+        return paths
 
+    def use(self):
+        pypath = ':'.join(self.gen_pythonpath())
         print("export PYTHONPATH={}".format(pypath))
 
     def clear(self):

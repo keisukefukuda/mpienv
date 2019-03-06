@@ -74,13 +74,3 @@ class OpenMPI(mpibase.MpiBase):
 
     def libexec_files(self):
         return []
-
-    def exec_(self, cmds):
-        envs = {}  # extra envs
-        for v in ['PYTHONPATH', 'PATH', 'LD_LIBRARY_PATH']:
-            cmds[:0] = ['-x', v]
-
-        cmds[:0] = ["mpiexec"]
-        # cmds[:0] = [self.mpiexec, '-prefix', self.prefix]
-
-        self.run_cmd(cmds, envs)
