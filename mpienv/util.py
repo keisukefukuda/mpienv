@@ -2,9 +2,9 @@
 import glob
 import json
 import os.path
+import re
 import sys
 from typing import List
-import re
 
 try:
     from subprocess import DEVNULL  # py3k

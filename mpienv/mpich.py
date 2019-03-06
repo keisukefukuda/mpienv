@@ -151,4 +151,3 @@ class Mpich(mpibase.MpiBase):
 
     def libexec_files(self):
         return []
-

@@ -1,16 +1,15 @@
 # coding: utf-8
 
+import datetime
 import distutils.spawn
 import os.path
+import re
 import shutil
-from subprocess import Popen
 from subprocess import check_call
+from subprocess import Popen
 import sys  # NOQA
 from typing import List
 from typing import Tuple
-import re
-import datetime
-import time
 
 import mpienv
 from mpienv.py import MPI4Py
@@ -27,7 +26,6 @@ def _which(cmd):
 
 
 def _gen_temp_script_name() -> str:
-    import random
     host_name = os.uname()[1]
     pid = os.getpid()
     tm = datetime.datetime.now().strftime("%Y%m%d%H%M%S")

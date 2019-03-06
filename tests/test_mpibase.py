@@ -1,5 +1,5 @@
-import tempfile
 import os
+import tempfile
 
 from mpienv.mpibase import parse_hosts
 from mpienv.mpibase import split_mpi_user_prog
@@ -14,13 +14,15 @@ localhost
 
 """
 
+
 def test_parse_hosts():
     temp = tempfile.NamedTemporaryFile(delete=False)
     try:
         temp.write(_test_hostfile.encode('utf-8'))
         temp.close()
 
-        for opt in ['--hostfile', '-hostfile', '--machinefile', '-machinefile']:
+        for opt in ['--hostfile', '-hostfile',
+                    '--machinefile', '-machinefile']:
             result = parse_hosts([opt, temp.name])
             assert result == ['host1', 'host2', 'host3', 'localhost']
 

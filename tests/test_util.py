@@ -21,5 +21,3 @@ def test_escape_shell_commands():
     inp = ['some special chars *']
     ans = ['"some special chars *"']
     assert ans == escape_shell_commands(inp)
-
-
