@@ -8,8 +8,6 @@ import shutil
 from subprocess import check_call
 from subprocess import Popen
 import sys  # NOQA
-from typing import List
-from typing import Tuple
 
 import mpienv
 from mpienv.py import MPI4Py
@@ -25,7 +23,7 @@ def _which(cmd):
     return exe
 
 
-def _gen_temp_script_name() -> str:
+def _gen_temp_script_name():
     host_name = os.uname()[1]
     pid = os.getpid()
     tm = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -56,7 +54,7 @@ def _parse_hostfile(file_name):
     return hosts
 
 
-def parse_hosts(cmds: List[str]):
+def parse_hosts(cmds):
     hosts = []
 
     cmds = cmds.copy()
@@ -90,7 +88,7 @@ def parse_hosts(cmds: List[str]):
     return hosts
 
 
-def split_mpi_user_prog(cmds) -> Tuple[List, List]:
+def split_mpi_user_prog(cmds):
     """An ad-hoc parser that splits mpiexec args and user program's args"""
 
     opt_with_one_arg = [

@@ -4,7 +4,6 @@ import json
 import os.path
 import re
 import sys
-from typing import List
 
 try:
     from subprocess import DEVNULL  # py3k
@@ -25,7 +24,7 @@ def glob_list(dire, pat_list):
     return [item for sublist in lol for item in sublist]
 
 
-def escape_shell_commands(cmds: List[str]):
+def escape_shell_commands(cmds):
     new_cmds = []
 
     for cmd in cmds:
