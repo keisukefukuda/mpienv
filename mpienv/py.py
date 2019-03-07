@@ -70,7 +70,7 @@ class PyModule(object):
         if newpath == "":
             print("unset PYTHONPATH;")
         else:
-            sys.stderr.write("export PYTHONPATH={}\n".format(newpath))
+            print("export PYTHONPATH={}\n".format(newpath))
 
     def rm(self):
         if os.path.exists(self._pylib_dir):

@@ -82,6 +82,7 @@ setUp() {
   export MPIENV_ROOT=$TMPDIR/mpienv/
   rm -rf $MPIENV_ROOT |:
   mkdir -p $MPIENV_ROOT
+  rm -rf ~/.mpienv  # Regression test. MPIENV_ROOT is set to /tmp/mpienv in this test script.
 }
 
 tearDown() {
@@ -191,6 +192,7 @@ test_openmpi_info() {
 test_1mpi() {
     # mpienv list
     mpienv autodiscover -q --add ${MPI_PREFIX}
+    rm -rf ~/.mpienv  # Regression test. MPIENV_ROOT is set to /tmp/mpienv in this test script.
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertTrue "$?"

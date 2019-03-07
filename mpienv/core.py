@@ -253,7 +253,7 @@ class Mpienv(object):
                 exit(-1)
 
         if name in self.config2:
-            sys.stderr.write("{} is already registered.".format(name))
+            sys.stderr.write("{} is already registered.\n".format(name))
         else:
             self.config2.add_section(name)
             self.config2[name]['name'] = name
@@ -316,6 +316,20 @@ class Mpienv(object):
         name = self.get_current_name()
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds, **kwargs)
+
+    def restore(self):
+        if 'DEFAULT' in self.config2:
+            try:
+                mpi_name = self.config2['DEFAULT']['active']
+                if 'mpi4py' in self.config2['DEFAULT']:
+                    mpi4py = self.config2['DEFAULT'].getboolean('mpi4py')
+                else:
+                    mpi4py = True
+            except KeyError:
+                sys.stderr.write("mpienv: Warning: internal error. "
+                                 "No MPI is restored.")
+                return
+            self.use(mpi_name, mpi4py)
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or
