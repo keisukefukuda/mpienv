@@ -323,7 +323,7 @@ class Mpienv(object):
     def exec_(self, cmds, **kwargs):
         try:
             name = self.get_current_name()
-        except RuntimeError as e:
+        except RuntimeError:
             sys.stderr.write("mpienv: Error: No MPI is currently activated.\n")
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds, **kwargs)
