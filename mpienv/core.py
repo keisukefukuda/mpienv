@@ -214,10 +214,18 @@ class Mpienv(object):
         return None
 
     def get_current_name(self):
-        try:
-            return next(name for name, mpi in self.items() if mpi.is_active)
-        except StopIteration:
-            raise UnknownMPI()
+        if 'DEFAULT' in self.config2 and 'active' in self.config2['DEFAULT']:
+            name = self.config2['DEFAULT']['active']
+
+            # Check
+            if not self.get_mpi_from_name(name).is_active:
+                sys.stderr.write("mpienv: Error: Internal status is "
+                                 "inconsistent. Please hit 'mpienv use' "
+                                 "command to refresh the status.\n")
+                exit(1)
+            return name
+        else:
+            raise RuntimeError("No MPI is activated.")
 
     def add(self, target, name=None):
         # `target` is expected to be an mpiexec command or its prefix
@@ -313,7 +321,10 @@ class Mpienv(object):
         mpi.use(name, no_mpi4py=no_mpi4py)
 
     def exec_(self, cmds, **kwargs):
-        name = self.get_current_name()
+        try:
+            name = self.get_current_name()
+        except RuntimeError as e:
+            sys.stderr.write("mpienv: Error: No MPI is currently activated.\n")
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds, **kwargs)
 
@@ -330,6 +341,10 @@ class Mpienv(object):
                                  "No MPI is restored.")
                 return
             self.use(mpi_name, mpi4py)
+
+    def describe(self, name):
+        mpi = self.get_mpi_from_name(name)
+        mpi.describe()
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or

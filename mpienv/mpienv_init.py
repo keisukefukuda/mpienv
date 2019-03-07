@@ -55,6 +55,12 @@ function mpienv() {
                     $PYTHON -m mpienv.command.rm "$@"
             }
             ;;
+        "describe" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    $PYTHON -m mpienv.command.describe "$@"
+            }
+            ;;
         "rename" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
