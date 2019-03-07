@@ -294,7 +294,7 @@ class Mpienv(object):
         if mpi4py.is_installed():
             mpi4py.rename(name_to)
 
-    def use(self, name, mpi4py=False):
+    def use(self, name, no_mpi4py=False):
         mpi = self.get_mpi_from_name(name)
 
         if isinstance(mpi, BrokenMPI):
@@ -310,7 +310,7 @@ class Mpienv(object):
                              "".format(name))
             exit(-1)
 
-        mpi.use(name, mpi4py=mpi4py)
+        mpi.use(name, no_mpi4py=no_mpi4py)
 
     def exec_(self, cmds, **kwargs):
         name = self.get_current_name()
