@@ -445,4 +445,3 @@ class MpiBase(object):
 
     def _describe(self):
         pass
-

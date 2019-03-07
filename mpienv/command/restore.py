@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(
 
 
 def main():
-    args = parser.parse_args()
+    args = parser.parse_args()  # NOQA
 
     # Create a link
     mpienv.restore()
