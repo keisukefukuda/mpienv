@@ -325,6 +325,7 @@ class MpiBase(object):
             print("tempfile = {}".format(tempfile))
             print("hosts = {}".format(remote_hosts))
 
+        # Generate a proxy shell script that runs user programs
         self._generate_exec_script(tempfile, cmds)
 
         # Copy script file
@@ -333,10 +334,19 @@ class MpiBase(object):
                 check_call(['scp', tempfile, '{}:{}'.format(host, tempfile)])
 
         # Run the mpiexec command
-        args, _ = split_mpi_user_prog(cmds)
+        mpi_args, user_args = split_mpi_user_prog(cmds)
+
+        # Warn if user tries to run python program while --mpi4py is not active
+        if user_args[0].startswith('python'):
+            if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
+                sys.stderr.write("mpienv: Warn: It seems that you are trying"
+                                 " to run a pythohn progrma, but mpi4py is not"
+                                 " ")
+
+        # Execute mpiexec
         mpiexec = self.mpiexec
         if dry_run:
-            print(' '.join([mpiexec] + args + [tempfile]))
+            print(' '.join([mpiexec] + mpi_args + [tempfile]))
             if verbose:
                 print("")
                 print(tempfile)
@@ -345,7 +355,7 @@ class MpiBase(object):
         else:
             sys.stdout.flush()
             sys.stderr.flush()
-            os.execv(mpiexec, [mpiexec] + args + [tempfile])
+            os.execv(mpiexec, [mpiexec] + mpi_args + [tempfile])
 
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()
@@ -376,25 +386,25 @@ class MpiBase(object):
         return env_path
 
     def _generate_ldlib(self):
-        env_ldlib = os.environ.get('LIBRARY_PATH', '').split(':')
+        env_ldlib = os.environ.get('LD_LIBRARY_PATH', '').split(':')
 
-        # Remove all directory that contains 'mpiexec'
         for dir_name in ['lib', 'lib64']:
             lib_dir = os.path.join(self.prefix, dir_name)
             if os.path.exists(lib_dir):
                 # Remove if lib_is already a part of LD_LIBRARY_PATH
+                # to avoid LD_LIBRARY_PATH is too long.
                 if lib_dir in env_ldlib:
                     env_ldlib.remove(lib_dir)
                 env_ldlib = [lib_dir] + env_ldlib
 
         return env_ldlib
 
-    def use(self, name, mpi4py=False):
+    def use(self, name, no_mpi4py=False):
         # Check if the specified `name` is the same as the current one
         try:
             cur_name = mpienv.mpienv.config2['DEFAULT']['name']
             cur_mpi4py = mpienv.mpienv.config2.getboolean('DEFAULT', 'mpi4py')
-            if cur_name == name and cur_mpi4py == mpi4py:
+            if cur_name == name and cur_mpi4py == (not no_mpi4py):
                 return
         except KeyError:
             pass
@@ -403,7 +413,7 @@ class MpiBase(object):
         env_ldlib = self._generate_ldlib()
 
         mpienv.mpienv.config2['DEFAULT']['active'] = name
-        mpienv.mpienv.config2['DEFAULT']['mpi4py'] = str(mpi4py)
+        mpienv.mpienv.config2['DEFAULT']['mpi4py'] = str(not no_mpi4py)
         mpienv.mpienv.config_save()
 
         print('export PATH={}'.format(':'.join(env_path)))
@@ -414,7 +424,7 @@ class MpiBase(object):
         env['LD_LIBRARY_PATH'] = ':'.join(env_ldlib)
 
         py = MPI4Py(self._conf, name)
-        if mpi4py:
+        if not no_mpi4py:
             if not py.is_installed():
                 py.install(env)
             py.use()
@@ -435,3 +445,13 @@ class MpiBase(object):
             shutil.rmtree(self.prefix)
         else:
             os.remove(os.path.join(self._conf['mpi_dir'], self.name))
+
+    def describe(self):
+        print("Name    : {}".format(self.name))
+        print("Type    : {}".format(self.type_))
+        print("Version : {}".format(self.version))
+        print("Path    : {}".format(self.prefix))
+        self._describe()
+
+    def _describe(self):
+        pass

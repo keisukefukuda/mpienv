@@ -3,3 +3,7 @@ versions
 *.pyc
 pylib
 dist
+.idea
+*.egg-info
+.pytest_cache
+

@@ -82,6 +82,7 @@ setUp() {
   export MPIENV_ROOT=$TMPDIR/mpienv/
   rm -rf $MPIENV_ROOT |:
   mkdir -p $MPIENV_ROOT
+  rm -rf ~/.mpienv  # Regression test. MPIENV_ROOT is set to /tmp/mpienv in this test script.
 }
 
 tearDown() {
@@ -191,6 +192,7 @@ test_openmpi_info() {
 test_1mpi() {
     # mpienv list
     mpienv autodiscover -q --add ${MPI_PREFIX}
+    rm -rf ~/.mpienv  # Regression test. MPIENV_ROOT is set to /tmp/mpienv in this test script.
 
     mpienv list | grep -q mpich-${MPICH_VER}
     assertTrue "$?"
@@ -320,12 +322,12 @@ test_mpi4py_clear_pypath() {
     assertNull "${PYTHONPATH:-}"
 
     mpienv use ${MPICH}
-    assertNull "${PYTHONPATH:-}"
+    assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
 
     mpienv use --mpi4py ${MPICH}
     assertNotNull "PYTHONPATH must be set for ${MPICH}" "${PYTHONPATH:-}"
 
-    mpienv use ${MPICH}
+    mpienv use --no-mpi4py ${MPICH}
     assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
 
     mpienv use --mpi4py ${MPICH}
@@ -333,12 +335,13 @@ test_mpi4py_clear_pypath() {
     assertEquals "PYTHONPATH must contain ${MPICH}" 0 $?
 
     mpienv rename "${MPICH}" mpix
-    mpienv use mpix
-    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
 
-    mpienv use --mpi4py mpix
+    mpienv use mpix
     echo "$PYTHONPATH" | grep mpix
     assertEquals "PYTHONPATH must contain mpix" 0 $?
+
+    mpienv use --no-mpi4py mpix
+    assertNull "PYTHONPATH must be NULL" "${PYTHONPATH:-}"
 }
 
 test_mpi4py() {
@@ -410,7 +413,7 @@ test_reg_issue10(){
     mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
     mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
 
-    OUT=$(mpienv use --mpi4py mpix 2>&1) # this command should NOT intall mpi4py again
+    OUT=$(mpienv use mpix 2>&1) # this command should NOT intall mpi4py again
 
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].

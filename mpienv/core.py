@@ -214,10 +214,18 @@ class Mpienv(object):
         return None
 
     def get_current_name(self):
-        try:
-            return next(name for name, mpi in self.items() if mpi.is_active)
-        except StopIteration:
-            raise UnknownMPI()
+        if 'DEFAULT' in self.config2 and 'active' in self.config2['DEFAULT']:
+            name = self.config2['DEFAULT']['active']
+
+            # Check
+            if not self.get_mpi_from_name(name).is_active:
+                sys.stderr.write("mpienv: Error: Internal status is "
+                                 "inconsistent. Please hit 'mpienv use' "
+                                 "command to refresh the status.\n")
+                exit(1)
+            return name
+        else:
+            raise RuntimeError("No MPI is activated.")
 
     def add(self, target, name=None):
         # `target` is expected to be an mpiexec command or its prefix
@@ -253,7 +261,7 @@ class Mpienv(object):
                 exit(-1)
 
         if name in self.config2:
-            sys.stderr.write("{} is already registered.".format(name))
+            sys.stderr.write("{} is already registered.\n".format(name))
         else:
             self.config2.add_section(name)
             self.config2[name]['name'] = name
@@ -294,7 +302,7 @@ class Mpienv(object):
         if mpi4py.is_installed():
             mpi4py.rename(name_to)
 
-    def use(self, name, mpi4py=False):
+    def use(self, name, no_mpi4py=False):
         mpi = self.get_mpi_from_name(name)
 
         if isinstance(mpi, BrokenMPI):
@@ -310,12 +318,31 @@ class Mpienv(object):
                              "".format(name))
             exit(-1)
 
-        mpi.use(name, mpi4py=mpi4py)
+        mpi.use(name, no_mpi4py=no_mpi4py)
 
     def exec_(self, cmds, **kwargs):
-        name = self.get_current_name()
+        try:
+            name = self.get_current_name()
+        except RuntimeError:
+            sys.stderr.write("mpienv: Error: No MPI is currently activated.\n")
         mpi = self.get_mpi_from_name(name)
         mpi.exec_(cmds, **kwargs)
+
+    def restore(self):
+        if 'DEFAULT' in self.config2:
+            try:
+                mpi_name = self.config2['DEFAULT']['active']
+                if 'mpi4py' in self.config2['DEFAULT']:
+                    mpi4py = self.config2['DEFAULT'].getboolean('mpi4py')
+                else:
+                    mpi4py = True
+            except KeyError:
+                return
+            self.use(mpi_name, mpi4py)
+
+    def describe(self, name):
+        mpi = self.get_mpi_from_name(name)
+        mpi.describe()
 
 
 _root_dir = (os.environ.get("MPIENV_ROOT", None) or

@@ -1,7 +1,9 @@
 import sys
 
 _template = """
-export MPIENV_ROOT="$HOME/.mpienv"
+if [ -z "${MPIENV_ROOT:-}" ]; then
+    export MPIENV_ROOT="$HOME/.mpienv"
+fi
 PYTHON=__SYS_EXECUTABLE__
 
 if [ -z "${MPIENV_VERSIONS_DIR:-}" ]; then
@@ -39,10 +41,24 @@ function mpienv() {
                    $PYTHON -m mpienv.command.add $*
             }
             ;;
+        "restore" )
+            {
+                eval "$(env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} $PYTHON -m mpienv.command.restore $*)"  # NOQA
+                if [ -z "${BASH_VERSION:-}" -a ! -z "${ZSH_VERSION:-}" ]; then
+                    rehash
+                fi
+            }
+            ;;
         "rm" )
             {
                 env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
                     $PYTHON -m mpienv.command.rm "$@"
+            }
+            ;;
+        "describe" )
+            {
+                env PYTHONPATH=$MPIENV_ROOT:${PYTHONPATH:-} \
+                    $PYTHON -m mpienv.command.describe "$@"
             }
             ;;
         "rename" )
@@ -92,6 +108,8 @@ function mpienv() {
             ;;
     esac
 }
+
+mpienv restore
 """
 
 
