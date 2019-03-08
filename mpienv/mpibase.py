@@ -376,13 +376,13 @@ class MpiBase(object):
         return env_path
 
     def _generate_ldlib(self):
-        env_ldlib = os.environ.get('LIBRARY_PATH', '').split(':')
+        env_ldlib = os.environ.get('LD_LIBRARY_PATH', '').split(':')
 
-        # Remove all directory that contains 'mpiexec'
         for dir_name in ['lib', 'lib64']:
             lib_dir = os.path.join(self.prefix, dir_name)
             if os.path.exists(lib_dir):
                 # Remove if lib_is already a part of LD_LIBRARY_PATH
+                # to avoid LD_LIBRARY_PATH is too long.
                 if lib_dir in env_ldlib:
                     env_ldlib.remove(lib_dir)
                 env_ldlib = [lib_dir] + env_ldlib
