@@ -337,8 +337,6 @@ class Mpienv(object):
                 else:
                     mpi4py = True
             except KeyError:
-                sys.stderr.write("mpienv: Warning: internal error. "
-                                 "No MPI is restored.")
                 return
             self.use(mpi_name, mpi4py)
 

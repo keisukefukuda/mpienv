@@ -325,6 +325,7 @@ class MpiBase(object):
             print("tempfile = {}".format(tempfile))
             print("hosts = {}".format(remote_hosts))
 
+        # Generate a proxy shell script that runs user programs
         self._generate_exec_script(tempfile, cmds)
 
         # Copy script file
@@ -333,10 +334,19 @@ class MpiBase(object):
                 check_call(['scp', tempfile, '{}:{}'.format(host, tempfile)])
 
         # Run the mpiexec command
-        args, _ = split_mpi_user_prog(cmds)
+        mpi_args, user_args = split_mpi_user_prog(cmds)
+
+        # Warn if user tries to run python program while --mpi4py is not active
+        if user_args[0].startswith('python'):
+            if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
+                sys.stderr.write("mpienv: Warn: It seems that you are trying"
+                                 " to run a pythohn progrma, but mpi4py is not"
+                                 " ")
+
+        # Execute mpiexec
         mpiexec = self.mpiexec
         if dry_run:
-            print(' '.join([mpiexec] + args + [tempfile]))
+            print(' '.join([mpiexec] + mpi_args + [tempfile]))
             if verbose:
                 print("")
                 print(tempfile)
@@ -345,7 +355,7 @@ class MpiBase(object):
         else:
             sys.stdout.flush()
             sys.stderr.flush()
-            os.execv(mpiexec, [mpiexec] + args + [tempfile])
+            os.execv(mpiexec, [mpiexec] + mpi_args + [tempfile])
 
     def run_cmd(self, cmd, extra_envs):
         envs = os.environ.copy()
