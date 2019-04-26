@@ -233,7 +233,11 @@ class Mpienv(object):
             # target seems to be prefix
             target = os.path.join(target, 'bin', 'mpiexec')
 
-        mpi = self.get_mpi_from_mpiexec(target)
+        try:
+            mpi = self.get_mpi_from_mpiexec(target)
+        except RuntimeError as e:
+            sys.stderr.write("Error: {}\n".format(e))
+            exit(1)
 
         if isinstance(mpi, BrokenMPI):
             sys.stderr.write("Cannot find MPI from {}. "
