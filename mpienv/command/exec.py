@@ -22,6 +22,7 @@ def main():
     idx = 0
     dry_run = False
     verbose = False
+    keep = False
     while True:
         if args[idx] == '--dry-run':
             # --dry-run is mpienv's unique option and is not passed to mpiexec.
@@ -35,10 +36,13 @@ def main():
             # it is preserved and passed to mpiexec.
             idx += 1
             verbose = True
+        elif args[idx] == '--keep':
+            keep = True
+            args.pop(idx)
         else:
             break
 
-    mpienv.exec_(args, dry_run=dry_run, verbose=verbose)
+    mpienv.exec_(args, dry_run=dry_run, verbose=verbose, keep=keep)
 
 
 if __name__ == "__main__":
