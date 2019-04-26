@@ -269,7 +269,7 @@ class MpiBase(object):
     def libexec_files(self):
         assert False, "Must be overriden"
 
-    def _generate_exec_script(self, file_name, cmds):
+    def _generate_exec_script(self, file_name, cmds, keep: bool):
         with open(file_name, 'w') as f:
             for shell in ['/bin/bash', '/bin/ash', '/bin/sh']:
                 if os.path.exists(shell):
@@ -307,11 +307,12 @@ class MpiBase(object):
             f.write(' '.join(cmds) + "\n")
 
             # remove the script itself
-            f.write('rm -f {}\n'.format(file_name))
+            if not keep:
+                f.write('rm -f {}\n'.format(file_name))
 
         os.chmod(file_name, 0o744)
 
-    def exec_(self, cmds, dry_run=False, verbose=False):
+    def exec_(self, cmds, keep, dry_run, verbose):
         # Determine the temporary shell script name
         # Determine the remote hosts
         # Transfer the shell script to remote hosts
@@ -326,7 +327,7 @@ class MpiBase(object):
             print("hosts = {}".format(remote_hosts))
 
         # Generate a proxy shell script that runs user programs
-        self._generate_exec_script(tempfile, cmds)
+        self._generate_exec_script(tempfile, cmds, keep)
 
         # Copy script file
         for host in remote_hosts:
