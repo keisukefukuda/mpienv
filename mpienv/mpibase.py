@@ -269,7 +269,7 @@ class MpiBase(object):
     def libexec_files(self):
         assert False, "Must be overriden"
 
-    def _generate_exec_script(self, file_name, cmds, keep: bool):
+    def _generate_exec_script(self, file_name, cmds, keep):
         with open(file_name, 'w') as f:
             for shell in ['/bin/bash', '/bin/ash', '/bin/sh']:
                 if os.path.exists(shell):
