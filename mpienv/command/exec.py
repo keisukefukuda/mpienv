@@ -23,6 +23,7 @@ def main():
     dry_run = False
     verbose = False
     keep = False
+    no_python_abspath = False
     while True:
         if args[idx] == '--dry-run':
             # --dry-run is mpienv's unique option and is not passed to mpiexec.
@@ -39,10 +40,14 @@ def main():
         elif args[idx] == '--keep':
             keep = True
             args.pop(idx)
+        elif args[idx] == '--no-python-abspath':
+            no_python_abspath = True
+            args.pop(idx)
         else:
             break
 
-    mpienv.exec_(args, dry_run=dry_run, verbose=verbose, keep=keep)
+    mpienv.exec_(args, dry_run=dry_run, verbose=verbose, keep=keep,
+                 no_python_abspath=no_python_abspath)
 
 
 if __name__ == "__main__":
