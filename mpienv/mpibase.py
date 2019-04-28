@@ -338,8 +338,8 @@ class MpiBase(object):
         remote_hosts = parse_hosts(cmds)
 
         if verbose:
-            print("tempfile = {}".format(tempfile))
-            print("hosts = {}".format(remote_hosts))
+            print("mpienv exec: INFO: tempfile = {}".format(tempfile))
+            print("mpienv exec: INFO: hosts = {}".format(remote_hosts))
 
         # Run the mpiexec command
         mpi_args, user_args = split_mpi_user_prog(cmds)
@@ -348,10 +348,15 @@ class MpiBase(object):
         if user_args[0] == 'python':
             if not no_python_abspath:
                 user_args[0] = _get_python_interp(user_args[0])
+                if verbose:
+                    print("mpienv exec: INFO: Python interpreter: {}".format(
+                        user_args[0]
+                    ))
+
             if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
-                sys.stderr.write("mpienv: Warn: It seems that you are trying"
-                                 " to run a pythohn progrma, but mpi4py is not"
-                                 " ")
+                sys.stderr.write("mpienv: Warning: It seems that you are trying"
+                                 " to run a python progrmam, but mpi4py is not"
+                                 " installed")
 
         # Generate a proxy shell script that runs user programs
         self._generate_exec_script(tempfile, mpi_args, user_args, keep)
