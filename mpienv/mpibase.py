@@ -285,12 +285,14 @@ class MpiBase(object):
 
     def _generate_exec_script(self, file_name, mpi_args, user_args, keep):
         with open(file_name, 'w') as f:
-            for shell in ['/bin/bash', '/bin/ash', '/bin/sh']:
+            shells = ['/bin/bash', '/bin/ash', '/bin/sh']
+            for shell in shells:
                 if os.path.exists(shell):
                     f.write('#!{}\n\n'.format(shell))
                     break
             else:
-                assert False
+                sys.stderr.write("No available shell found: {}".format(shells))
+                exit(1)
 
             # Write MPIENV_HOME
             f.write("export MPIENV_HOME={}\n\n".format(self.conf['root_dir']))
