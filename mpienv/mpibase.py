@@ -6,6 +6,7 @@ import os.path
 import re
 import shutil
 from subprocess import check_call
+from subprocess import PIPE
 from subprocess import Popen
 import sys  # NOQA
 
@@ -136,6 +137,19 @@ def split_mpi_user_prog(cmds):
             break
 
     return cmds[:idx], cmds[idx:]
+
+
+def _get_python_interp(python):
+    p = Popen([python, '-c', 'import sys; print(sys.executable)'],
+              stdout=PIPE, stderr=PIPE)
+    out, err = p.communicate()
+    if p.returncode != 0:
+        sys.stderr.write("Warning: Cannot obtain Python executable: "
+                         + err.decode('utf-8'))
+
+    print("Python interpreter: {}".format(out.decode('utf-8').strip()))
+
+    return out.decode('utf-8').strip()
 
 
 class MpiBase(object):
@@ -269,7 +283,7 @@ class MpiBase(object):
     def libexec_files(self):
         assert False, "Must be overriden"
 
-    def _generate_exec_script(self, file_name, cmds, keep):
+    def _generate_exec_script(self, file_name, mpi_args, user_args, keep):
         with open(file_name, 'w') as f:
             for shell in ['/bin/bash', '/bin/ash', '/bin/sh']:
                 if os.path.exists(shell):
@@ -302,9 +316,8 @@ class MpiBase(object):
             f.write("\n")
 
             # construct the command line
-            _, cmds = split_mpi_user_prog(cmds)
-            cmds = mpienv.util.escape_shell_commands(cmds)
-            f.write(' '.join(cmds) + "\n")
+            user_args = mpienv.util.escape_shell_commands(user_args)
+            f.write(' '.join(user_args) + "\n")
 
             # remove the script itself
             if not keep:
@@ -312,7 +325,7 @@ class MpiBase(object):
 
         os.chmod(file_name, 0o744)
 
-    def exec_(self, cmds, keep, dry_run, verbose):
+    def exec_(self, cmds, keep, dry_run, verbose, no_python_abspath):
         # Determine the temporary shell script name
         # Determine the remote hosts
         # Transfer the shell script to remote hosts
@@ -326,23 +339,25 @@ class MpiBase(object):
             print("tempfile = {}".format(tempfile))
             print("hosts = {}".format(remote_hosts))
 
+        # Run the mpiexec command
+        mpi_args, user_args = split_mpi_user_prog(cmds)
+
+        # Warn if user tries to run python program while --mpi4py is not active
+        if user_args[0] == 'python':
+            if not no_python_abspath:
+                user_args[0] = _get_python_interp(user_args[0])
+            if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
+                sys.stderr.write("mpienv: Warn: It seems that you are trying"
+                                 " to run a pythohn progrma, but mpi4py is not"
+                                 " ")
+
         # Generate a proxy shell script that runs user programs
-        self._generate_exec_script(tempfile, cmds, keep)
+        self._generate_exec_script(tempfile, mpi_args, user_args, keep)
 
         # Copy script file
         for host in remote_hosts:
             if host not in ['localhost', '127.0.0.1']:
                 check_call(['scp', tempfile, '{}:{}'.format(host, tempfile)])
-
-        # Run the mpiexec command
-        mpi_args, user_args = split_mpi_user_prog(cmds)
-
-        # Warn if user tries to run python program while --mpi4py is not active
-        if user_args[0].startswith('python'):
-            if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
-                sys.stderr.write("mpienv: Warn: It seems that you are trying"
-                                 " to run a pythohn progrma, but mpi4py is not"
-                                 " ")
 
         # Execute mpiexec
         mpiexec = self.mpiexec
