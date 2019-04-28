@@ -328,10 +328,6 @@ class MpiBase(object):
         os.chmod(file_name, 0o744)
 
     def exec_(self, cmds, keep, dry_run, verbose, no_python_abspath):
-        # Determine the temporary shell script name
-        # Determine the remote hosts
-        # Transfer the shell script to remote hosts
-
         # We use '/tmp/%%%%.mpienv.sh as a script name
         # I think this is OK in most cases
         tempfile = _gen_temp_script_name()

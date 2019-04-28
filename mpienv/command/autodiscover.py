@@ -10,6 +10,7 @@ import re
 import sys
 
 from mpienv import mpienv
+from mpienv import AlreadyManagedMpi
 
 
 parser = argparse.ArgumentParser(
@@ -139,6 +140,8 @@ def install_mpi(path, mpiexec):
                                  name))
         else:
             raise
+    except AlreadyManagedMpi as e:
+        prints("{} is already managed".format(path))
     except RuntimeError as e:
         prints("Error occured while "
                "adding {}".format(path))
