@@ -6,8 +6,8 @@ import os.path
 import re
 import shutil
 from subprocess import check_call
-from subprocess import Popen
 from subprocess import PIPE
+from subprocess import Popen
 import sys  # NOQA
 
 import mpienv
