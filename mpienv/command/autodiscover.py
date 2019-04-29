@@ -5,7 +5,6 @@ import errno
 import glob
 import os
 import os.path
-import pprint
 import re
 import sys
 
@@ -172,7 +171,7 @@ def investigate_path(path, flg_to_add, done={}):
             prints("")
             prints("--------------------------------------")
             prints("Found {}".format(mpiexec))
-            mpi =mpienv.get_mpi_from_mpiexec(mpiexec)
+            mpi = mpienv.get_mpi_from_mpiexec(mpiexec)
             mpi.describe()
             # Install the new MPI
             if flg_to_add:
