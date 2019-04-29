@@ -20,6 +20,10 @@ class UnknownMPI(RuntimeError):
     pass
 
 
+class AlreadyManagedMpi(RuntimeError):
+    pass
+
+
 try:
     FileNotFoundError
 except NameError:
@@ -249,7 +253,7 @@ class Mpienv(object):
         if n is not None:
             sys.stderr.write("'{}' is already managed "
                              "as '{}'\n".format(target, n))
-            exit(1)
+            raise AlreadyManagedMpi()
 
         if self._installed.get(name) is not None:
             sys.stderr.write("Specifed name '{}' is "

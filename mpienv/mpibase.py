@@ -285,12 +285,14 @@ class MpiBase(object):
 
     def _generate_exec_script(self, file_name, mpi_args, user_args, keep):
         with open(file_name, 'w') as f:
-            for shell in ['/bin/bash', '/bin/ash', '/bin/sh']:
+            shells = ['/bin/bash', '/bin/ash', '/bin/sh']
+            for shell in shells:
                 if os.path.exists(shell):
                     f.write('#!{}\n\n'.format(shell))
                     break
             else:
-                assert False
+                sys.stderr.write("No available shell found: {}".format(shells))
+                exit(1)
 
             # Write MPIENV_HOME
             f.write("export MPIENV_HOME={}\n\n".format(self.conf['root_dir']))
@@ -326,18 +328,14 @@ class MpiBase(object):
         os.chmod(file_name, 0o744)
 
     def exec_(self, cmds, keep, dry_run, verbose, no_python_abspath):
-        # Determine the temporary shell script name
-        # Determine the remote hosts
-        # Transfer the shell script to remote hosts
-
         # We use '/tmp/%%%%.mpienv.sh as a script name
         # I think this is OK in most cases
         tempfile = _gen_temp_script_name()
         remote_hosts = parse_hosts(cmds)
 
         if verbose:
-            print("tempfile = {}".format(tempfile))
-            print("hosts = {}".format(remote_hosts))
+            print("mpienv exec: INFO: tempfile = {}".format(tempfile))
+            print("mpienv exec: INFO: hosts = {}".format(remote_hosts))
 
         # Run the mpiexec command
         mpi_args, user_args = split_mpi_user_prog(cmds)
@@ -346,10 +344,16 @@ class MpiBase(object):
         if user_args[0] == 'python':
             if not no_python_abspath:
                 user_args[0] = _get_python_interp(user_args[0])
+                if verbose:
+                    print("mpienv exec: INFO: Python interpreter: {}".format(
+                        user_args[0]
+                    ))
+
             if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
-                sys.stderr.write("mpienv: Warn: It seems that you are trying"
-                                 " to run a pythohn progrma, but mpi4py is not"
-                                 " ")
+                sys.stderr.write("mpienv: Warning: "
+                                 "It seems that you are trying"
+                                 " to run a python program, but mpi4py is not"
+                                 " installed")
 
         # Generate a proxy shell script that runs user programs
         self._generate_exec_script(tempfile, mpi_args, user_args, keep)

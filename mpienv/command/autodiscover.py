@@ -9,6 +9,7 @@ import pprint
 import re
 import sys
 
+from mpienv import AlreadyManagedMpi
 from mpienv import mpienv
 
 
@@ -139,6 +140,8 @@ def install_mpi(path, mpiexec):
                                  name))
         else:
             raise
+    except AlreadyManagedMpi as e:
+        prints("{} is already managed".format(path))
     except RuntimeError as e:
         prints("Error occured while "
                "adding {}".format(path))
