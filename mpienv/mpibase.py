@@ -350,8 +350,9 @@ class MpiBase(object):
                     ))
 
             if not mpienv.mpienv.config2['DEFAULT'].getboolean('mpi4py'):
-                sys.stderr.write("mpienv: Warning: It seems that you are trying"
-                                 " to run a python progrmam, but mpi4py is not"
+                sys.stderr.write("mpienv: Warning: "
+                                 "It seems that you are trying"
+                                 " to run a python program, but mpi4py is not"
                                  " installed")
 
         # Generate a proxy shell script that runs user programs
