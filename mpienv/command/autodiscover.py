@@ -9,8 +9,8 @@ import pprint
 import re
 import sys
 
-from mpienv import mpienv
 from mpienv import AlreadyManagedMpi
+from mpienv import mpienv
 
 
 parser = argparse.ArgumentParser(
