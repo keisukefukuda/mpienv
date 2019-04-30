@@ -29,6 +29,8 @@ def main():
             # --dry-run is mpienv's unique option and is not passed to mpiexec.
             args.pop(idx)
             dry_run = True
+            keep = True
+            verbose = True
         elif args[idx] == '--verbose':
             # The behaviour of '--verbose' is tricky
             # because both mpiexec and mpienv have the option and

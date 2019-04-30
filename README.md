@@ -1,11 +1,36 @@
 [![Build Status](https://travis-ci.org/keisukefukuda/mpienv.svg?branch=master)](https://travis-ci.org/keisukefukuda/mpienv)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-[![Issue Count](https://codeclimate.com/github/keisukefukuda/mpienv/badges/issue_count.svg)](https://codeclimate.com/github/keisukefukuda/mpienv)
 
 # mpienv
-MPI environment selector, like pyenv or rbenv. 
+MPI environment selector for Pythonisa
 
 ## Background and motivation
+
+Managing multiple MPI installations is hard. It's even harder if you use MPI through Python.
+
+### Environmental setting over SSH (non-interactive sessions)
+
+As often asked on Stack Overflow (such as [this question](https://unix.stackexchange.com/questions/170493/login-non-login-and-interactive-non-interactive-shells)),
+setting environmental variables on remote hosts are sometimes hard, in particular on Ubuntu 
+platforms.
+
+### MPI and mpi4py
+
+When you have multiple MPI installations, it is time-consuming and error-prone situation.
+To switch the active MPI, it is not enough to modify `PATH` and `LD_LIBRARY_PATH`.
+It is because the `mpi4py` library binary, namely `MPI.so`, is linked to the previous MPI
+installation.
+
+To properly switch the MPI installation, you need to reinstall `mpi4py` everytime you
+switch MPI.
+
+```
+$ pip uninstall -y mpi4py
+$ pip install mpi4py --no-cache-dir
+``` 
+
+Mpienv is designed to avoid such issues and provide a smooth workflow to work on multiple
+Python and MPI combinations.
 
 
 ## Installation
@@ -16,7 +41,7 @@ First, install mpienv via `pip`
 $ pip install mpienv
 ```
 
-## How to start using
+## How to start
 
 After installing, insert the following line into your `.bashrc` or any other initialization shell script.
 ```
@@ -43,18 +68,13 @@ following (it would take some time):
 ```bash
 $ mpienv autodiscover
 
+$ mpienv autodiscover /usr/local/Cellar
+
 --------------------------------------
-Found /opt/local/bin/mpiexec
-{'active': False,
-# (...snip...)
-'mpicc': '/opt/local/bin/mpicc-mpich-devel-clang39',
-'mpicxx': '/opt/local/bin/mpicxx-mpich-devel-clang39',
-'mpiexec': '/opt/local/bin/mpiexec.hydra-mpich-devel-clang39',
-'path': '/opt/local',
-'type': 'MPICH',
-'version': u'3.3a1'}
---------------------------------------
-Found /Users/keisukefukuda/.mpienv/shims/bin/mpiexec
+Found /usr/local/Cellar/mpich/3.3/bin/mpiexec
+Type    : MPICH
+Version : 3.3
+Path    : /usr/local/Cellar/mpich/3.3
 
 # (...snip...)
 ```
@@ -88,7 +108,7 @@ Installed MPIs:
 If you are too lazy to add all the found MPIs manually, you can just use
 
 ```bash
-$ mpienv autodiscover --add
+$ mpienv autodiscover [--add|-a]
 ```
 
 This command automatically `add`s all the MPI installations.
@@ -163,7 +183,7 @@ Installed MPIs:
   openmpi-1.6.5 -> /usr
 * openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
 
-$ mpiexec --prefix $(mpienv prefix) -n ${NP} --hostfile ${HOSTFILE} ./your.app
+$ mpienv exec -n ${NP} --hostfile ${HOSTFILE} ./your.app
 ```
 
 ```bash
@@ -176,8 +196,39 @@ Installed MPIs:
   openmpi-1.6.5 -> /usr
   openmpi-2.1.1 -> /home/kfukuda/mpi/openmpi-2.1.1
 
-$ mpiexec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
+$ mpienv exec --genvall -n ${NP} --hostfile ${HOSTFILE} ./your.app
 ```
+
+If you are curious about what `mpienv exec` does, try `--dry-run`. 
+It shows the command to execute and the content of a generated helper shell script.
+ 
+```
+$ mpienv exec --dry-run -n 2 hostname
+mpienv exec: INFO: tempfile = /tmp/KeisukenoMacBook-Pro.local.50192.20190430150049.mpienv.sh
+mpienv exec: INFO: hosts = ['localhost']
+/usr/local/Cellar/mpich/3.3/bin/mpiexec -n 2 /tmp/KeisukenoMacBook-Pro.local.50192.20190430150049.mpienv.sh
+
+/tmp/KeisukenoMacBook-Pro.local.50192.20190430150049.mpienv.sh
+---
+#!/bin/bash
+
+export MPIENV_HOME=/Users/keisukefukuda/.mpienv
+
+export PATH=/usr/local/Cellar/mpich/3.3/bin:/Users/keisukefukuda/.cargo/bin:/Users/keisukefukuda/local/bin:/Users/keisukefukuda/.pyenv/shims:/Users/keisukefukuda/.pyenv/bin:/Users/keisukefukuda/.cargo/bin:/usr/local/bin:/Users/keisukefukuda/lcoal/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Library/TeX/texbin
+
+export LD_LIBRARY_PATH=/usr/local/Cellar/mpich/3.3/lib:
+
+export PYTHONPATH=/Users/keisukefukuda/.mpienv/versions/pylib/Users_keisukefukuda_.pyenv_versions_3.6.1_bin_python3.6/mpich-3.3:
+
+export MPIENV_MPI_TYPE="MPICH"
+export MPIENV_MPI_VERSION="3.3"
+export MPIENV_MPI_NAME="mpich-3.3"
+
+hostname
+ 
+``` 
+
+Of course, you can use `mpiexec` as usual.
 
 ## Using Python together
 
