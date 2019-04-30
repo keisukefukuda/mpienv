@@ -5,7 +5,6 @@ import errno
 import glob
 import os
 import os.path
-import pprint
 import re
 import sys
 
@@ -141,7 +140,7 @@ def install_mpi(path, mpiexec):
         else:
             raise
     except AlreadyManagedMpi as e:
-        prints("{} is already managed".format(path))
+        pass
     except RuntimeError as e:
         prints("Error occured while "
                "adding {}".format(path))
@@ -169,9 +168,11 @@ def investigate_path(path, flg_to_add, done={}):
                    "'{}'".format(path, name))
             prints()
         else:
+            prints("")
             prints("--------------------------------------")
             prints("Found {}".format(mpiexec))
-            prints(pprint.pformat(mpienv.get_mpi_from_mpiexec(mpiexec)))
+            mpi = mpienv.get_mpi_from_mpiexec(mpiexec)
+            mpi.describe()
             # Install the new MPI
             if flg_to_add:
                 install_mpi(path, mpiexec)

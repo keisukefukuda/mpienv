@@ -467,7 +467,8 @@ class MpiBase(object):
             os.remove(os.path.join(self._conf['mpi_dir'], self.name))
 
     def describe(self):
-        print("Name    : {}".format(self.name))
+        if self.name is not None:
+            print("Name    : {}".format(self.name))
         print("Type    : {}".format(self.type_))
         print("Version : {}".format(self.version))
         print("Path    : {}".format(self.prefix))
