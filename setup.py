@@ -1,9 +1,12 @@
 from setuptools import find_packages
 from setuptools import setup
 
+from mpienv import __version__
+
+
 setup(
     name="mpienv",
-    version="0.1.3",
+    version=__version__,
     description="MPI environment switcher",
     author="Keisuke Fukuda",
     author_email="keisukefukuda@gmail.com",
