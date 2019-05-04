@@ -84,3 +84,7 @@ script:
   - export LD_LIBRARY_PATH=$MPI/lib:$LD_LIBRARY_PATH
   - ${TEST_SHELL_CMD} ./tests/test_main.sh
   # - codeclimate-test-reporter || true # CODECLIMATE_REPO_TOKEN is defined in TravisCI's setting
+
+branches:
+  only:
+  - master
