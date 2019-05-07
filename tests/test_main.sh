@@ -425,7 +425,7 @@ test_reg_issue_timeout() {
     # https://github.com/keisukefukuda/mpienv/issues/10
     assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
-    mpienv use ${MPICH} # this command should install mpi4py to mpich-3.2
+    mpienv use ${OMPI} # this command should install mpi4py to mpich-3.2
 
     mpienv exec -host localhost:2 --timeout 200 -n 2 $PYTHON -c "from mpi4py import MPI"
     assertTrue "$LINENO: import mpi4py should success with --timeout option" $?
