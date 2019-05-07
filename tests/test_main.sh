@@ -405,7 +405,7 @@ EOF
 }
 
 
-test_reg_issue10(){
+test_reg_issue10() {
     # Regression test for #10
     # https://github.com/keisukefukuda/mpienv/issues/10
     assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
@@ -418,6 +418,17 @@ test_reg_issue10(){
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].
     assertEquals "\$OUT must be empty" "" "${OUT}"
+}
+
+test_reg_issue_timeout() {
+    # Regression test for
+    # https://github.com/keisukefukuda/mpienv/issues/10
+    assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
+
+    mpienv use ${MPICH} # this command should install mpi4py to mpich-3.2
+
+    mpienv exec -host localhost:2 --timeout 200 -n 2 $PYTHON -c "from mpi4py import MPI"
+    assertTrue "$LINENO: import mpi4py should success with --timeout option" $?
 }
 
 # suite() {
