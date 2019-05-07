@@ -112,6 +112,7 @@ def split_mpi_user_prog(cmds):
         '--preload-files-dest-dir',
         '--tmpdir', '-wd', '-wdir', '-x',
         '-tune', '--tune',
+        '--timeout',
         '-aborted', '--aborted',
         '--app', '-cf', '--cartofile',
         '-ompi-server', '--ompi-server',
