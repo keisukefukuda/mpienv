@@ -311,7 +311,7 @@ EOF
     mpienv use ${OMPI}
     mpiexec -n 2 -host localhost:2 ./a.out >${OUT}
     assertEquals "$LINENO: 01" "01" "$(cat $OUT)"
-    
+
     rm -f ${SRC} ${OUT} a.out
 }
 
@@ -431,10 +431,14 @@ test_reg_issue_timeout() {
     assertTrue "$LINENO: import mpi4py should success with --timeout option" $?
 }
 
-# suite() {
-#     suite_addTest "test_mpi4py"
-#     # suite_addTest "test_mpicc"
-# }
+test_reg_issue_134_add_relpath() {
+    # Regression test for
+    pushd $HOME
+    OMPI_relpath=$(realpath --relative-to=$PWD $OMPI_ROOT)
+    mpienv add ${OMPI_relpath}
+    mpienv use ${OMPI}
+    popd
+}
 
 
 #-----------------------------------------------------------
