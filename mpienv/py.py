@@ -6,6 +6,8 @@ import glob
 import os
 import os.path
 import shutil
+from subprocess import Popen
+from subprocess import PIPE
 import sys
 
 import mpienv.pip as pip
@@ -35,8 +37,11 @@ class PyModule(object):
             mkdir_p(self._pylib_dir)
 
     def is_installed(self):
-        libs = glob.glob(os.path.join(self._pylib_dir, self._libname, '*.so'))
-        return len(libs) > 0
+        """Check if mpi4py is installed"""
+        python = sys.executable
+        p = Popen([python, '-c', 'import mpi4py'], stdout=PIPE, stderr=PIPE)
+        p.communicate()
+        return p.returncode == 0
 
     def install(self, env):
         sys.stderr.write(
