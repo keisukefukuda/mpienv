@@ -9,6 +9,8 @@ import mpienv.util as util
 
 
 def _call_ompi_info(bin):
+    if not os.path.exists(bin):
+        raise RuntimeError("ompi_info does not exist: {}".format(bin))
     out = check_output([bin, '--all', '--parsable'], stderr=util.DEVNULL)
     out = util.decode(out)
 
