@@ -2,12 +2,11 @@
 
 from __future__ import print_function
 import errno
-import glob
 import os
 import os.path
 import shutil
-from subprocess import Popen
 from subprocess import PIPE
+from subprocess import Popen
 import sys
 
 import mpienv.pip as pip
