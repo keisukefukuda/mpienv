@@ -32,7 +32,9 @@ function install_ompi {
                     echo "MD5 mismatch:"
                     file ${FILE}
                     md5sum ${FILE}
+                    ls
                     echo "Answer is:"
+                    echo "CHECKSUM=${CHECKSUM}"
                     cat ${CHECKSUM}
                 fi
                 rm -f ${FILE}
@@ -122,7 +124,9 @@ if [ "$(uname)" == "Darwin" ]; then
   SELF="$(readlink $0 || echo $0)"
   TEST_DIR=$(dirname $SELF)
 else
-  TEST_DIR=$(dirname $(readlink -e $0))
+  echo "\$0 = $0"
+  echo "readlink -f \$0 = $(readlink -f $0)"
+  TEST_DIR=$(dirname $(readlink -f $0))
 fi
 
 echo TEST_DIR=$TEST_DIR

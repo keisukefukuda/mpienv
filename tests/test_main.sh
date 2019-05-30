@@ -2,6 +2,12 @@
 set -u
 set -x
 
+if which python; then
+  PYTHON=$(which python)
+elif which python3; then
+  PYTHON=$(which python3)
+fi
+
 # ==============================================================
 # Configuration
 # ==============================================================
@@ -9,15 +15,13 @@ MPI_PREFIX=$HOME/mpi
 
 if [ ! -d "${TMPDIR:-}" ]; then
   TMPDIR=/tmp/$USER/$$
-  mdkir -p $TMPDIR
+  mkdir -p $TMPDIR
 fi
 export MPIENV_ROOT=$TMPDIR/mpienv/
 echo MPIENV_ROOT=$MPIENV_ROOT
 
 export PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
 mkdir -p ${PIP_DOWNLOAD_CACHE}
-
-export PYTHON=$(which python)
 
 export OMPI_MCA_btl_base_warn_component_unused=1
 
@@ -55,7 +59,7 @@ echo "proj_dir=$proj_dir"
 echo "=================== Install mpienv =================="
 cd ${proj_dir}
 rm -rf mpienv.egg-info dist ||:
-python -m pip install -e .
+$PYTHON -m pip install -e .
 
 echo "=================== Load mpienv =================="
 INIT=$(which mpienv-init)
@@ -132,7 +136,7 @@ cls = get_mpi_class(mpienv, '${MPIEXEC}')
 mpi = cls('${MPIEXEC}', mpienv.config())
 print(mpi.${INFO})
 EOF
-    env PYTHONPATH=. python ${tmpfile}
+    env PYTHONPATH=. $PYTHON ${tmpfile}
     rm -f ${tmpfile}
 }
 
@@ -198,7 +202,7 @@ test_1mpi() {
     assertTrue "$?"
 
     # Test json output
-    mpienv list --json | python -m json.tool >/dev/null
+    mpienv list --json | $PYTHON -m json.tool >/dev/null
     assertTrue "mpienv list --json produces proper JSON" "$?"
 
     # Test rename
@@ -227,14 +231,14 @@ json_get() {
     # Assuming a JSON dict is given from the stdin,
     # return the value of dict[key]
     key=$1
-    python -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
+    $PYTHON -c "import json;import sys; print(json.load(sys.stdin)['${key}'])"
 }
 
 json_check_key() {
     # Assuming a JSON dict is given from the stdin,
     # checks if dict has the key
     key=$1
-    python -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
+    $PYTHON -c "import json;import sys; print(0 if '${key}' in json.load(sys.stdin) else 1)"
 }
 
 test_cmd_info() {
@@ -242,7 +246,7 @@ test_cmd_info() {
     mpienv use mpich-${MPICH_VER}
 
     mpienv info mpich-${MPICH_VER} --json >a.json
-    assertSuccess python -mjson.tool <a.json >/dev/null
+    assertSuccess $PYTHON -mjson.tool <a.json >/dev/null
     rm -f a.json
 
     # Currently mpich is active
