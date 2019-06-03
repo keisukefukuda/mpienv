@@ -18,7 +18,6 @@ _pip_ver = None
 def _get_pip_ver():
     global _pip_ver
 
-    sys.stderr.write(str(dir(pip)))
     ver = pip.__version__
     m = re.match(r'(\d+)[.](\S+)', ver)
     major_ver = int(m.group(1))
@@ -42,7 +41,7 @@ def install(libname, target_dir, build_dir, env):
 
     if float(_pip_ver) > 8:  # >= 9
         # 9.x.x
-        cmd = ['pip', 'install',
+        cmd = [sys.executable, '-m', 'pip', 'install',
                # '-q',
                '--no-binary', ':all:',
                '-t', target_dir,
