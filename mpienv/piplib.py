@@ -5,11 +5,9 @@ import pip
 import re
 from subprocess import check_call
 from subprocess import check_output  # NOQA
-from subprocess import PIPE
-from subprocess import Popen
+from subprocess import PIPE  # NOQA
+from subprocess import Popen  # NOQA
 import sys
-
-import mpienv.util as util
 
 # We support pip 10.x.x, 9.x.x and 1.5
 _pip_ver = None

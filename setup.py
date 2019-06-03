@@ -3,7 +3,9 @@ from setuptools import find_packages
 from setuptools import setup
 import sys
 
-for line in [ln for ln in open("mpienv/__init__.py").readlines() \
+__version__ = None  # Set by the exec() below
+
+for line in [ln for ln in open("mpienv/__init__.py").readlines()
              if re.search(r'VERSION', ln)]:
     exec(line)
 
