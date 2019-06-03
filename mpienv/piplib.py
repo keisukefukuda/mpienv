@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import pip
 import re
 from subprocess import check_call
 from subprocess import check_output  # NOQA
@@ -17,12 +18,8 @@ _pip_ver = None
 def _get_pip_ver():
     global _pip_ver
 
-    p = Popen(['pip', '--version'], stdout=PIPE)
-    out, err = p.communicate()
-
-    m = re.match(r'pip (\S+)', util.decode(out))
-    ver = m.group(1)
-
+    sys.stderr.write(str(dir(pip)))
+    ver = pip.__version__
     m = re.match(r'(\d+)[.](\S+)', ver)
     major_ver = int(m.group(1))
 

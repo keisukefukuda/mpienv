@@ -1,8 +1,16 @@
+import re
 from setuptools import find_packages
 from setuptools import setup
+import sys
 
-from mpienv import __version__
+for line in [ln for ln in open("mpienv/__init__.py").readlines() \
+             if re.search(r'VERSION', ln)]:
+    exec(line)
 
+if sys.version_info[0] == 2:
+    dep = ['pip', 'configparser']
+else:
+    dep = ['pip']
 
 setup(
     name="mpienv",
@@ -12,6 +20,7 @@ setup(
     author_email="keisukefukuda@gmail.com",
     url="https://github.com/keisukefukuda/mpienv",
     packages=find_packages(),
+    install_requires=dep,
     entry_points={
         'console_scripts': ['mpienv-init=mpienv.mpienv_init:main'],
     }
