@@ -12,11 +12,11 @@ fi
 
 mkdir -p ${MPIENV_VERSIONS_DIR}
 
-function usage() {
+usage() {
     echo "Usage: mpienv [command] [options...]"
 }
 
-function mpienv() {
+mpienv() {
     if [ "0" = "${#*}" ]; then
         usage
         return -1

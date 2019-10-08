@@ -410,10 +410,10 @@ test_reg_issue10() {
     # https://github.com/keisukefukuda/mpienv/issues/10
     assertSuccess mpienv autodiscover -q --add ${MPI_PREFIX}
 
-    mpienv use --mpi4py ${MPICH} # this command should install mpi4py to mpich-3.2
+    mpienv use ${MPICH} # this command should install mpi4py to mpich-3.2
     mpienv rename ${MPICH} mpix # The mpi4py module should be taken over to 'mpix'
 
-    OUT=$(mpienv use mpix 2>&1) # this command should NOT intall mpi4py again
+    OUT=$(mpienv use mpix 2>&1) # this command should NOT install mpi4py again
 
     # If the `use` command does not run `pip install mpi4py`,
     # which is a correct behavior, E-S should be < 1 [s].
@@ -434,7 +434,10 @@ test_reg_issue_timeout() {
 test_reg_issue_134_add_relpath() {
     # Regression test for
     pushd $HOME
-    OMPI_relpath=$(realpath --relative-to=$PWD $OMPI_ROOT)
+    echo realpath --version
+    realpath --version
+    # OMPI_relpath=$(realpath --relative-to $PWD $OMPI_ROOT)
+    OMPI_relpath=$(python -c "import os.path; print(os.path.relpath('${OMPI_ROOT}', '${PWD}'))")
     mpienv add ${OMPI_relpath}
     mpienv use ${OMPI}
     popd
