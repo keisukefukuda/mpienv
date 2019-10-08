@@ -436,7 +436,8 @@ test_reg_issue_134_add_relpath() {
     pushd $HOME
     echo realpath --version
     realpath --version
-    OMPI_relpath=$(realpath --relative-to $PWD $OMPI_ROOT)
+    # OMPI_relpath=$(realpath --relative-to $PWD $OMPI_ROOT)
+    OMPI_relpath=$(python -c "import os.path; print(os.path.relpath('${OMPI_ROOT}', '${PWD}'))")
     mpienv add ${OMPI_relpath}
     mpienv use ${OMPI}
     popd
