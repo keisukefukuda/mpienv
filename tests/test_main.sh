@@ -434,6 +434,8 @@ test_reg_issue_timeout() {
 test_reg_issue_134_add_relpath() {
     # Regression test for
     pushd $HOME
+    echo realpath --version
+    realpath --version
     OMPI_relpath=$(realpath --relative-to $PWD $OMPI_ROOT)
     mpienv add ${OMPI_relpath}
     mpienv use ${OMPI}
