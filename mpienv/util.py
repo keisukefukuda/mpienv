@@ -39,7 +39,10 @@ def escape_shell_commands(cmds):
 
 def decode(s):
     if type(s) == bytes:
-        return s.decode(sys.getdefaultencoding())
+        try:
+            return s.decode(sys.getdefaultencoding())
+        except UnicodeDecodeError:
+            return s.decode('utf-8')
     else:
         return s
 

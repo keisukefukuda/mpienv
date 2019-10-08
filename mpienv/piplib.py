@@ -1,14 +1,13 @@
 # coding: utf-8
 
 import os
+import pip
 import re
 from subprocess import check_call
 from subprocess import check_output  # NOQA
-from subprocess import PIPE
-from subprocess import Popen
+from subprocess import PIPE  # NOQA
+from subprocess import Popen  # NOQA
 import sys
-
-import mpienv.util as util
 
 # We support pip 10.x.x, 9.x.x and 1.5
 _pip_ver = None
@@ -17,12 +16,7 @@ _pip_ver = None
 def _get_pip_ver():
     global _pip_ver
 
-    p = Popen(['pip', '--version'], stdout=PIPE)
-    out, err = p.communicate()
-
-    m = re.match(r'pip (\S+)', util.decode(out))
-    ver = m.group(1)
-
+    ver = pip.__version__
     m = re.match(r'(\d+)[.](\S+)', ver)
     major_ver = int(m.group(1))
 
@@ -45,7 +39,7 @@ def install(libname, target_dir, build_dir, env):
 
     if float(_pip_ver) > 8:  # >= 9
         # 9.x.x
-        cmd = ['pip', 'install',
+        cmd = [sys.executable, '-m', 'pip', 'install',
                # '-q',
                '--no-binary', ':all:',
                '-t', target_dir,
